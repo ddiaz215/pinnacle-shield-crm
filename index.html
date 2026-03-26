@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v18</title>
+<title>Pinnacle Shield CRM v18.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -280,7 +280,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <path d="M20 7L8 13v10c0 7 5 13 12 15 7-2 12-8 12-15V13L20 7z" fill="#C9A227" opacity="0.25"/>
       <path d="M14 22l4 4 8-8" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · v18</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · v18.1</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -315,7 +315,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item" onclick="showSection('plantillas')"><span class="nav-icon">📝</span><span class="nav-label">Plantillas</span></div>
   <div class="nav-item" onclick="showSection('respaldo')"><span class="nav-icon">☁</span><span class="nav-label">Respaldo</span></div>
   <div class="nav-item" onclick="showSection('config')"><span class="nav-icon">⚙</span><span class="nav-label">Config</span></div>
-  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v18</div></div>
+  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v18.1</div></div>
 </nav>
 
 <main id="content">
@@ -749,7 +749,7 @@ function setSyncStatus(state,msg){document.getElementById('sync-dot').className=
 async function syncAll(){if(!sbClient||!sbConnected){toast('Sin conexión Supabase. Guardado localmente.','warning');saveLocal();return;}setSyncStatus('syncing','Sincronizando...');await pushToSupabase();setSyncStatus('connected','Sincronizado');const el=document.getElementById('last-sync-text');if(el)el.textContent='Sync: '+new Date().toLocaleTimeString('es-PR');toast('Sincronizado ✓','success');}
 async function upsertTable(table,rows){if(!rows.length)return;try{const{error}=await sbClient.from(table).upsert(rows,{onConflict:'id'});if(error)console.warn(table,error.message);}catch(e){}}
 async function pushToSupabase(){for(const t of['clientes','polizas','prospectos','comisiones','referidos','tareas']){if(DB[t]?.length)await upsertTable(t,DB[t]);}saveLocal();}
-async function loadFromSupabase(){if(!sbClient||!sbConnected)return;for(const t of['clientes','polizas','prospectos','comisiones','referidos','tareas']){try{const{data,error}=await sbClient.from(t).select('*').order('created_at',{ascending:false});if(!error&&data)DB[t]=data;}catch(e){}}saveLocal();refreshAll();toast('Datos cargados ✓','success');}
+async function loadFromSupabase(){if(!sbClient||!sbConnected)return;const tables=['clientes','polizas','prospectos','comisiones','referidos','tareas'];let sbHasData=false;const sbData={};for(const t of tables){try{const{data,error}=await sbClient.from(t).select('*').order('created_at',{ascending:false});if(!error&&data){sbData[t]=data;if(data.length>0)sbHasData=true;}else{sbData[t]=[];}}catch(e){sbData[t]=[];}}const localHasData=tables.some(t=>DB[t]&&DB[t].length>0);if(sbHasData){for(const t of tables){if(sbData[t]&&sbData[t].length>0)DB[t]=sbData[t];}saveLocal();refreshAll();toast('Datos cargados desde Supabase ✓','success');}else if(localHasData){toast('Supabase vacío — subiendo datos locales...','info');await pushToSupabase();toast('Datos locales sincronizados a Supabase ✓','success');}else{saveLocal();refreshAll();toast('CRM listo','success');}}
 function startAutoSave(){if(autoSaveInterval)clearInterval(autoSaveInterval);autoSaveInterval=setInterval(()=>{if(DB.config.autosave!==false){saveLocal();if(sbConnected)pushToSupabase().then(()=>{const el=document.getElementById('autosave-status');if(el)el.textContent='Guardado '+new Date().toLocaleTimeString('es-PR');});}},30000);}
 function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
 
