@@ -3,10 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v14</title>
+<title>Pinnacle Shield CRM v15</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root {
   --navy:#0B1F3A; --navy-light:#152d52; --navy-mid:#1e3a6b;
@@ -281,7 +280,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <path d="M20 7L8 13v10c0 7 5 13 12 15 7-2 12-8 12-15V13L20 7z" fill="#C9A227" opacity="0.25"/>
       <path d="M14 22l4 4 8-8" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · v14</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · v15</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -316,7 +315,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item" onclick="showSection('plantillas')"><span class="nav-icon">📝</span><span class="nav-label">Plantillas</span></div>
   <div class="nav-item" onclick="showSection('respaldo')"><span class="nav-icon">☁</span><span class="nav-label">Respaldo</span></div>
   <div class="nav-item" onclick="showSection('config')"><span class="nav-icon">⚙</span><span class="nav-label">Config</span></div>
-  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v14</div></div>
+  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v15</div></div>
 </nav>
 
 <main id="content">
@@ -612,11 +611,12 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="modal" style="max-width:540px;">
     <div class="modal-header"><span class="modal-title">📄 Escáner de Póliza</span><button class="modal-close" onclick="closeModal('modal-scanner')">✕</button></div>
     <div class="modal-body">
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Sube la declaración de póliza (PDF o imagen). La IA extrae los datos automáticamente.</p>
+      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Sube la declaración de póliza en PDF o imagen. <strong style="color:var(--navy);">Claude IA</strong> extrae todos los datos automáticamente.</p>
       <div id="scanner-drop-zone" style="border:2px dashed var(--border-gold);border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:var(--gold-pale);" onclick="document.getElementById('scanner-file-input').click()" ondragover="event.preventDefault()" ondrop="handleScannerDrop(event)">
         <div style="font-size:32px;margin-bottom:8px;">📁</div>
         <div style="font-size:13px;font-weight:600;color:var(--navy);">Arrastra aquí la declaración de póliza</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">PDF o imagen JPG/PNG</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">PDF o JPG/PNG · Multinational, Universal, MAPFRE, Triple-S...</div>
+        <div style="font-size:10px;color:var(--gold);font-weight:600;margin-top:6px;">⚡ Powered by Claude IA</div>
         <input type="file" id="scanner-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleScannerFile(this.files[0])">
       </div>
       <div id="scanner-status" style="display:none;margin-top:14px;padding:12px;border-radius:8px;background:var(--info-bg);color:var(--info);font-size:12px;text-align:center;"><span id="scanner-status-text"></span></div>
@@ -846,10 +846,10 @@ function openWhatsApp(tel,nombre){
 // ══════════════════════════════════════════════
 // LOCAL STORAGE
 // ══════════════════════════════════════════════
-function saveLocal(){try{localStorage.setItem('ps_crm_v14',JSON.stringify(DB));}catch(e){}}
+function saveLocal(){try{localStorage.setItem('ps_crm_v15',JSON.stringify(DB));}catch(e){}}
 function loadLocal(){
   try{
-    const raw=localStorage.getItem('ps_crm_v14')||localStorage.getItem('ps_crm_v13')||localStorage.getItem('ps_crm_v12');
+    const raw=localStorage.getItem('ps_crm_v15')||localStorage.getItem('ps_crm_v14')||localStorage.getItem('ps_crm_v13')||localStorage.getItem('ps_crm_v12');
     if(raw){const p=JSON.parse(raw);DB={...DB,...p};}
   }catch(e){}
 }
@@ -880,62 +880,132 @@ function startAutoSave(){if(autoSaveInterval)clearInterval(autoSaveInterval);aut
 function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
 
 // ══════════════════════════════════════════════
-// SCANNER
+// ══════════════════════════════════════════════
+// SCANNER — CLAUDE IA v15
 // ══════════════════════════════════════════════
 let scannerTarget='cliente',scannerExtracted={};
-function openScannerFor(t){scannerTarget=t;scannerExtracted={};['scanner-status','scanner-result','scanner-footer'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('scanner-file-input').value='';openModal('modal-scanner');}
+
+function openScannerFor(t){
+  scannerTarget=t;scannerExtracted={};
+  ['scanner-status','scanner-result','scanner-footer'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('scanner-file-input').value='';
+  openModal('modal-scanner');
+}
 function handleScannerDrop(e){e.preventDefault();if(e.dataTransfer.files[0])handleScannerFile(e.dataTransfer.files[0]);}
+
 async function handleScannerFile(file){
   if(!file)return;
-  const sEl=document.getElementById('scanner-status'),sTxt=document.getElementById('scanner-status-text'),rEl=document.getElementById('scanner-result'),fEl=document.getElementById('scanner-fields'),footEl=document.getElementById('scanner-footer');
-  sEl.style.display='block';rEl.style.display='none';footEl.style.display='none';sTxt.textContent='🔍 Leyendo documento...';
+  const sEl=document.getElementById('scanner-status');
+  const sTxt=document.getElementById('scanner-status-text');
+  const rEl=document.getElementById('scanner-result');
+  const fEl=document.getElementById('scanner-fields');
+  const footEl=document.getElementById('scanner-footer');
+  sEl.style.display='block';rEl.style.display='none';footEl.style.display='none';
+  sTxt.textContent='📄 Preparando documento...';
+
   try{
-    let text='';
-    if(file.type.startsWith('image/')){const{data:{text:t}}=await Tesseract.recognize(file,'spa+eng',{logger:m=>{if(m.status==='recognizing text')sTxt.textContent=`🔍 ${Math.round(m.progress*100)}%`;}});text=t;}
-    else{sTxt.textContent='🔍 Leyendo PDF...';const ab=await file.arrayBuffer();text=new TextDecoder('latin1').decode(new Uint8Array(ab)).replace(/[^\x20-\x7E\xA0-\xFF\n\r\t]/g,' ').replace(/\s{3,}/g,'\n').substring(0,50000);}
-    if(!text.trim())throw new Error('No se pudo leer. Intenta con imagen JPG.');
-    sTxt.textContent='🧠 Analizando...';
-    scannerExtracted=parseMPPPolicy(text,scannerTarget);
-    const labels={nombre:'Nombre',vehiculo:'Vehículo',numpoliza:'N° Póliza',aseguradora:'Aseguradora',inicio:'Inicio',vencimiento:'Vencimiento',prima_m:'Prima mensual',deducible:'Deducible',liab:'Liability',pip:'PIP'};
+    const base64=await fileToBase64(file);
+    const mediaType=file.type||'application/pdf';
+    sTxt.textContent='🧠 Claude IA analizando la póliza... (puede tomar 5-10 segundos)';
+
+    const contentBlock = file.type==='application/pdf'
+      ? {type:'document',source:{type:'base64',media_type:'application/pdf',data:base64}}
+      : {type:'image',source:{type:'base64',media_type:mediaType,data:base64}};
+
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{
+          role:'user',
+          content:[
+            contentBlock,
+            {type:'text',text:`Eres experto en pólizas de seguro de Puerto Rico (Multinational, Universal, MAPFRE, Triple-S). Analiza este documento y extrae los datos. Responde ÚNICAMENTE con JSON válido, sin texto adicional, sin markdown, sin backticks.
+
+Formato exacto requerido:
+{"nombre":"nombre completo asegurado","direccion":"dirección completa","nacimiento":"YYYY-MM-DD o vacío","anio":"año del vehículo","vehiculo":"marca y modelo sin el año","color":"color o vacío","vin":"VIN completo o vacío","placa":"placa o vacío","numpoliza":"número completo ej MPP 0446798","aseguradora":"nombre aseguradora","inicio":"YYYY-MM-DD fecha inicio","vencimiento":"YYYY-MM-DD fecha vencimiento","prima_anual":"monto numérico sin símbolos","prima_m":"prima anual dividida entre 12 con 2 decimales","deducible":"número del deducible","liab":"liability ej 100/300k","pip":"medical payment o PIP","coberturas":"coberturas separadas por punto","tipo":"Auto o Hogar o MPP (Paquete Personal)"}`}
+          ]
+        }]
+      })
+    });
+
+    const data=await response.json();
+    if(data.error)throw new Error(data.error.message||'Error de API Claude');
+
+    const rawText=data.content?.find(b=>b.type==='text')?.text||'';
+    const clean=rawText.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+
+    if(!parsed.prima_m&&parsed.prima_anual){
+      const anual=parseFloat(String(parsed.prima_anual).replace(/[,$]/g,''));
+      if(anual>0)parsed.prima_m=(anual/12).toFixed(2);
+    }
+
+    scannerExtracted=parsed;
+
+    const labels={nombre:'Nombre asegurado',direccion:'Dirección',nacimiento:'Fecha nacimiento',anio:'Año vehículo',vehiculo:'Marca / Modelo',color:'Color',vin:'VIN',placa:'Placa',numpoliza:'N° Póliza',aseguradora:'Aseguradora',inicio:'Inicio vigencia',vencimiento:'Vencimiento',prima_anual:'Prima anual',prima_m:'Prima mensual',deducible:'Deducible',liab:'Liability',pip:'PIP / Med Payment',coberturas:'Coberturas',tipo:'Tipo'};
+
     let html='',found=0;
-    for(const[k,v]of Object.entries(scannerExtracted)){if(v&&v.toString().trim()){html+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);gap:10px;"><span style="color:var(--text-muted);font-size:11px;">${labels[k]||k}</span><span style="color:var(--navy);font-weight:600;font-size:12px;">${v}</span></div>`;found++;}}
-    if(!found){sTxt.textContent='⚠️ No se pudieron extraer datos. Intenta con imagen JPG.';return;}
-    sEl.style.display='none';fEl.innerHTML=html;rEl.style.display='block';footEl.style.display='flex';
-  }catch(err){sEl.style.display='block';sTxt.textContent='❌ '+err.message;}
+    for(const[k,v] of Object.entries(parsed)){
+      if(v&&String(v).trim()&&k!=='prima_anual'){
+        html+=`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);gap:10px;"><span style="color:var(--text-muted);font-size:11px;min-width:110px;">${labels[k]||k}</span><span style="color:var(--navy);font-weight:600;font-size:12px;text-align:right;">${v}</span></div>`;
+        found++;
+      }
+    }
+    if(!found)throw new Error('No se pudieron extraer datos.');
+
+    sEl.style.display='none';
+    fEl.innerHTML=html+`<div style="margin-top:8px;padding:6px;background:var(--success-bg);border-radius:6px;font-size:10px;color:var(--success);text-align:center;">✅ Extraído por Claude IA · Revisa antes de guardar</div>`;
+    rEl.style.display='block';
+    footEl.style.display='flex';
+
+  }catch(err){
+    sEl.style.display='block';
+    sTxt.textContent='❌ '+err.message;
+    console.error('Scanner error:',err);
+  }
 }
-function parseMPPPolicy(text,target){
-  const t=text;const find=(patterns,clean)=>{for(const p of patterns){const m=t.match(p);if(m){let v=(m[2]||m[1]||'').trim();if(clean)v=v.replace(/\s+/g,' ').substring(0,60);if(v.length>1)return v;}}return'';};
-  const numpoliza=find([/(?:Policy\s*Number|P[oó]liza)[:\s]*(?:MPP\s*)?([0-9]{7})/i,/MPP[\s\-]?([0-9]{7})/i]);
-  const nombre=find([/NAMED\s+INSURED[:\s\n]+([A-Z][A-Z\s]{5,40}?)(?:\n|URB|Tel)/,/(?:Named Insured)[:\s]+([A-ZÁÉÍÓÚÑ][A-Za-záéíóúñ\s]{4,40})/],true);
-  const vehiculo=find([/(\d{4}\s+(?:LEXUS|TOYOTA|HONDA|NISSAN|FORD|HYUNDAI|KIA|MAZDA|BMW|JEEP|RAM|DODGE|CHEVROLET)[^\n]{3,30})/i],true);
-  const inicio=find([/FROM[:\s]+(\d{1,2}\/\d{1,2}\/\d{4})/i,/(\d{1,2}\/\d{1,2}\/\d{4})(?=\s+TO)/i]);
-  const vencimiento=find([/TO[:\s]+(\d{1,2}\/\d{1,2}\/\d{4})/i,/(?:TO|Vence|Expires)[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i]);
-  const primaAnual=find([/(?:Total\s*Premium\s*is|Total\s*Premium)[:\s]*\$?([\d,]+\.?\d{0,2})/i]);
-  let prima_m='';if(primaAnual){const a=parseFloat(primaAnual.replace(/,/g,''));if(a>0)prima_m=(a/12).toFixed(2);}
-  const deducible=find([/(?:Ded\.|Deductible)[:\s]*\$?(\d{3,4})/i]);
-  const liab=find([/Bodily\s*Injury[^\n]{0,20}\$?([\d,]+)\s*each/i,/(\$?100,000[^\n]{0,10}\$?300,000)/i]);
-  const pip=find([/(?:PIP|Personal\s*Injury\s*Protection)[:\s]*\$?([\d,k]+)/i]);
-  let aseguradora='';
-  if(/multinational/i.test(t))aseguradora='Multinational Insurance Company';
-  else if(/universal/i.test(t))aseguradora='Universal Insurance';
-  else if(/mapfre/i.test(t))aseguradora='MAPFRE';
-  else if(/triple[\-\s]?s/i.test(t))aseguradora='Triple-S';
-  return{nombre:nombre||'',vehiculo:vehiculo||'',numpoliza:numpoliza?'MPP '+numpoliza:'',aseguradora:aseguradora||'',inicio:fmtDate(inicio),vencimiento:fmtDate(vencimiento),prima_m:prima_m||'',deducible:deducible||'',liab:liab||'',pip:pip||''};
+
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>resolve(reader.result.split(',')[1]);
+    reader.onerror=reject;
+    reader.readAsDataURL(file);
+  });
 }
-function fmtDate(ds){if(!ds)return'';const m=ds.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);if(!m)return'';let[_,mo,day,yr]=m;if(yr.length===2)yr='20'+yr;return`${yr}-${mo.padStart(2,'0')}-${day.padStart(2,'0')}`;}
+
+function fmtDate(ds){
+  if(!ds)return'';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(ds))return ds;
+  const m=ds.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  if(!m)return'';
+  let[_,mo,day,yr]=m;
+  if(yr.length===2)yr='20'+yr;
+  return`${yr}-${mo.padStart(2,'0')}-${day.padStart(2,'0')}`;
+}
+
 function applyScannerData(){
   const d=scannerExtracted;
   if(scannerTarget==='cliente'){
     closeModal('modal-scanner');openModal('modal-cliente');
     setTimeout(()=>{
       if(d.nombre)document.getElementById('c-nombre').value=d.nombre;
-      if(d.vehiculo){const p=d.vehiculo.trim().split(' ');if(p[0]&&/^\d{4}$/.test(p[0])){document.getElementById('c-anio').value=p[0];document.getElementById('c-vehiculo').value=p.slice(1).join(' ');}else document.getElementById('c-vehiculo').value=d.vehiculo;}
+      if(d.nacimiento)document.getElementById('c-nacimiento').value=d.nacimiento;
+      if(d.direccion)document.getElementById('c-direccion').value=d.direccion;
+      // Year separate from model
+      if(d.anio)document.getElementById('c-anio').value=d.anio;
+      if(d.vehiculo)document.getElementById('c-vehiculo').value=d.vehiculo;
+      if(d.color)document.getElementById('c-color').value=d.color;
       if(d.numpoliza)document.getElementById('c-numpoliza').value=d.numpoliza;
       if(d.aseguradora)document.getElementById('c-aseguradora').value=d.aseguradora;
       if(d.prima_m)document.getElementById('c-prima').value=d.prima_m;
       if(d.deducible){document.getElementById('c-deducible').value=d.deducible;document.getElementById('c-ded-col').value=d.deducible;}
       if(d.liab)document.getElementById('c-liab').value=d.liab;
       if(d.pip)document.getElementById('c-pip').value=d.pip;
+      if(d.coberturas)document.getElementById('c-coberturas').value=d.coberturas;
       if(d.inicio){document.getElementById('c-inicio').value=d.inicio;calcVencimientoCliente();}
       if(d.vencimiento){document.getElementById('c-vencimiento').value=d.vencimiento;updateClienteRenoPreview();}
     },300);
@@ -1268,7 +1338,7 @@ function copyPlantilla(i){navigator.clipboard.writeText(PLANTILLAS[i].contenido)
 // ══════════════════════════════════════════════
 // RESPALDO
 // ══════════════════════════════════════════════
-function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pinnacle-shield-v14-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('JSON descargado ✓','success');}
+function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pinnacle-shield-v15-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('JSON descargado ✓','success');}
 function exportCSV(){if(!DB.clientes.length){toast('Sin clientes','warning');return;}const keys=['nombre','tel','email','vehiculo','aseguradora','prima_m','pago','estado','numpoliza','inicio','vencimiento'];const header=keys.join(',');const rows=DB.clientes.map(c=>keys.map(k=>'"'+(c[k]||'').toString().replace(/"/g,'""')+'"').join(','));const blob=new Blob([header+'\n'+rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='clientes-'+new Date().toISOString().slice(0,10)+'.csv';a.click();toast('CSV descargado ✓','success');}
 function importJSON(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);['clientes','polizas','prospectos','comisiones','referidos','tareas'].forEach(t=>{if(data[t])DB[t]=data[t];});saveLocal();refreshAll();toast('Datos restaurados ✓','success');}catch(err){toast('Error al leer el archivo','error');}};reader.readAsText(file);}
 
