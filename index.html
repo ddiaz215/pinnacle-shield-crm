@@ -72,6 +72,27 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text-m
 .seg-empty-icon{font-size:48px;margin-bottom:12px;}
 .seg-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
 
+
+/* LOCK SCREEN */
+#lock-screen{position:fixed;inset:0;z-index:99999;background:var(--navy);display:flex;align-items:center;justify-content:center;flex-direction:column;}
+#lock-screen.hidden{display:none;}
+.lock-box{background:rgba(255,255,255,0.05);border:1px solid rgba(201,162,39,0.3);border-radius:20px;padding:40px 36px;width:340px;text-align:center;}
+.lock-logo{width:64px;height:64px;margin:0 auto 20px;background:rgba(201,162,39,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;}
+.lock-title{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:white;margin-bottom:4px;}
+.lock-sub{font-size:11px;color:rgba(255,255,255,0.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:28px;}
+.lock-dots{display:flex;gap:12px;justify-content:center;margin-bottom:24px;}
+.lock-dot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);background:transparent;transition:all 0.2s;}
+.lock-dot.filled{background:var(--gold);border-color:var(--gold);}
+.lock-dot.error{background:#c0392b;border-color:#c0392b;animation:shake 0.3s;}
+.lock-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
+.lock-key{height:56px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.07);color:white;font-size:20px;font-weight:600;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.15s;}
+.lock-key:hover{background:rgba(201,162,39,0.2);border-color:var(--gold);}
+.lock-key:active{transform:scale(0.95);}
+.lock-key.del{font-size:16px;color:rgba(255,255,255,0.5);}
+.lock-error{color:#f87171;font-size:11px;height:16px;margin-bottom:8px;}
+.lock-hint{font-size:10px;color:rgba(255,255,255,0.25);margin-top:12px;}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
 /* SYNC BAR */
 #sync-bar{position:fixed;top:0;left:0;right:0;z-index:2000;height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--navy);color:rgba(255,255,255,0.85);font-size:11px;font-weight:500;}
 #sync-bar .sync-left{display:flex;align-items:center;gap:8px;}
@@ -313,6 +334,38 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
 </style>
 </head>
 <body>
+
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-box">
+    <div class="lock-logo">🔐</div>
+    <div class="lock-title">Pinnacle Shield</div>
+    <div class="lock-sub">Insurance Advisors</div>
+    <div class="lock-dots">
+      <div class="lock-dot" id="dot-0"></div>
+      <div class="lock-dot" id="dot-1"></div>
+      <div class="lock-dot" id="dot-2"></div>
+      <div class="lock-dot" id="dot-3"></div>
+    </div>
+    <div class="lock-error" id="lock-error"></div>
+    <div class="lock-keypad">
+      <button class="lock-key" onclick="lockPress('1')">1</button>
+      <button class="lock-key" onclick="lockPress('2')">2</button>
+      <button class="lock-key" onclick="lockPress('3')">3</button>
+      <button class="lock-key" onclick="lockPress('4')">4</button>
+      <button class="lock-key" onclick="lockPress('5')">5</button>
+      <button class="lock-key" onclick="lockPress('6')">6</button>
+      <button class="lock-key" onclick="lockPress('7')">7</button>
+      <button class="lock-key" onclick="lockPress('8')">8</button>
+      <button class="lock-key" onclick="lockPress('9')">9</button>
+      <button class="lock-key" onclick="lockPress('0')">0</button>
+      <button class="lock-key del" onclick="lockDel()">⌫</button>
+      <button class="lock-key" style="background:rgba(201,162,39,0.2);border-color:var(--gold);" onclick="lockSubmit()">✓</button>
+    </div>
+    <div class="lock-hint">Ingresa tu PIN de acceso</div>
+  </div>
+</div>
 
 <div id="sync-bar">
   <div class="sync-left"><div class="sync-dot" id="sync-dot"></div><span id="sync-status-text">Iniciando...</span></div>
@@ -605,7 +658,15 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
 <!-- CONFIG -->
 <div id="sec-config" class="section">
   <div class="page-header"><div><div class="page-title">Configuración</div></div></div>
-  <div class="config-section"><h3>🔌 Supabase</h3>
+  
+        <div class="config-section" style="grid-column:1/-1;">
+          <h3>🔐 Seguridad</h3>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn btn-outline" onclick="changePin()">Cambiar PIN</button>
+            <span style="font-size:11px;color:var(--text-muted);">PIN por defecto: 2606</span>
+          </div>
+        </div>
+<div class="config-section"><h3>🔌 Supabase</h3>
     <div class="config-field"><label>URL</label><input type="text" id="sb-url" value="https://oljsjvsakzymxrsfkbda.supabase.co"></div>
     <div class="config-field"><label>API Key</label><input type="text" id="sb-key" value="sb_publishable_x8DOB_xZ-umyV0eIbP9B7Q_dfXfaIaO"></div>
     <div style="display:flex;gap:8px;margin-top:14px;align-items:center;"><button class="btn btn-primary" onclick="saveSupabaseConfig()">Guardar y conectar</button><button class="btn btn-outline" onclick="checkSupabaseConnection()">Probar</button><span class="test-result" id="test-result" style="display:none;"></span></div>
@@ -1201,6 +1262,87 @@ function renderSeguimiento(){
   }).join('');
 }
 
+
+// ============================================================
+// LOCK SCREEN
+// ============================================================
+const LOCK_PIN_KEY = 'ps_pin';
+const DEFAULT_PIN = '2606'; // Default PIN: 2606
+let lockInput = '';
+let lockAttempts = 0;
+
+function initLock(){
+  const savedPin = localStorage.getItem(LOCK_PIN_KEY) || DEFAULT_PIN;
+  const unlocked = sessionStorage.getItem('ps_unlocked');
+  if(unlocked === 'yes'){
+    document.getElementById('lock-screen').classList.add('hidden');
+  }
+}
+
+function lockPress(digit){
+  if(lockInput.length >= 4) return;
+  lockInput += digit;
+  updateDots();
+  if(lockInput.length === 4) setTimeout(lockSubmit, 200);
+}
+
+function lockDel(){
+  lockInput = lockInput.slice(0,-1);
+  updateDots();
+  document.getElementById('lock-error').textContent = '';
+}
+
+function updateDots(){
+  for(let i=0;i<4;i++){
+    const dot = document.getElementById('dot-'+i);
+    dot.classList.remove('filled','error');
+    if(i < lockInput.length) dot.classList.add('filled');
+  }
+}
+
+function lockSubmit(){
+  const savedPin = localStorage.getItem(LOCK_PIN_KEY) || DEFAULT_PIN;
+  if(lockInput === savedPin){
+    sessionStorage.setItem('ps_unlocked','yes');
+    document.getElementById('lock-screen').classList.add('hidden');
+    lockInput = '';
+    updateDots();
+  } else {
+    lockAttempts++;
+    document.getElementById('lock-error').textContent = 'PIN incorrecto. Intenta de nuevo.';
+    for(let i=0;i<4;i++) document.getElementById('dot-'+i).classList.add('error');
+    setTimeout(()=>{
+      lockInput='';
+      updateDots();
+      document.getElementById('lock-error').textContent='';
+    }, 800);
+    if(lockAttempts >= 5){
+      document.getElementById('lock-error').textContent = 'Demasiados intentos. Espera 30s.';
+      setTimeout(()=>{lockAttempts=0; document.getElementById('lock-error').textContent='';}, 30000);
+    }
+  }
+}
+
+// Allow keyboard input
+document.addEventListener('keydown', e => {
+  if(document.getElementById('lock-screen').classList.contains('hidden')) return;
+  if(e.key >= '0' && e.key <= '9') lockPress(e.key);
+  if(e.key === 'Backspace') lockDel();
+  if(e.key === 'Enter') lockSubmit();
+});
+
+function changePin(){
+  const current = prompt('PIN actual:');
+  const savedPin = localStorage.getItem(LOCK_PIN_KEY) || DEFAULT_PIN;
+  if(current !== savedPin){alert('PIN incorrecto');return;}
+  const newPin = prompt('Nuevo PIN (4 dígitos):');
+  if(!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)){alert('El PIN debe ser 4 dígitos');return;}
+  const confirm = prompt('Confirma el nuevo PIN:');
+  if(newPin !== confirm){alert('Los PINs no coinciden');return;}
+  localStorage.setItem(LOCK_PIN_KEY, newPin);
+  alert('PIN cambiado exitosamente ✓');
+}
+
 function saveLocal(){try{localStorage.setItem('ps_crm_v19',JSON.stringify(DB));}catch(e){}}
 function loadLocal(){try{const raw=localStorage.getItem('ps_crm_v19')||localStorage.getItem('ps_crm_v17')||localStorage.getItem('ps_crm_v16')||localStorage.getItem('ps_crm_v15')||localStorage.getItem('ps_crm_v14')||localStorage.getItem('ps_crm_v13')||localStorage.getItem('ps_crm_v12');if(raw){const p=JSON.parse(raw);DB={...DB,...p};if(!DB.seguimiento)DB.seguimiento=[];}}catch(e){}}
 function initSupabase(){const url=DB.config.sbUrl||DEFAULT_CFG.sbUrl,key=DB.config.sbKey||DEFAULT_CFG.sbKey;if(!url||!key)return;try{sbClient=supabase.createClient(url,key);checkSupabaseConnection();}catch(e){setSyncStatus('error','Error config');}}
@@ -1374,7 +1516,7 @@ function saveAgencyConfig(){DB.config.agencia=document.getElementById('cfg-agenc
 function refreshAll(){refreshDashboard();renderClientes();renderPolizas();renderPipeline();renderComisiones();renderRenovaciones();renderReferidos();renderTareas();renderReportes();renderPlantillas();renderSeguimiento();}
 
 document.addEventListener('DOMContentLoaded',()=>{
-  loadLocal();initSupabase();refreshAll();
+  loadLocal();initSupabase();refreshAll();initLock();
   document.getElementById('ref-fecha').value=new Date().toISOString().slice(0,10);
   document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
   startAutoSave();
