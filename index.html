@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v18.3</title>
+<title>Pinnacle Shield CRM v19</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -23,6 +23,54 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text-main);font-size:14px;min-height:100vh;overflow-x:hidden;}
+
+
+/* DOCUMENTS SECTION */
+.docs-section{margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.docs-section-header{background:#f8f9fa;padding:10px 14px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between;}
+.doc-list{padding:8px 12px;}
+.doc-item{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid var(--border);font-size:12px;}
+.doc-item:last-child{border-bottom:none;}
+.doc-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center;}
+.doc-name{flex:1;font-weight:500;color:var(--navy);word-break:break-word;}
+.doc-meta{font-size:10px;color:var(--text-muted);}
+.doc-actions{display:flex;gap:4px;}
+.doc-drop-zone{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;margin:8px 12px 12px;}
+.doc-drop-zone:hover,.doc-drop-zone.dragover{border-color:var(--gold);background:var(--gold-pale);}
+.doc-drop-zone .dz-icon{font-size:24px;margin-bottom:6px;}
+.doc-drop-zone .dz-text{font-size:11px;color:var(--text-muted);}
+.doc-drop-zone .dz-btn{display:inline-block;margin-top:8px;padding:5px 14px;background:var(--navy);color:white;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;}
+.doc-upload-progress{height:3px;background:var(--gold);border-radius:2px;transition:width 0.3s;width:0%;}
+.licencia-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px;display:none;}
+.licencia-wrap{position:relative;border:2px dashed var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.licencia-wrap:hover{border-color:var(--gold);background:var(--gold-pale);}
+.licencia-wrap .lic-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-muted);font-size:12px;}
+.licencia-wrap .lic-icon{font-size:32px;}
+
+
+/* SEGUIMIENTO MODULE */
+.seg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:16px;}
+.seg-card{background:white;border-radius:12px;border:1px solid var(--border);padding:14px;transition:box-shadow 0.2s;}
+.seg-card:hover{box-shadow:var(--shadow-md);}
+.seg-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+.seg-card-name{font-size:13px;font-weight:700;color:var(--navy);}
+.seg-card-aseg{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.seg-card-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.seg-field{background:#f8f9fa;border-radius:7px;padding:8px;}
+.seg-field-label{font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;}
+.seg-field-val{font-size:12px;font-weight:600;color:var(--navy);}
+.seg-card-footer{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
+.seg-status{display:flex;gap:4px;flex-wrap:wrap;}
+.seg-vence-badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;}
+.seg-vence-urgent{background:#fdecea;color:#c0392b;}
+.seg-vence-soon{background:#fff8e6;color:#a06000;}
+.seg-vence-ok{background:#e8f5ee;color:#1a7a4a;}
+.seg-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.seg-filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:white;font-size:11px;cursor:pointer;font-family:'Montserrat',sans-serif;transition:all 0.2s;}
+.seg-filter-btn.active,.seg-filter-btn:hover{background:var(--navy);color:white;border-color:var(--navy);}
+.seg-empty{text-align:center;padding:48px 20px;color:var(--text-muted);}
+.seg-empty-icon{font-size:48px;margin-bottom:12px;}
+.seg-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
 
 /* SYNC BAR */
 #sync-bar{position:fixed;top:0;left:0;right:0;z-index:2000;height:32px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--navy);color:rgba(255,255,255,0.85);font-size:11px;font-weight:500;}
@@ -280,7 +328,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <path d="M20 7L8 13v10c0 7 5 13 12 15 7-2 12-8 12-15V13L20 7z" fill="#C9A227" opacity="0.25"/>
       <path d="M14 22l4 4 8-8" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · v18.3</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · v19</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -315,7 +363,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item" onclick="showSection('plantillas')"><span class="nav-icon">📝</span><span class="nav-label">Plantillas</span></div>
   <div class="nav-item" onclick="showSection('respaldo')"><span class="nav-icon">☁</span><span class="nav-label">Respaldo</span></div>
   <div class="nav-item" onclick="showSection('config')"><span class="nav-icon">⚙</span><span class="nav-label">Config</span></div>
-  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v18.3</div></div>
+  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v19</div></div>
 </nav>
 
 <main id="content">
@@ -471,6 +519,73 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
 </div>
 
 <!-- PLANTILLAS -->
+
+  <!-- SEGUIMIENTO SECTION -->
+  <div id="sec-seguimiento" class="section">
+    <div class="page-header">
+      <div>
+        <div class="page-title">📋 Cartera en Seguimiento</div>
+        <div class="page-sub">Clientes con pólizas en otras compañías — próximos a vencer</div>
+      </div>
+      <button class="btn btn-gold" onclick="openModal('modal-seguimiento')">+ Agregar</button>
+    </div>
+    <div class="seg-stats">
+      <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="seg-total">0</div></div>
+      <div class="stat-card"><div class="stat-label">Urgentes ≤30d</div><div class="stat-value" style="color:var(--danger)" id="seg-urgentes">0</div></div>
+      <div class="stat-card"><div class="stat-label">Contactados</div><div class="stat-value" style="color:var(--gold)" id="seg-contactados">0</div></div>
+      <div class="stat-card"><div class="stat-label">Convertidos</div><div class="stat-value" style="color:var(--success)" id="seg-convertidos">0</div></div>
+    </div>
+    <div class="seg-filters">
+      <span style="font-size:11px;font-weight:600;color:var(--text-muted);">Filtrar:</span>
+      <button class="seg-filter-btn active" onclick="filterSeguimiento('todos',this)">Todos</button>
+      <button class="seg-filter-btn" onclick="filterSeguimiento('Pendiente llamar',this)">📞 Pendiente</button>
+      <button class="seg-filter-btn" onclick="filterSeguimiento('Contactado',this)">✉️ Contactado</button>
+      <button class="seg-filter-btn" onclick="filterSeguimiento('Cotización enviada',this)">📩 Cotización</button>
+      <button class="seg-filter-btn" onclick="filterSeguimiento('Convertido',this)">✅ Convertido</button>
+      <button class="seg-filter-btn" onclick="filterSeguimiento('No interesado',this)">❌ No interesado</button>
+      <input type="text" id="seg-search" placeholder="🔍 Buscar..." onInput="renderSeguimiento()" style="padding:5px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;outline:none;font-family:'Montserrat',sans-serif;">
+    </div>
+    <div class="seg-grid" id="seg-grid"></div>
+  </div>
+
+  <!-- MODAL SEGUIMIENTO -->
+  <div class="modal-overlay" id="modal-seguimiento" onclick="if(event.target===this)closeModal('modal-seguimiento')">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-seg-title">Agregar a Seguimiento</span>
+        <button class="modal-close" onclick="closeModal('modal-seguimiento')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="seg-id">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="form-group" style="grid-column:1/-1"><label>Nombre completo *</label><input type="text" id="seg-nombre" placeholder="Juan García"></div>
+          <div class="form-group"><label>Teléfono</label><input type="tel" id="seg-tel" placeholder="787-000-0000"></div>
+          <div class="form-group"><label>Email</label><input type="email" id="seg-email" placeholder="juan@email.com"></div>
+          <div class="form-group"><label>Vehículo / Bien asegurado</label><input type="text" id="seg-vehiculo" placeholder="2022 Toyota Camry"></div>
+          <div class="form-group"><label>Compañía actual</label><input type="text" id="seg-aseguradora" placeholder="Triple-S, MAPFRE..."></div>
+          <div class="form-group"><label>N° Póliza actual</label><input type="text" id="seg-poliza" placeholder="Opcional"></div>
+          <div class="form-group"><label>⚠️ Fecha vencimiento póliza</label><input type="date" id="seg-vence"></div>
+          <div class="form-group"><label>Prima actual / año ($)</label><input type="number" id="seg-prima" placeholder="0.00" step="0.01"></div>
+          <div class="form-group"><label>Estado de seguimiento</label>
+            <select id="seg-estado">
+              <option>Pendiente llamar</option>
+              <option>Contactado</option>
+              <option>Cotización enviada</option>
+              <option>Convertido</option>
+              <option>No interesado</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Referido por</label><input type="text" id="seg-referido" placeholder="Opcional"></div>
+          <div class="form-group" style="grid-column:1/-1"><label>Notas de seguimiento</label><textarea id="seg-notas" rows="3" placeholder="Ej: Llamé, dice que llame en 2 semanas..." style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;resize:vertical;outline:none;"></textarea></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-seguimiento')">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveSeguimiento()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
 <div id="sec-plantillas" class="section">
   <div class="page-header"><div><div class="page-title">Plantillas</div><div class="page-sub">WhatsApp · Email</div></div></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;" id="plantillas-grid"></div>
@@ -523,22 +638,18 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <input type="hidden" id="cliente-id">
       <!-- Foto vehículo -->
       <div class="form-section-title">📷 Foto del vehículo / documento</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
-        <div>
-          <div class="vehicle-photo-wrap" onclick="document.getElementById('foto-vehiculo-input').click()" id="foto-vehiculo-wrap">
-            <img id="foto-vehiculo-preview" src="" style="display:none;">
-            <div class="photo-placeholder" id="foto-vehiculo-placeholder"><div>🚗</div><div>Foto del vehículo</div></div>
+      <div style="margin-bottom:14px;">
+          <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">🪪 Licencia de Conducir</label>
+          <div class="licencia-wrap" onclick="document.getElementById('licencia-input').click()" id="licencia-wrap">
+            <img id="licencia-preview" class="licencia-preview" src="" alt="Licencia">
+            <div class="lic-placeholder" id="licencia-placeholder">
+              <div class="lic-icon">🪪</div>
+              <div>Click o arrastra foto/scan de licencia</div>
+              <div style="font-size:10px;">JPG, PNG, PDF — máx 5MB</div>
+            </div>
           </div>
-          <input type="file" id="foto-vehiculo-input" accept="image/*" style="display:none;" onchange="loadPhoto('foto-vehiculo',this)">
+          <input type="file" id="licencia-input" accept="image/*,.pdf" style="display:none;" onchange="loadLicencia(this)">
         </div>
-        <div>
-          <div class="vehicle-photo-wrap" onclick="document.getElementById('foto-doc-input').click()" id="foto-doc-wrap">
-            <img id="foto-doc-preview" src="" style="display:none;">
-            <div class="photo-placeholder" id="foto-doc-placeholder"><div>📄</div><div>Tarjeta / documento</div></div>
-          </div>
-          <input type="file" id="foto-doc-input" accept="image/*" style="display:none;" onchange="loadPhoto('foto-doc',this)">
-        </div>
-      </div>
       <div class="form-section-title">Datos personales</div>
       <div class="form-grid form-grid-2" style="margin-bottom:14px;">
         <div class="form-group"><label>Nombre completo *</label><input type="text" id="c-nombre" placeholder="Juan Pérez Rivera"></div>
@@ -586,7 +697,27 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
         <button class="btn btn-outline btn-sm" onclick="addContactLog()" style="height:36px;">+ Añadir</button>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-primary" onclick="saveCliente()">Guardar cliente</button></div>
+    
+        <!-- DOCUMENTOS -->
+        <div class="docs-section" id="docs-section">
+          <div class="docs-section-header">
+            <span>📎 Documentos adjuntos</span>
+            <span id="docs-count" style="background:var(--navy);color:white;padding:2px 8px;border-radius:10px;font-size:10px;">0</span>
+          </div>
+          <div class="doc-list" id="doc-list">
+            <div style="text-align:center;padding:12px;font-size:11px;color:var(--text-muted);" id="doc-empty">Sin documentos adjuntos</div>
+          </div>
+          <div class="doc-drop-zone" id="doc-drop-zone" onclick="document.getElementById('doc-file-input').click()">
+            <div class="dz-icon">📎</div>
+            <div class="dz-text">Arrastra archivos aquí o click para seleccionar</div>
+            <div class="dz-text" style="margin-top:4px;">PDF, JPG, PNG, DOCX — cualquier formato</div>
+            <div class="dz-btn">Seleccionar archivo</div>
+            <div class="doc-upload-progress" id="doc-progress"></div>
+          </div>
+          <input type="file" id="doc-file-input" multiple accept="*/*" style="display:none;" onchange="uploadDocumentos(this)">
+        </div>
+
+        <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-primary" onclick="saveCliente()">Guardar cliente</button></div>
   </div>
 </div>
 
@@ -721,7 +852,7 @@ let currentRenoTabState='clientes';
 let currentHistorialClienteId=null;
 
 const DEFAULT_CFG={sbUrl:'https://oljsjvsakzymxrsfkbda.supabase.co',sbKey:'sb_publishable_x8DOB_xZ-umyV0eIbP9B7Q_dfXfaIaO',agencia:'Pinnacle Shield Advisors LLC',productor:'Daniel Díaz Rodríguez',tel:'939-392-5008',email:'ddiaz@pinnacleshieldpr.com',apoyo:'Reborn Agency Inc.',override:6,comisionBase:15,autosave:true};
-let DB={clientes:[],polizas:[],prospectos:[],comisiones:[],referidos:[],tareas:[],config:{...DEFAULT_CFG}};
+let DB={clientes:[],polizas:[],prospectos:[],comisiones:[],referidos:[],tareas:[],seguimiento:[],config:{...DEFAULT_CFG}};
 
 function daysDiff(dateStr){if(!dateStr)return null;const d=new Date(dateStr);d.setHours(0,0,0,0);const h=new Date();h.setHours(0,0,0,0);return Math.round((d-h)/86400000);}
 function renoClass(dias){if(dias===null)return'future';if(dias<0)return'expired';if(dias<=30)return'urgent';if(dias<=60)return'soon';if(dias<=90)return'ok';return'future';}
@@ -741,14 +872,342 @@ function addContactLogFromModal(){if(!currentHistorialClienteId)return;const not
 function openHistorial(clienteId){const c=DB.clientes.find(x=>x.id===clienteId);if(!c)return;currentHistorialClienteId=clienteId;document.getElementById('modal-historial-title').textContent=`Historial · ${c.nombre}`;renderModalHistorial(c);openModal('modal-historial');}
 function renderModalHistorial(c){const el=document.getElementById('modal-historial-list');const logs=c.historial||[];if(!logs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">💬</div><p>Sin historial de contacto aún.</p></div>';return;}el.innerHTML=logs.map(l=>`<div class="contact-log-item"><div class="contact-log-dot"></div><div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;"><span style="font-size:11px;font-weight:600;">${l.tipo||'📞'}</span><span style="font-size:10px;color:var(--text-light);">${l.fecha||''}</span></div><div style="font-size:12px;line-height:1.5;">${l.nota}</div></div></div>`).join('');}
 function openWhatsApp(tel,nombre){if(!tel){toast('Sin número de teléfono','warning');return;}const clean=tel.replace(/\D/g,'');const num=clean.startsWith('1')?clean:'1'+clean;const msg=encodeURIComponent(`Hola ${nombre}, soy Daniel Díaz de Pinnacle Shield Advisors.`);window.open(`https://wa.me/${num}?text=${msg}`,'_blank');}
-function saveLocal(){try{localStorage.setItem('ps_crm_v18',JSON.stringify(DB));}catch(e){}}
-function loadLocal(){try{const raw=localStorage.getItem('ps_crm_v18')||localStorage.getItem('ps_crm_v17')||localStorage.getItem('ps_crm_v16')||localStorage.getItem('ps_crm_v15')||localStorage.getItem('ps_crm_v14')||localStorage.getItem('ps_crm_v13')||localStorage.getItem('ps_crm_v12');if(raw){const p=JSON.parse(raw);DB={...DB,...p};}}catch(e){}}
+
+// ---- LICENCIA & DOCUMENTOS ----
+let currentDocumentos = [];
+
+function loadLicencia(input){
+  const file = input.files[0];
+  if(!file) return;
+  if(file.size > 5*1024*1024){toast('Archivo muy grande (máx 5MB)','warning');return;}
+  if(file.type.startsWith('image/')){
+    const reader = new FileReader();
+    reader.onload = e => {
+      const lp = document.getElementById('licencia-preview');
+      const lph = document.getElementById('licencia-placeholder');
+      if(lp){lp.src=e.target.result;lp.style.display='block';}
+      if(lph)lph.style.display='none';
+      toast('Licencia cargada ✓','success');
+    };
+    reader.readAsDataURL(file);
+  } else {
+    toast('Licencia guardada (PDF)','success');
+  }
+}
+
+function getFileIcon(name){
+  const ext=(name||'').split('.').pop().toLowerCase();
+  const icons={pdf:'📄',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',txt:'📃'};
+  return icons[ext]||'📎';
+}
+
+function formatBytes(b){
+  if(b<1024)return b+'B';
+  if(b<1024*1024)return (b/1024).toFixed(0)+'KB';
+  return (b/(1024*1024)).toFixed(1)+'MB';
+}
+
+function renderDocList(docs){
+  const list = document.getElementById('doc-list');
+  const empty = document.getElementById('doc-empty');
+  const count = document.getElementById('docs-count');
+  if(!list) return;
+  if(!docs||!docs.length){
+    list.innerHTML='<div style="text-align:center;padding:12px;font-size:11px;color:var(--text-muted);">Sin documentos adjuntos</div>';
+    if(count)count.textContent='0';
+    return;
+  }
+  if(count)count.textContent=docs.length;
+  list.innerHTML=docs.map((d,i)=>`
+    <div class="doc-item">
+      <div class="doc-icon">${getFileIcon(d.name)}</div>
+      <div style="flex:1">
+        <div class="doc-name">${d.name}</div>
+        <div class="doc-meta">${d.size?formatBytes(d.size):''} ${d.date?'· '+d.date:''}</div>
+      </div>
+      <div class="doc-actions">
+        ${d.url?`<button class="btn btn-outline btn-sm" onclick="window.open('${d.url}','_blank')" title="Ver">👁</button>`:''}
+        <button class="btn btn-danger btn-sm" onclick="removeDoc(${i})" title="Eliminar">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeDoc(i){
+  currentDocumentos.splice(i,1);
+  renderDocList(currentDocumentos);
+  toast('Documento eliminado','warning');
+}
+
+async function uploadDocumentos(input){
+  const files = Array.from(input.files);
+  if(!files.length) return;
+  const progress = document.getElementById('doc-progress');
+  
+  for(let i=0;i<files.length;i++){
+    const file = files[i];
+    if(file.size > 10*1024*1024){toast(file.name+' muy grande (máx 10MB)','warning');continue;}
+    
+    if(progress){progress.style.width=((i+1)/files.length*100)+'%';}
+    
+    const clienteId = document.getElementById('cliente-id').value;
+    
+    // Try Supabase Storage upload
+    if(sbConnected && clienteId){
+      try{
+        const path = clienteId+'/'+Date.now()+'_'+file.name;
+        const{data,error} = await sbClient.storage.from('cliente-docs').upload(path,file,{upsert:true});
+        if(!error){
+          const{data:urlData} = sbClient.storage.from('cliente-docs').getPublicUrl(path);
+          currentDocumentos.push({name:file.name,size:file.size,date:new Date().toLocaleDateString('es-PR'),url:urlData.publicUrl,path});
+          toast(file.name+' subido ✓','success');
+        } else {
+          // Fallback to base64 local
+          await readFileLocal(file);
+        }
+      } catch(e){ await readFileLocal(file); }
+    } else {
+      await readFileLocal(file);
+    }
+    renderDocList(currentDocumentos);
+  }
+  if(progress)setTimeout(()=>{progress.style.width='0%';},1000);
+  input.value='';
+}
+
+function readFileLocal(file){
+  return new Promise(resolve=>{
+    if(file.size>2*1024*1024){
+      // Too large for base64, store metadata only
+      currentDocumentos.push({name:file.name,size:file.size,date:new Date().toLocaleDateString('es-PR'),url:'',local:true});
+      toast(file.name+' registrado (sin Supabase Storage)','info');
+      resolve();
+      return;
+    }
+    const reader=new FileReader();
+    reader.onload=e=>{
+      currentDocumentos.push({name:file.name,size:file.size,date:new Date().toLocaleDateString('es-PR'),url:e.target.result,local:true});
+      resolve();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// Drag and drop for documents
+document.addEventListener('DOMContentLoaded',()=>{
+  const dz = document.getElementById('doc-drop-zone');
+  if(dz){
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
+    dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+    dz.addEventListener('drop',e=>{
+      e.preventDefault();dz.classList.remove('dragover');
+      const input=document.getElementById('doc-file-input');
+      const dt=new DataTransfer();
+      Array.from(e.dataTransfer.files).forEach(f=>dt.items.add(f));
+      input.files=dt.files;
+      uploadDocumentos(input);
+    });
+  }
+});
+
+
+// ============================================================
+// SEGUIMIENTO MODULE
+// ============================================================
+let seguimientoFilter = 'todos';
+
+function saveSeguimiento(){
+  const id = document.getElementById('seg-id').value || uid();
+  const obj = {
+    id,
+    nombre: document.getElementById('seg-nombre').value.trim(),
+    tel: document.getElementById('seg-tel').value.trim(),
+    email: document.getElementById('seg-email').value.trim(),
+    vehiculo: document.getElementById('seg-vehiculo').value.trim(),
+    aseguradora: document.getElementById('seg-aseguradora').value.trim(),
+    poliza: document.getElementById('seg-poliza').value.trim(),
+    vence: document.getElementById('seg-vence').value,
+    prima: document.getElementById('seg-prima').value,
+    estado: document.getElementById('seg-estado').value,
+    referido: document.getElementById('seg-referido').value.trim(),
+    notas: document.getElementById('seg-notas').value,
+    created_at: new Date().toISOString()
+  };
+  if(!obj.nombre){toast('Ingresa el nombre','warning');return;}
+  if(!DB.seguimiento) DB.seguimiento = [];
+  const idx = DB.seguimiento.findIndex(s=>s.id===id);
+  if(idx>=0) DB.seguimiento[idx]=obj; else DB.seguimiento.unshift(obj);
+  saveLocal();
+  closeModal('modal-seguimiento');
+  clearSeguimientoForm();
+  renderSeguimiento();
+  refreshDashboard();
+  toast('Guardado ✓','success');
+}
+
+function clearSeguimientoForm(){
+  ['seg-id','seg-nombre','seg-tel','seg-email','seg-vehiculo','seg-aseguradora','seg-poliza','seg-vence','seg-prima','seg-referido','seg-notas'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  const est=document.getElementById('seg-estado'); if(est) est.value='Pendiente llamar';
+  document.getElementById('modal-seg-title').textContent='Agregar a Seguimiento';
+}
+
+function editSeguimiento(id){
+  const s = (DB.seguimiento||[]).find(x=>x.id===id);
+  if(!s) return;
+  document.getElementById('seg-id').value=s.id;
+  document.getElementById('seg-nombre').value=s.nombre||'';
+  document.getElementById('seg-tel').value=s.tel||'';
+  document.getElementById('seg-email').value=s.email||'';
+  document.getElementById('seg-vehiculo').value=s.vehiculo||'';
+  document.getElementById('seg-aseguradora').value=s.aseguradora||'';
+  document.getElementById('seg-poliza').value=s.poliza||'';
+  document.getElementById('seg-vence').value=s.vence||'';
+  document.getElementById('seg-prima').value=s.prima||'';
+  document.getElementById('seg-estado').value=s.estado||'Pendiente llamar';
+  document.getElementById('seg-referido').value=s.referido||'';
+  document.getElementById('seg-notas').value=s.notas||'';
+  document.getElementById('modal-seg-title').textContent='Editar · '+s.nombre;
+  openModal('modal-seguimiento');
+}
+
+function deleteSeguimiento(id){
+  if(!confirm('¿Eliminar de seguimiento?')) return;
+  DB.seguimiento=(DB.seguimiento||[]).filter(s=>s.id!==id);
+  saveLocal();
+  renderSeguimiento();
+  refreshDashboard();
+  toast('Eliminado','warning');
+}
+
+function convertirCliente(id){
+  const s=(DB.seguimiento||[]).find(x=>x.id===id);
+  if(!s) return;
+  if(!confirm('¿Convertir '+s.nombre+' a cliente activo?')) return;
+  // Mark as converted
+  s.estado='Convertido';
+  saveLocal();
+  // Pre-fill new client modal
+  document.getElementById('c-nombre').value=s.nombre||'';
+  document.getElementById('c-tel').value=s.tel||'';
+  document.getElementById('c-email').value=s.email||'';
+  document.getElementById('c-vehiculo').value=s.vehiculo||'';
+  document.getElementById('c-prima').value=s.prima||'';
+  document.getElementById('modal-cliente-title').textContent='Nuevo Cliente — '+s.nombre;
+  renderSeguimiento();
+  showSection('clientes');
+  setTimeout(()=>openModal('modal-cliente'),300);
+  toast('¡Abriendo formulario de nuevo cliente!','success');
+}
+
+function filterSeguimiento(estado, btn){
+  seguimientoFilter = estado;
+  document.querySelectorAll('.seg-filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderSeguimiento();
+}
+
+function renderSeguimiento(){
+  if(!DB.seguimiento) DB.seguimiento=[];
+  const hoy=new Date(); hoy.setHours(0,0,0,0);
+  const searchTerm=(document.getElementById('seg-search')?.value||'').toLowerCase();
+  
+  let lista=[...DB.seguimiento];
+  
+  // Filter by status
+  if(seguimientoFilter!=='todos') lista=lista.filter(s=>s.estado===seguimientoFilter);
+  
+  // Filter by search
+  if(searchTerm) lista=lista.filter(s=>(s.nombre||'').toLowerCase().includes(searchTerm)||(s.aseguradora||'').toLowerCase().includes(searchTerm)||(s.vehiculo||'').toLowerCase().includes(searchTerm));
+  
+  // Sort: urgent first
+  lista.sort((a,b)=>{
+    if(!a.vence&&!b.vence) return 0;
+    if(!a.vence) return 1;
+    if(!b.vence) return -1;
+    return new Date(a.vence)-new Date(b.vence);
+  });
+  
+  // Update stats
+  const all=DB.seguimiento;
+  document.getElementById('seg-total').textContent=all.length;
+  document.getElementById('seg-urgentes').textContent=all.filter(s=>{
+    if(!s.vence) return false;
+    const d=Math.round((new Date(s.vence)-hoy)/86400000);
+    return d>=0&&d<=30;
+  }).length;
+  document.getElementById('seg-contactados').textContent=all.filter(s=>s.estado==='Contactado'||s.estado==='Cotización enviada').length;
+  document.getElementById('seg-convertidos').textContent=all.filter(s=>s.estado==='Convertido').length;
+  
+  // Update badge
+  const badge=document.getElementById('badge-seguimiento');
+  if(badge) badge.textContent=all.filter(s=>s.estado!=='Convertido'&&s.estado!=='No interesado').length;
+  
+  const grid=document.getElementById('seg-grid');
+  if(!grid) return;
+  
+  if(!lista.length){
+    grid.innerHTML=`<div class="seg-empty" style="grid-column:1/-1"><div class="seg-empty-icon">📋</div><p style="font-size:14px;font-weight:600;margin-bottom:8px;">Sin registros</p><p style="font-size:12px;">Agrega clientes con pólizas próximas a vencer</p></div>`;
+    return;
+  }
+  
+  const statusColors={
+    'Pendiente llamar':'#e6eef8:#1a4a8a',
+    'Contactado':'#fff8e6:#a06000',
+    'Cotización enviada':'#f5e8c0:#8b6914',
+    'Convertido':'#e8f5ee:#1a7a4a',
+    'No interesado':'#fdecea:#c0392b'
+  };
+  const statusIcons={'Pendiente llamar':'📞','Contactado':'✉️','Cotización enviada':'📩','Convertido':'✅','No interesado':'❌'};
+  
+  grid.innerHTML=lista.map(s=>{
+    const dias=s.vence?Math.round((new Date(s.vence)-hoy)/86400000):null;
+    let venceBadge='';
+    if(dias!==null){
+      if(dias<0) venceBadge=`<span class="seg-vence-badge seg-vence-urgent">Venció hace ${Math.abs(dias)}d</span>`;
+      else if(dias<=30) venceBadge=`<span class="seg-vence-badge seg-vence-urgent">⚡ ${dias}d — URGENTE</span>`;
+      else if(dias<=60) venceBadge=`<span class="seg-vence-badge seg-vence-soon">🔔 ${dias}d</span>`;
+      else venceBadge=`<span class="seg-vence-badge seg-vence-ok">✓ ${dias}d</span>`;
+    }
+    const colors=(statusColors[s.estado]||'#f4f6f9:#0B1F3A').split(':');
+    const icon=statusIcons[s.estado]||'📋';
+    return `<div class="seg-card">
+      <div class="seg-card-header">
+        <div>
+          <div class="seg-card-name">${s.nombre}</div>
+          <div class="seg-card-aseg">${s.aseguradora||'Compañía no indicada'} ${s.poliza?'· '+s.poliza:''}</div>
+        </div>
+        <span style="background:${colors[0]};color:${colors[1]};padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;">${icon} ${s.estado}</span>
+      </div>
+      <div class="seg-card-body">
+        <div class="seg-field"><div class="seg-field-label">Vehículo</div><div class="seg-field-val">${s.vehiculo||'—'}</div></div>
+        <div class="seg-field"><div class="seg-field-label">Prima actual/año</div><div class="seg-field-val">${s.prima?'$'+parseFloat(s.prima).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>
+        <div class="seg-field"><div class="seg-field-label">Vence</div><div class="seg-field-val">${s.vence||'—'}</div></div>
+        <div class="seg-field"><div class="seg-field-label">Teléfono</div><div class="seg-field-val">${s.tel||'—'}</div></div>
+      </div>
+      ${s.notas?`<div style="font-size:11px;color:var(--text-muted);background:#f8f9fa;border-radius:7px;padding:8px;margin-bottom:10px;line-height:1.5;">${s.notas}</div>`:''}
+      <div class="seg-card-footer">
+        ${venceBadge}
+        <div style="display:flex;gap:5px;">
+          ${s.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${s.tel}','${s.nombre.split(' ')[0]}')" style="padding:4px 8px;font-size:10px;">💬 WA</button>`:''}
+          <button class="btn btn-outline btn-sm" onclick="editSeguimiento('${s.id}')">✏</button>
+          ${s.estado!=='Convertido'?`<button class="btn btn-gold btn-sm" onclick="convertirCliente('${s.id}')" title="Convertir a cliente" style="font-size:10px;padding:4px 8px;">⭐ Convertir</button>`:''}
+          <button class="btn btn-danger btn-sm" onclick="deleteSeguimiento('${s.id}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveLocal(){try{localStorage.setItem('ps_crm_v19',JSON.stringify(DB));}catch(e){}}
+function loadLocal(){try{const raw=localStorage.getItem('ps_crm_v19')||localStorage.getItem('ps_crm_v17')||localStorage.getItem('ps_crm_v16')||localStorage.getItem('ps_crm_v15')||localStorage.getItem('ps_crm_v14')||localStorage.getItem('ps_crm_v13')||localStorage.getItem('ps_crm_v12');if(raw){const p=JSON.parse(raw);DB={...DB,...p};if(!DB.seguimiento)DB.seguimiento=[];}}catch(e){}}
 function initSupabase(){const url=DB.config.sbUrl||DEFAULT_CFG.sbUrl,key=DB.config.sbKey||DEFAULT_CFG.sbKey;if(!url||!key)return;try{sbClient=supabase.createClient(url,key);checkSupabaseConnection();}catch(e){setSyncStatus('error','Error config');}}
 async function checkSupabaseConnection(){if(!sbClient){initSupabase();return;}setSyncStatus('syncing','Conectando...');try{const{error}=await sbClient.from('clientes').select('id').limit(1);if(error&&error.code!=='PGRST116'&&error.code!=='42P01'){setSyncStatus('error','Sin conexión');sbConnected=false;const r=document.getElementById('test-result');if(r){r.style.display='inline';r.className='test-result fail';r.textContent='❌ '+error.message;}}else{sbConnected=true;setSyncStatus('connected','Supabase conectado');const r=document.getElementById('test-result');if(r){r.style.display='inline';r.className='test-result ok';r.textContent='✓ Conectado';}loadFromSupabase();}}catch(e){setSyncStatus('error','Sin conexión');sbConnected=false;}}
 function setSyncStatus(state,msg){document.getElementById('sync-dot').className='sync-dot '+state;document.getElementById('sync-status-text').textContent=msg;}
 async function syncAll(){if(!sbClient||!sbConnected){toast('Sin conexión Supabase. Guardado localmente.','warning');saveLocal();return;}setSyncStatus('syncing','Sincronizando...');await pushToSupabase();setSyncStatus('connected','Sincronizado');const el=document.getElementById('last-sync-text');if(el)el.textContent='Sync: '+new Date().toLocaleTimeString('es-PR');toast('Sincronizado ✓','success');}
 async function upsertTable(table,rows){if(!rows.length)return;try{const{error}=await sbClient.from(table).upsert(rows,{onConflict:'id'});if(error)console.warn(table,error.message);}catch(e){}}
-async function pushToSupabase(){for(const t of['clientes','polizas','prospectos','comisiones','referidos','tareas']){if(DB[t]?.length)await upsertTable(t,DB[t]);}saveLocal();}
+async function pushToSupabase(){for(const t of['clientes','polizas','prospectos','comisiones','referidos','tareas','seguimiento']){if(DB[t]?.length)await upsertTable(t,DB[t]);}saveLocal();}
 async function loadFromSupabase(){if(!sbClient||!sbConnected)return;const tables=['clientes','polizas','prospectos','comisiones','referidos','tareas'];let sbHasData=false;const sbData={};for(const t of tables){try{const{data,error}=await sbClient.from(t).select('*').order('created_at',{ascending:false});if(!error&&data){sbData[t]=data;if(data.length>0)sbHasData=true;}else{sbData[t]=[];}}catch(e){sbData[t]=[];}}const localHasData=tables.some(t=>DB[t]&&DB[t].length>0);if(sbHasData){for(const t of tables){if(sbData[t]&&sbData[t].length>0)DB[t]=sbData[t];}saveLocal();refreshAll();toast('Datos cargados desde Supabase ✓','success');}else if(localHasData){toast('Supabase vacío — subiendo datos locales...','info');await pushToSupabase();toast('Datos locales sincronizados a Supabase ✓','success');}else{saveLocal();refreshAll();toast('CRM listo','success');}}
 function startAutoSave(){if(autoSaveInterval)clearInterval(autoSaveInterval);autoSaveInterval=setInterval(()=>{if(DB.config.autosave!==false){saveLocal();if(sbConnected)pushToSupabase().then(()=>{const el=document.getElementById('autosave-status');if(el)el.textContent='Guardado '+new Date().toLocaleTimeString('es-PR');});}},30000);}
 function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
@@ -851,7 +1310,7 @@ function applyScannerData(){
 }
 
 function toggleSidebar(){const s=document.getElementById('sidebar'),o=document.getElementById('sidebar-overlay');s.classList.toggle('open');o.classList.toggle('active');}
-function showSection(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('sec-'+id).classList.add('active');if(event?.currentTarget)event.currentTarget.classList.add('active');const fns={dashboard:refreshDashboard,clientes:renderClientes,polizas:renderPolizas,pipeline:renderPipeline,comisiones:renderComisiones,renovaciones:renderRenovaciones,referidos:renderReferidos,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas};if(fns[id])fns[id]();if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');}}
+function showSection(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.getElementById('sec-'+id).classList.add('active');if(event?.currentTarget)event.currentTarget.classList.add('active');const fns={dashboard:refreshDashboard,clientes:renderClientes,polizas:renderPolizas,pipeline:renderPipeline,comisiones:renderComisiones,renovaciones:renderRenovaciones,referidos:renderReferidos,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas,seguimiento:renderSeguimiento};if(fns[id])fns[id]();if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');}}
 function showSectionDirect(id){document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.click();});}
 function openModal(id){document.getElementById(id).classList.add('open');if(id==='modal-poliza')populateClienteSelect();}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
@@ -864,10 +1323,10 @@ function refreshDashboard(){document.getElementById('dashboard-date').textConten
 function renderActivity(){const el=document.getElementById('recent-activity');const all=[...DB.clientes.map(c=>({date:c.created_at,text:'Cliente: '+c.nombre,type:'cliente'})),...DB.polizas.map(p=>({date:p.created_at,text:'Póliza: '+(p.num||''),type:'poliza'})),...DB.tareas.filter(t=>t.estado!=='Completada').map(t=>({date:t.created_at,text:'Tarea: '+t.titulo,type:'tarea'}))].filter(a=>a.date).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);if(!all.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>Sin actividad</p></div>';return;}el.innerHTML=all.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);"><span class="badge ${a.type==='cliente'?'badge-info':a.type==='poliza'?'badge-success':'badge-warning'}">${a.type}</span><span style="font-size:12px;flex:1;">${a.text}</span><span style="font-size:10px;color:var(--text-light);">${new Date(a.date).toLocaleDateString('es-PR')}</span></div>`).join('');}
 function renderRenosDashboard(renos){const el=document.getElementById('renos-dashboard');if(!renos.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔄</div><p>Sin renovaciones urgentes</p></div>';return;}el.innerHTML=renos.slice(0,6).map(item=>{const ds=item.fin||item.vencimiento||item.reno_fecha;const dias=daysDiff(ds);const cls=renoClass(dias);const nombre=item.cliente_id?DB.clientes.find(c=>c.id===item.cliente_id)?.nombre||'N/A':item.nombre||'N/A';return`<div class="renovacion-item"><div class="renovacion-days ${cls==='future'?'ok':cls}"><div class="days-num">${dias??'—'}</div><div class="days-label">días</div></div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${nombre}</div><div style="font-size:10px;color:var(--text-muted);">${item.tipo||item.etapa||'Póliza'}</div></div><span class="badge ${cls==='urgent'?'badge-danger':cls==='soon'?'badge-warning':'badge-success'}">${ds}</span></div>`;}).join('');}
 
-function saveCliente(){const id=document.getElementById('cliente-id').value||uid();const fotoV=document.getElementById('foto-vehiculo-preview');const fotoD=document.getElementById('foto-doc-preview');const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,foto_vehiculo:fotoV.style.display!=='none'?fotoV.src:'',foto_doc:fotoD.style.display!=='none'?fotoD.src:'',historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};if(!obj.nombre){toast('Ingresa el nombre','warning');return;}const idx=DB.clientes.findIndex(c=>c.id===id);if(idx>=0)DB.clientes[idx]=obj;else DB.clientes.unshift(obj);saveLocal();if(sbConnected)upsertTable('clientes',[{...obj,foto_vehiculo:'',foto_doc:''}]);if(obj.vencimiento){const dias=daysDiff(obj.vencimiento);if(dias!==null&&dias>0&&dias<=60){const t={id:uid(),titulo:`Renovación — ${obj.nombre}`,cliente:obj.nombre,vence:obj.vencimiento,prioridad:dias<=30?'Alta':'Media',estado:'Pendiente',notas:`Póliza ${obj.numpoliza||''} vence en ${dias}d`,created_at:new Date().toISOString()};const exists=DB.tareas.some(x=>x.titulo===t.titulo&&x.cliente===t.cliente);if(!exists){DB.tareas.unshift(t);toast(`⚡ Tarea de renovación creada (${dias}d)`,'warning');}}}closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');}
-function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';document.getElementById('foto-vehiculo-preview').style.display='none';document.getElementById('foto-vehiculo-placeholder').style.display='flex';document.getElementById('foto-doc-preview').style.display='none';document.getElementById('foto-doc-placeholder').style.display='flex';tempContactLog=[];renderContactHistoryInModal([]);}
+function saveCliente(){const id=document.getElementById('cliente-id').value||uid();const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,licencia:document.getElementById('licencia-preview').style.display!=='none'?document.getElementById('licencia-preview').src:'',documentos:currentDocumentos||[],historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};if(!obj.nombre){toast('Ingresa el nombre','warning');return;}const idx=DB.clientes.findIndex(c=>c.id===id);if(idx>=0)DB.clientes[idx]=obj;else DB.clientes.unshift(obj);saveLocal();if(sbConnected)upsertTable('clientes',[{...obj,licencia:'',documentos:[]}]);if(obj.vencimiento){const dias=daysDiff(obj.vencimiento);if(dias!==null&&dias>0&&dias<=60){const t={id:uid(),titulo:`Renovación — ${obj.nombre}`,cliente:obj.nombre,vence:obj.vencimiento,prioridad:dias<=30?'Alta':'Media',estado:'Pendiente',notas:`Póliza ${obj.numpoliza||''} vence en ${dias}d`,created_at:new Date().toISOString()};const exists=DB.tareas.some(x=>x.titulo===t.titulo&&x.cliente===t.cliente);if(!exists){DB.tareas.unshift(t);toast(`⚡ Tarea de renovación creada (${dias}d)`,'warning');}}}closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');}
+function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';const lp=document.getElementById('licencia-preview');if(lp){lp.style.display='none';lp.src='';}const lph=document.getElementById('licencia-placeholder');if(lph)lph.style.display='flex';currentDocumentos=[];renderDocList([]);tempContactLog=[];renderContactHistoryInModal([]);}
 function renderClientes(){const tbody=document.getElementById('clientes-body');if(!DB.clientes.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👤</div><p>No hay clientes. Agrega el primero.</p></div></td></tr>';return;}tbody.innerHTML=DB.clientes.map(c=>{const dias=daysDiff(c.vencimiento);const cls=renoClass(dias);const venceCell=c.vencimiento?`<div><span class="badge ${cls==='urgent'?'badge-danger':cls==='soon'?'badge-warning':cls==='ok'?'badge-success':'badge-neutral'}">${c.vencimiento}</span><div style="font-size:10px;color:var(--text-muted);margin-top:1px;">${dias!==null?renoLabel(dias):''}</div></div>`:'—';const pagoCell=c.pago?`<span class="payment-badge ${c.pago==='Al día'?'al-dia':c.pago==='Atrasado'?'atrasado':'pendiente'}">${c.pago==='Al día'?'✅':c.pago==='Atrasado'?'⚠️':'🔵'} ${c.pago}</span>`:'—';const histCount=(c.historial||[]).length;return`<tr><td><div style="display:flex;align-items:center;gap:8px;">${c.foto_vehiculo?`<img src="${c.foto_vehiculo}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0;">`:'<div style="width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚗</div>'}<div><strong style="font-size:12px;">${c.nombre}</strong>${c.email?`<div style="font-size:10px;color:var(--text-muted);">${c.email}</div>`:''}</div></div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${c.tel||'—'}</span>${c.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${c.tel}','${c.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[c.anio,c.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${c.aseguradora||'—'}</td><td>${venceCell}</td><td><strong>${(c.prima_anual||c.prima_m)?'$'+parseFloat(c.prima_anual||c.prima_m).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td>${pagoCell}</td><td><span class="badge ${c.estado==='Activo'?'badge-success':c.estado==='Prospecto'?'badge-warning':'badge-neutral'}">${c.estado||'Activo'}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewCliente(\'${c.id}\')" title="Ver" style="font-size:13px;">👁</button><button class="btn btn-outline btn-sm" onclick="openHistorial('${c.id}')" title="Historial">💬${histCount>0?`<span style="font-size:9px;font-weight:700;margin-left:1px;">${histCount}</span>`:''}</button><button class="btn btn-outline btn-sm" onclick="editCliente('${c.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">✕</button></div></td></tr>`;}).join('');}
-function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';if(c.foto_vehiculo){document.getElementById('foto-vehiculo-preview').src=c.foto_vehiculo;document.getElementById('foto-vehiculo-preview').style.display='block';document.getElementById('foto-vehiculo-placeholder').style.display='none';}if(c.foto_doc){document.getElementById('foto-doc-preview').src=c.foto_doc;document.getElementById('foto-doc-preview').style.display='block';document.getElementById('foto-doc-placeholder').style.display='none';}tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
+function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';if(c.licencia){const lp=document.getElementById('licencia-preview');const lph=document.getElementById('licencia-placeholder');if(lp){lp.src=c.licencia;lp.style.display='block';}if(lph)lph.style.display='none';}currentDocumentos=c.documentos||[];renderDocList(currentDocumentos);tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
 function viewCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;const flds=[['Nombre',c.nombre],['Tel',c.tel||'--'],['Email',c.email||'--'],['Direccion',c.direccion||'--'],['Vehiculo',[c.anio,c.vehiculo,c.color].filter(Boolean).join(' ')||'--'],['Aseguradora',c.aseguradora||'--'],['Poliza',c.numpoliza||'--'],['Inicio',c.inicio||'--'],['Vence',c.vencimiento||'--'],['Prima anual','$'+(parseFloat(c.prima_anual||c.prima_m)||0).toLocaleString('en-US',{minimumFractionDigits:2})],['Pago',c.pago||'--'],['Deducible',c.deducible?'$'+c.deducible:'--'],['Liability',c.liab||'--'],['PIP',c.pip?'$'+c.pip:'--'],['UM',c.um||'--'],['Estado',c.estado||'--'],['Coberturas',c.coberturas||'--']];const mb=document.querySelector('#modal-cliente .modal-body');const mf=document.querySelector('#modal-cliente .modal-footer');const mt=document.getElementById('modal-cliente-title');const origHTML=mb.innerHTML;const origClose=document.querySelector('#modal-cliente .modal-close').onclick;mt.textContent='Expediente - '+c.nombre;mb.innerHTML='<div style="padding:8px 0;max-height:65vh;overflow-y:auto;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;"><div style="width:48px;height:48px;border-radius:10px;background:#0B1F3A;display:flex;align-items:center;justify-content:center;font-size:22px;">&#x1F697;</div><div><div style="font-size:16px;font-weight:700;color:#0B1F3A;">'+c.nombre+'</div><div style="font-size:12px;color:#888;">'+(c.aseguradora||'')+' '+(c.numpoliza||'')+'</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+flds.map(function(x){return'<div style="background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">'+x[0]+'</div><div style="font-size:12px;font-weight:500;color:#0B1F3A;word-break:break-word;">'+x[1]+'</div></div>';}).join('')+'</div></div>';mf.style.display='none';const cb=document.querySelector('#modal-cliente .modal-close');cb.onclick=function(){closeModal('modal-cliente');setTimeout(function(){mb.innerHTML=origHTML;mf.style.display='';mt.textContent='Nuevo Cliente';cb.onclick=origClose;},300);};openModal('modal-cliente');}
 function deleteCliente(id){if(!confirm('¿Eliminar este cliente?'))return;DB.clientes=DB.clientes.filter(c=>c.id!==id);saveLocal();renderClientes();refreshDashboard();if(sbConnected){sbClient.from('clientes').delete().eq('id',id).then(r=>{if(r.error)toast('Error nube','error');else toast('Cliente eliminado ✓','warning');});}else toast('Cliente eliminado','warning');}
 
@@ -911,7 +1370,7 @@ function importJSON(input){const file=input.files[0];if(!file)return;const reade
 
 function saveSupabaseConfig(){DB.config.sbUrl=document.getElementById('sb-url').value.trim();DB.config.sbKey=document.getElementById('sb-key').value.trim();saveLocal();sbClient=null;sbConnected=false;initSupabase();toast('Guardado. Conectando...','info');}
 function saveAgencyConfig(){DB.config.agencia=document.getElementById('cfg-agencia').value;DB.config.productor=document.getElementById('cfg-productor').value;DB.config.tel=document.getElementById('cfg-tel').value;DB.config.email=document.getElementById('cfg-email').value;DB.config.override=parseFloat(document.getElementById('cfg-override').value)||6;DB.config.comisionBase=parseFloat(document.getElementById('cfg-comision').value)||15;saveLocal();toast('Guardado ✓','success');}
-function refreshAll(){refreshDashboard();renderClientes();renderPolizas();renderPipeline();renderComisiones();renderRenovaciones();renderReferidos();renderTareas();renderReportes();renderPlantillas();}
+function refreshAll(){refreshDashboard();renderClientes();renderPolizas();renderPipeline();renderComisiones();renderRenovaciones();renderReferidos();renderTareas();renderReportes();renderPlantillas();renderSeguimiento();}
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadLocal();initSupabase();refreshAll();
