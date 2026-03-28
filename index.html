@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v20</title>
+<title>Pinnacle Shield CRM v20.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -50,19 +50,6 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text-m
 .seg-empty-icon{font-size:48px;margin-bottom:12px;}
 .seg-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
 
-
-/* LOGIN SCREEN */
-#login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--navy);z-index:9999;display:flex;align-items:center;justify-content:center;}
-.login-box{background:white;border-radius:16px;padding:40px;width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
-.login-shield{font-size:48px;margin-bottom:16px;}
-.login-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--navy);margin-bottom:4px;}
-.login-sub{font-size:11px;color:var(--text-muted);margin-bottom:24px;letter-spacing:0.5px;}
-.login-input{width:100%;padding:12px 16px;border:2px solid var(--border);border-radius:10px;font-size:18px;text-align:center;letter-spacing:4px;outline:none;font-family:'Montserrat',sans-serif;margin-bottom:12px;transition:border-color 0.2s;}
-.login-input:focus{border-color:var(--gold);}
-.login-btn{width:100%;padding:12px;background:var(--navy);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif;letter-spacing:1px;transition:background 0.2s;}
-.login-btn:hover{background:var(--navy-mid);}
-.login-error{color:var(--danger);font-size:11px;margin-top:8px;display:none;}
-.login-tagline{font-size:10px;color:var(--text-muted);margin-top:20px;letter-spacing:0.5px;}
 
 
 /* BIRTHDAY ALERTS */
@@ -328,7 +315,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <path d="M20 7L8 13v10c0 7 5 13 12 15 7-2 12-8 12-15V13L20 7z" fill="#C9A227" opacity="0.25"/>
       <path d="M14 22l4 4 8-8" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · v20</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · v20.1</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -364,7 +351,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item" onclick="showSection('plantillas')"><span class="nav-icon">📝</span><span class="nav-label">Plantillas</span></div>
   <div class="nav-item" onclick="showSection('respaldo')"><span class="nav-icon">☁</span><span class="nav-label">Respaldo</span></div>
   <div class="nav-item" onclick="showSection('config')"><span class="nav-icon">⚙</span><span class="nav-label">Config</span></div>
-  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v20</div></div>
+  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v20.1</div></div>
 </nav>
 
 <main id="content">
@@ -850,82 +837,6 @@ function renderModalHistorial(c){const el=document.getElementById('modal-histori
 function openWhatsApp(tel,nombre){if(!tel){toast('Sin número de teléfono','warning');return;}const clean=tel.replace(/\D/g,'');const num=clean.startsWith('1')?clean:'1'+clean;const msg=encodeURIComponent(`Hola ${nombre}, soy Daniel Díaz de Pinnacle Shield Advisors.`);window.open(`https://wa.me/${num}?text=${msg}`,'_blank');}
 
 
-// ---- LOGIN ----
-function checkLogin(){
-  const pwd = document.getElementById('login-password').value;
-  const err = document.getElementById('login-error');
-  if(pwd === '015643'){
-    document.getElementById('login-screen').style.display='none';
-    localStorage.setItem('ps_auth','ok');
-  } else {
-    err.style.display='block';
-    document.getElementById('login-password').value='';
-    document.getElementById('login-password').focus();
-    setTimeout(()=>err.style.display='none',3000);
-  }
-}
-
-// Check if already authenticated
-(function(){
-  if(localStorage.getItem('ps_auth')==='ok'){
-    const ls = document.getElementById('login-screen');
-    if(ls) ls.style.display='none';
-  }
-})();
-
-
-// ---- BIRTHDAY UTILS ----
-function getBirthdayInfo(nacimiento){
-  if(!nacimiento) return null;
-  const today = new Date();
-  const bday = new Date(nacimiento);
-  const thisYear = new Date(today.getFullYear(), bday.getMonth(), bday.getDate());
-  let days = Math.round((thisYear - today) / 86400000);
-  if(days < -1) {
-    const nextYear = new Date(today.getFullYear()+1, bday.getMonth(), bday.getDate());
-    days = Math.round((nextYear - today) / 86400000);
-  }
-  const age = today.getFullYear() - bday.getFullYear() - (today < thisYear ? 1 : 0);
-  return {days, age, date: bday.toLocaleDateString('es-PR',{month:'long',day:'numeric'})};
-}
-
-function getBirthdayAlerts(){
-  const all = [
-    ...DB.clientes.map(c=>({nombre:c.nombre, nacimiento:c.nacimiento, tipo:'Cliente', tel:c.tel})),
-    ...(DB.prospectos||[]).map(p=>({nombre:p.nombre, nacimiento:p.nacimiento, tipo:'Prospecto', tel:p.tel})),
-    ...(DB.referidos||[]).map(r=>({nombre:r.nombre, nacimiento:r.nacimiento, tipo:'Referido', tel:r.tel})),
-    ...(DB.seguimiento||[]).map(s=>({nombre:s.nombre, nacimiento:s.nacimiento, tipo:'Seguimiento', tel:s.tel})),
-  ].filter(x=>x.nacimiento);
-  
-  return all.map(x=>({...x, info:getBirthdayInfo(x.nacimiento)}))
-    .filter(x=>x.info && x.info.days >= 0 && x.info.days <= 30)
-    .sort((a,b)=>a.info.days - b.info.days);
-}
-
-function renderBirthdayAlerts(){
-  const alerts = getBirthdayAlerts();
-  const container = document.getElementById('birthday-alerts');
-  if(!container) return;
-  if(!alerts.length){
-    container.style.display='none';
-    return;
-  }
-  container.style.display='block';
-  container.innerHTML = `
-    <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">🎂 Cumpleaños próximos</div>
-    ${alerts.map(a=>`
-      <div class="bday-alert">
-        <div class="bday-icon">🎂</div>
-        <div style="flex:1">
-          <div class="bday-name">${a.nombre}</div>
-          <div class="bday-sub">${a.tipo} · ${a.info.date} · ${a.info.age+1} años</div>
-        </div>
-        <span class="bday-badge">${a.info.days===0?'¡HOY!':a.info.days+'d'}</span>
-        ${a.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${a.tel}','${a.nombre.split(' ')[0]}')" style="padding:3px 7px;font-size:10px;">💬</button>`:''}
-      </div>
-    `).join('')}
-  `;
-}
 
 function saveLocal(){try{localStorage.setItem('ps_crm_v20',JSON.stringify(DB));}catch(e){}}
 function loadLocal(){try{const raw=localStorage.getItem('ps_crm_v20')||localStorage.getItem('ps_crm_v17')||localStorage.getItem('ps_crm_v16')||localStorage.getItem('ps_crm_v15')||localStorage.getItem('ps_crm_v14')||localStorage.getItem('ps_crm_v13')||localStorage.getItem('ps_crm_v12');if(raw){const p=JSON.parse(raw);DB={...DB,...p};if(!DB.seguimiento)DB.seguimiento=[];}}catch(e){}}
@@ -1124,19 +1035,6 @@ document.addEventListener('DOMContentLoaded',()=>{
   startAutoSave();
 });
 </script>
-
-  <!-- LOGIN SCREEN -->
-  <div id="login-screen">
-    <div class="login-box">
-      <div class="login-shield">🛡️</div>
-      <div class="login-title">Pinnacle Shield</div>
-      <div class="login-sub">INSURANCE ADVISORS · CRM</div>
-      <input type="password" id="login-password" class="login-input" placeholder="••••••" maxlength="10" onkeydown="if(event.key==='Enter')checkLogin()">
-      <button class="login-btn" onclick="checkLogin()">ACCEDER</button>
-      <div class="login-error" id="login-error">❌ Contraseña incorrecta</div>
-      <div class="login-tagline">Every Life. Fully Protected.</div>
-    </div>
-  </div>
 
 </body>
 </html>
