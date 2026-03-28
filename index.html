@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v19</title>
+<title>Pinnacle Shield CRM v19.1</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -24,28 +24,6 @@
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text-main);font-size:14px;min-height:100vh;overflow-x:hidden;}
 
-
-/* DOCUMENTS SECTION */
-.docs-section{margin-top:16px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-.docs-section-header{background:#f8f9fa;padding:10px 14px;font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;justify-content:space-between;}
-.doc-list{padding:8px 12px;}
-.doc-item{display:flex;align-items:center;gap:10px;padding:8px 6px;border-bottom:1px solid var(--border);font-size:12px;}
-.doc-item:last-child{border-bottom:none;}
-.doc-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center;}
-.doc-name{flex:1;font-weight:500;color:var(--navy);word-break:break-word;}
-.doc-meta{font-size:10px;color:var(--text-muted);}
-.doc-actions{display:flex;gap:4px;}
-.doc-drop-zone{border:2px dashed var(--border);border-radius:8px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;margin:8px 12px 12px;}
-.doc-drop-zone:hover,.doc-drop-zone.dragover{border-color:var(--gold);background:var(--gold-pale);}
-.doc-drop-zone .dz-icon{font-size:24px;margin-bottom:6px;}
-.doc-drop-zone .dz-text{font-size:11px;color:var(--text-muted);}
-.doc-drop-zone .dz-btn{display:inline-block;margin-top:8px;padding:5px 14px;background:var(--navy);color:white;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;}
-.doc-upload-progress{height:3px;background:var(--gold);border-radius:2px;transition:width 0.3s;width:0%;}
-.licencia-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px;display:none;}
-.licencia-wrap{position:relative;border:2px dashed var(--border);border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all 0.2s;}
-.licencia-wrap:hover{border-color:var(--gold);background:var(--gold-pale);}
-.licencia-wrap .lic-placeholder{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text-muted);font-size:12px;}
-.licencia-wrap .lic-icon{font-size:32px;}
 
 
 /* SEGUIMIENTO MODULE */
@@ -342,7 +320,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <path d="M20 7L8 13v10c0 7 5 13 12 15 7-2 12-8 12-15V13L20 7z" fill="#C9A227" opacity="0.25"/>
       <path d="M14 22l4 4 8-8" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · v19</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · v19.1</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -378,7 +356,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item" onclick="showSection('plantillas')"><span class="nav-icon">📝</span><span class="nav-label">Plantillas</span></div>
   <div class="nav-item" onclick="showSection('respaldo')"><span class="nav-icon">☁</span><span class="nav-label">Respaldo</span></div>
   <div class="nav-item" onclick="showSection('config')"><span class="nav-icon">⚙</span><span class="nav-label">Config</span></div>
-  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v19</div></div>
+  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v19.1</div></div>
 </nav>
 
 <main id="content">
@@ -653,18 +631,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <input type="hidden" id="cliente-id">
       <!-- Foto vehículo -->
       <div class="form-section-title">📷 Foto del vehículo / documento</div>
-      <div style="margin-bottom:14px;">
-          <label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:8px;">🪪 Licencia de Conducir</label>
-          <div class="licencia-wrap" onclick="document.getElementById('licencia-input').click()" id="licencia-wrap">
-            <img id="licencia-preview" class="licencia-preview" src="" alt="Licencia">
-            <div class="lic-placeholder" id="licencia-placeholder">
-              <div class="lic-icon">🪪</div>
-              <div>Click o arrastra foto/scan de licencia</div>
-              <div style="font-size:10px;">JPG, PNG, PDF — máx 5MB</div>
-            </div>
-          </div>
-          <input type="file" id="licencia-input" accept="image/*,.pdf" style="display:none;" onchange="loadLicencia(this)">
-        </div>
+      
       <div class="form-section-title">Datos personales</div>
       <div class="form-grid form-grid-2" style="margin-bottom:14px;">
         <div class="form-group"><label>Nombre completo *</label><input type="text" id="c-nombre" placeholder="Juan Pérez Rivera"></div>
@@ -713,24 +680,6 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       </div>
     </div>
     
-        <!-- DOCUMENTOS -->
-        <div class="docs-section" id="docs-section">
-          <div class="docs-section-header">
-            <span>📎 Documentos adjuntos</span>
-            <span id="docs-count" style="background:var(--navy);color:white;padding:2px 8px;border-radius:10px;font-size:10px;">0</span>
-          </div>
-          <div class="doc-list" id="doc-list">
-            <div style="text-align:center;padding:12px;font-size:11px;color:var(--text-muted);" id="doc-empty">Sin documentos adjuntos</div>
-          </div>
-          <div class="doc-drop-zone" id="doc-drop-zone" onclick="document.getElementById('doc-file-input').click()">
-            <div class="dz-icon">📎</div>
-            <div class="dz-text">Arrastra archivos aquí o click para seleccionar</div>
-            <div class="dz-text" style="margin-top:4px;">PDF, JPG, PNG, DOCX — cualquier formato</div>
-            <div class="dz-btn">Seleccionar archivo</div>
-            <div class="doc-upload-progress" id="doc-progress"></div>
-          </div>
-          <input type="file" id="doc-file-input" multiple accept="*/*" style="display:none;" onchange="uploadDocumentos(this)">
-        </div>
 
         <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-primary" onclick="saveCliente()">Guardar cliente</button></div>
   </div>
@@ -888,333 +837,6 @@ function openHistorial(clienteId){const c=DB.clientes.find(x=>x.id===clienteId);
 function renderModalHistorial(c){const el=document.getElementById('modal-historial-list');const logs=c.historial||[];if(!logs.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">💬</div><p>Sin historial de contacto aún.</p></div>';return;}el.innerHTML=logs.map(l=>`<div class="contact-log-item"><div class="contact-log-dot"></div><div style="flex:1;"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;"><span style="font-size:11px;font-weight:600;">${l.tipo||'📞'}</span><span style="font-size:10px;color:var(--text-light);">${l.fecha||''}</span></div><div style="font-size:12px;line-height:1.5;">${l.nota}</div></div></div>`).join('');}
 function openWhatsApp(tel,nombre){if(!tel){toast('Sin número de teléfono','warning');return;}const clean=tel.replace(/\D/g,'');const num=clean.startsWith('1')?clean:'1'+clean;const msg=encodeURIComponent(`Hola ${nombre}, soy Daniel Díaz de Pinnacle Shield Advisors.`);window.open(`https://wa.me/${num}?text=${msg}`,'_blank');}
 
-// ---- LICENCIA & DOCUMENTOS ----
-let currentDocumentos = [];
-
-function loadLicencia(input){
-  const file = input.files[0];
-  if(!file) return;
-  if(file.size > 5*1024*1024){toast('Archivo muy grande (máx 5MB)','warning');return;}
-  if(file.type.startsWith('image/')){
-    const reader = new FileReader();
-    reader.onload = e => {
-      const lp = document.getElementById('licencia-preview');
-      const lph = document.getElementById('licencia-placeholder');
-      if(lp){lp.src=e.target.result;lp.style.display='block';}
-      if(lph)lph.style.display='none';
-      toast('Licencia cargada ✓','success');
-    };
-    reader.readAsDataURL(file);
-  } else {
-    toast('Licencia guardada (PDF)','success');
-  }
-}
-
-function getFileIcon(name){
-  const ext=(name||'').split('.').pop().toLowerCase();
-  const icons={pdf:'📄',jpg:'🖼️',jpeg:'🖼️',png:'🖼️',doc:'📝',docx:'📝',xls:'📊',xlsx:'📊',txt:'📃'};
-  return icons[ext]||'📎';
-}
-
-function formatBytes(b){
-  if(b<1024)return b+'B';
-  if(b<1024*1024)return (b/1024).toFixed(0)+'KB';
-  return (b/(1024*1024)).toFixed(1)+'MB';
-}
-
-function renderDocList(docs){
-  const list = document.getElementById('doc-list');
-  const empty = document.getElementById('doc-empty');
-  const count = document.getElementById('docs-count');
-  if(!list) return;
-  if(!docs||!docs.length){
-    list.innerHTML='<div style="text-align:center;padding:12px;font-size:11px;color:var(--text-muted);">Sin documentos adjuntos</div>';
-    if(count)count.textContent='0';
-    return;
-  }
-  if(count)count.textContent=docs.length;
-  list.innerHTML=docs.map((d,i)=>`
-    <div class="doc-item">
-      <div class="doc-icon">${getFileIcon(d.name)}</div>
-      <div style="flex:1">
-        <div class="doc-name">${d.name}</div>
-        <div class="doc-meta">${d.size?formatBytes(d.size):''} ${d.date?'· '+d.date:''}</div>
-      </div>
-      <div class="doc-actions">
-        ${d.url?`<button class="btn btn-outline btn-sm" onclick="window.open('${d.url}','_blank')" title="Ver">👁</button>`:''}
-        <button class="btn btn-danger btn-sm" onclick="removeDoc(${i})" title="Eliminar">✕</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-function removeDoc(i){
-  currentDocumentos.splice(i,1);
-  renderDocList(currentDocumentos);
-  toast('Documento eliminado','warning');
-}
-
-async function uploadDocumentos(input){
-  const files = Array.from(input.files);
-  if(!files.length) return;
-  const progress = document.getElementById('doc-progress');
-  
-  for(let i=0;i<files.length;i++){
-    const file = files[i];
-    if(file.size > 10*1024*1024){toast(file.name+' muy grande (máx 10MB)','warning');continue;}
-    
-    if(progress){progress.style.width=((i+1)/files.length*100)+'%';}
-    
-    const clienteId = document.getElementById('cliente-id').value;
-    
-    // Try Supabase Storage upload
-    if(sbConnected && clienteId){
-      try{
-        const path = clienteId+'/'+Date.now()+'_'+file.name;
-        const{data,error} = await sbClient.storage.from('cliente-docs').upload(path,file,{upsert:true});
-        if(!error){
-          const{data:urlData} = sbClient.storage.from('cliente-docs').getPublicUrl(path);
-          currentDocumentos.push({name:file.name,size:file.size,date:new Date().toLocaleDateString('es-PR'),url:urlData.publicUrl,path});
-          toast(file.name+' subido ✓','success');
-        } else {
-          // Fallback to base64 local
-          await readFileLocal(file);
-        }
-      } catch(e){ await readFileLocal(file); }
-    } else {
-      await readFileLocal(file);
-    }
-    renderDocList(currentDocumentos);
-  }
-  if(progress)setTimeout(()=>{progress.style.width='0%';},1000);
-  input.value='';
-}
-
-function readFileLocal(file){
-  return new Promise(resolve=>{
-    if(file.size>2*1024*1024){
-      // Too large for base64, store metadata only
-      currentDocumentos.push({name:file.name,size:file.size,date:new Date().toLocaleDateString('es-PR'),url:'',local:true});
-      toast(file.name+' registrado (sin Supabase Storage)','info');
-      resolve();
-      return;
-    }
-    const reader=new FileReader();
-    reader.onload=e=>{
-      currentDocumentos.push({name:file.name,size:file.size,date:new Date().toLocaleDateString('es-PR'),url:e.target.result,local:true});
-      resolve();
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// Drag and drop for documents
-document.addEventListener('DOMContentLoaded',()=>{
-  const dz = document.getElementById('doc-drop-zone');
-  if(dz){
-    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover');});
-    dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
-    dz.addEventListener('drop',e=>{
-      e.preventDefault();dz.classList.remove('dragover');
-      const input=document.getElementById('doc-file-input');
-      const dt=new DataTransfer();
-      Array.from(e.dataTransfer.files).forEach(f=>dt.items.add(f));
-      input.files=dt.files;
-      uploadDocumentos(input);
-    });
-  }
-});
-
-
-// ============================================================
-// SEGUIMIENTO MODULE
-// ============================================================
-let seguimientoFilter = 'todos';
-
-function saveSeguimiento(){
-  const id = document.getElementById('seg-id').value || uid();
-  const obj = {
-    id,
-    nombre: document.getElementById('seg-nombre').value.trim(),
-    tel: document.getElementById('seg-tel').value.trim(),
-    email: document.getElementById('seg-email').value.trim(),
-    vehiculo: document.getElementById('seg-vehiculo').value.trim(),
-    aseguradora: document.getElementById('seg-aseguradora').value.trim(),
-    poliza: document.getElementById('seg-poliza').value.trim(),
-    vence: document.getElementById('seg-vence').value,
-    prima: document.getElementById('seg-prima').value,
-    estado: document.getElementById('seg-estado').value,
-    referido: document.getElementById('seg-referido').value.trim(),
-    notas: document.getElementById('seg-notas').value,
-    created_at: new Date().toISOString()
-  };
-  if(!obj.nombre){toast('Ingresa el nombre','warning');return;}
-  if(!DB.seguimiento) DB.seguimiento = [];
-  const idx = DB.seguimiento.findIndex(s=>s.id===id);
-  if(idx>=0) DB.seguimiento[idx]=obj; else DB.seguimiento.unshift(obj);
-  saveLocal();
-  closeModal('modal-seguimiento');
-  clearSeguimientoForm();
-  renderSeguimiento();
-  refreshDashboard();
-  toast('Guardado ✓','success');
-}
-
-function clearSeguimientoForm(){
-  ['seg-id','seg-nombre','seg-tel','seg-email','seg-vehiculo','seg-aseguradora','seg-poliza','seg-vence','seg-prima','seg-referido','seg-notas'].forEach(id=>{
-    const el=document.getElementById(id); if(el) el.value='';
-  });
-  const est=document.getElementById('seg-estado'); if(est) est.value='Pendiente llamar';
-  document.getElementById('modal-seg-title').textContent='Agregar a Seguimiento';
-}
-
-function editSeguimiento(id){
-  const s = (DB.seguimiento||[]).find(x=>x.id===id);
-  if(!s) return;
-  document.getElementById('seg-id').value=s.id;
-  document.getElementById('seg-nombre').value=s.nombre||'';
-  document.getElementById('seg-tel').value=s.tel||'';
-  document.getElementById('seg-email').value=s.email||'';
-  document.getElementById('seg-vehiculo').value=s.vehiculo||'';
-  document.getElementById('seg-aseguradora').value=s.aseguradora||'';
-  document.getElementById('seg-poliza').value=s.poliza||'';
-  document.getElementById('seg-vence').value=s.vence||'';
-  document.getElementById('seg-prima').value=s.prima||'';
-  document.getElementById('seg-estado').value=s.estado||'Pendiente llamar';
-  document.getElementById('seg-referido').value=s.referido||'';
-  document.getElementById('seg-notas').value=s.notas||'';
-  document.getElementById('modal-seg-title').textContent='Editar · '+s.nombre;
-  openModal('modal-seguimiento');
-}
-
-function deleteSeguimiento(id){
-  if(!confirm('¿Eliminar de seguimiento?')) return;
-  DB.seguimiento=(DB.seguimiento||[]).filter(s=>s.id!==id);
-  saveLocal();
-  renderSeguimiento();
-  refreshDashboard();
-  toast('Eliminado','warning');
-}
-
-function convertirCliente(id){
-  const s=(DB.seguimiento||[]).find(x=>x.id===id);
-  if(!s) return;
-  if(!confirm('¿Convertir '+s.nombre+' a cliente activo?')) return;
-  // Mark as converted
-  s.estado='Convertido';
-  saveLocal();
-  // Pre-fill new client modal
-  document.getElementById('c-nombre').value=s.nombre||'';
-  document.getElementById('c-tel').value=s.tel||'';
-  document.getElementById('c-email').value=s.email||'';
-  document.getElementById('c-vehiculo').value=s.vehiculo||'';
-  document.getElementById('c-prima').value=s.prima||'';
-  document.getElementById('modal-cliente-title').textContent='Nuevo Cliente — '+s.nombre;
-  renderSeguimiento();
-  showSection('clientes');
-  setTimeout(()=>openModal('modal-cliente'),300);
-  toast('¡Abriendo formulario de nuevo cliente!','success');
-}
-
-function filterSeguimiento(estado, btn){
-  seguimientoFilter = estado;
-  document.querySelectorAll('.seg-filter-btn').forEach(b=>b.classList.remove('active'));
-  if(btn) btn.classList.add('active');
-  renderSeguimiento();
-}
-
-function renderSeguimiento(){
-  if(!DB.seguimiento) DB.seguimiento=[];
-  const hoy=new Date(); hoy.setHours(0,0,0,0);
-  const searchTerm=(document.getElementById('seg-search')?.value||'').toLowerCase();
-  
-  let lista=[...DB.seguimiento];
-  
-  // Filter by status
-  if(seguimientoFilter!=='todos') lista=lista.filter(s=>s.estado===seguimientoFilter);
-  
-  // Filter by search
-  if(searchTerm) lista=lista.filter(s=>(s.nombre||'').toLowerCase().includes(searchTerm)||(s.aseguradora||'').toLowerCase().includes(searchTerm)||(s.vehiculo||'').toLowerCase().includes(searchTerm));
-  
-  // Sort: urgent first
-  lista.sort((a,b)=>{
-    if(!a.vence&&!b.vence) return 0;
-    if(!a.vence) return 1;
-    if(!b.vence) return -1;
-    return new Date(a.vence)-new Date(b.vence);
-  });
-  
-  // Update stats
-  const all=DB.seguimiento;
-  document.getElementById('seg-total').textContent=all.length;
-  document.getElementById('seg-urgentes').textContent=all.filter(s=>{
-    if(!s.vence) return false;
-    const d=Math.round((new Date(s.vence)-hoy)/86400000);
-    return d>=0&&d<=30;
-  }).length;
-  document.getElementById('seg-contactados').textContent=all.filter(s=>s.estado==='Contactado'||s.estado==='Cotización enviada').length;
-  document.getElementById('seg-convertidos').textContent=all.filter(s=>s.estado==='Convertido').length;
-  
-  // Update badge
-  const badge=document.getElementById('badge-seguimiento');
-  if(badge) badge.textContent=all.filter(s=>s.estado!=='Convertido'&&s.estado!=='No interesado').length;
-  
-  const grid=document.getElementById('seg-grid');
-  if(!grid) return;
-  
-  if(!lista.length){
-    grid.innerHTML=`<div class="seg-empty" style="grid-column:1/-1"><div class="seg-empty-icon">📋</div><p style="font-size:14px;font-weight:600;margin-bottom:8px;">Sin registros</p><p style="font-size:12px;">Agrega clientes con pólizas próximas a vencer</p></div>`;
-    return;
-  }
-  
-  const statusColors={
-    'Pendiente llamar':'#e6eef8:#1a4a8a',
-    'Contactado':'#fff8e6:#a06000',
-    'Cotización enviada':'#f5e8c0:#8b6914',
-    'Convertido':'#e8f5ee:#1a7a4a',
-    'No interesado':'#fdecea:#c0392b'
-  };
-  const statusIcons={'Pendiente llamar':'📞','Contactado':'✉️','Cotización enviada':'📩','Convertido':'✅','No interesado':'❌'};
-  
-  grid.innerHTML=lista.map(s=>{
-    const dias=s.vence?Math.round((new Date(s.vence)-hoy)/86400000):null;
-    let venceBadge='';
-    if(dias!==null){
-      if(dias<0) venceBadge=`<span class="seg-vence-badge seg-vence-urgent">Venció hace ${Math.abs(dias)}d</span>`;
-      else if(dias<=30) venceBadge=`<span class="seg-vence-badge seg-vence-urgent">⚡ ${dias}d — URGENTE</span>`;
-      else if(dias<=60) venceBadge=`<span class="seg-vence-badge seg-vence-soon">🔔 ${dias}d</span>`;
-      else venceBadge=`<span class="seg-vence-badge seg-vence-ok">✓ ${dias}d</span>`;
-    }
-    const colors=(statusColors[s.estado]||'#f4f6f9:#0B1F3A').split(':');
-    const icon=statusIcons[s.estado]||'📋';
-    return `<div class="seg-card">
-      <div class="seg-card-header">
-        <div>
-          <div class="seg-card-name">${s.nombre}</div>
-          <div class="seg-card-aseg">${s.aseguradora||'Compañía no indicada'} ${s.poliza?'· '+s.poliza:''}</div>
-        </div>
-        <span style="background:${colors[0]};color:${colors[1]};padding:3px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;">${icon} ${s.estado}</span>
-      </div>
-      <div class="seg-card-body">
-        <div class="seg-field"><div class="seg-field-label">Vehículo</div><div class="seg-field-val">${s.vehiculo||'—'}</div></div>
-        <div class="seg-field"><div class="seg-field-label">Prima actual/año</div><div class="seg-field-val">${s.prima?'$'+parseFloat(s.prima).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</div></div>
-        <div class="seg-field"><div class="seg-field-label">Vence</div><div class="seg-field-val">${s.vence||'—'}</div></div>
-        <div class="seg-field"><div class="seg-field-label">Teléfono</div><div class="seg-field-val">${s.tel||'—'}</div></div>
-      </div>
-      ${s.notas?`<div style="font-size:11px;color:var(--text-muted);background:#f8f9fa;border-radius:7px;padding:8px;margin-bottom:10px;line-height:1.5;">${s.notas}</div>`:''}
-      <div class="seg-card-footer">
-        ${venceBadge}
-        <div style="display:flex;gap:5px;">
-          ${s.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${s.tel}','${s.nombre.split(' ')[0]}')" style="padding:4px 8px;font-size:10px;">💬 WA</button>`:''}
-          <button class="btn btn-outline btn-sm" onclick="editSeguimiento('${s.id}')">✏</button>
-          ${s.estado!=='Convertido'?`<button class="btn btn-gold btn-sm" onclick="convertirCliente('${s.id}')" title="Convertir a cliente" style="font-size:10px;padding:4px 8px;">⭐ Convertir</button>`:''}
-          <button class="btn btn-danger btn-sm" onclick="deleteSeguimiento('${s.id}')">✕</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 
 // ---- LOGIN ----
 function checkLogin(){
@@ -1362,10 +984,10 @@ function refreshDashboard(){document.getElementById('dashboard-date').textConten
 function renderActivity(){const el=document.getElementById('recent-activity');const all=[...DB.clientes.map(c=>({date:c.created_at,text:'Cliente: '+c.nombre,type:'cliente'})),...DB.polizas.map(p=>({date:p.created_at,text:'Póliza: '+(p.num||''),type:'poliza'})),...DB.tareas.filter(t=>t.estado!=='Completada').map(t=>({date:t.created_at,text:'Tarea: '+t.titulo,type:'tarea'}))].filter(a=>a.date).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);if(!all.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>Sin actividad</p></div>';return;}el.innerHTML=all.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);"><span class="badge ${a.type==='cliente'?'badge-info':a.type==='poliza'?'badge-success':'badge-warning'}">${a.type}</span><span style="font-size:12px;flex:1;">${a.text}</span><span style="font-size:10px;color:var(--text-light);">${new Date(a.date).toLocaleDateString('es-PR')}</span></div>`).join('');}
 function renderRenosDashboard(renos){const el=document.getElementById('renos-dashboard');if(!renos.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔄</div><p>Sin renovaciones urgentes</p></div>';return;}el.innerHTML=renos.slice(0,6).map(item=>{const ds=item.fin||item.vencimiento||item.reno_fecha;const dias=daysDiff(ds);const cls=renoClass(dias);const nombre=item.cliente_id?DB.clientes.find(c=>c.id===item.cliente_id)?.nombre||'N/A':item.nombre||'N/A';return`<div class="renovacion-item"><div class="renovacion-days ${cls==='future'?'ok':cls}"><div class="days-num">${dias??'—'}</div><div class="days-label">días</div></div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${nombre}</div><div style="font-size:10px;color:var(--text-muted);">${item.tipo||item.etapa||'Póliza'}</div></div><span class="badge ${cls==='urgent'?'badge-danger':cls==='soon'?'badge-warning':'badge-success'}">${ds}</span></div>`;}).join('');}
 
-function saveCliente(){const id=document.getElementById('cliente-id').value||uid();const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,licencia:document.getElementById('licencia-preview').style.display!=='none'?document.getElementById('licencia-preview').src:'',documentos:currentDocumentos||[],historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};if(!obj.nombre){toast('Ingresa el nombre','warning');return;}const idx=DB.clientes.findIndex(c=>c.id===id);if(idx>=0)DB.clientes[idx]=obj;else DB.clientes.unshift(obj);saveLocal();if(sbConnected)upsertTable('clientes',[{...obj,licencia:'',documentos:[]}]);if(obj.vencimiento){const dias=daysDiff(obj.vencimiento);if(dias!==null&&dias>0&&dias<=60){const t={id:uid(),titulo:`Renovación — ${obj.nombre}`,cliente:obj.nombre,vence:obj.vencimiento,prioridad:dias<=30?'Alta':'Media',estado:'Pendiente',notas:`Póliza ${obj.numpoliza||''} vence en ${dias}d`,created_at:new Date().toISOString()};const exists=DB.tareas.some(x=>x.titulo===t.titulo&&x.cliente===t.cliente);if(!exists){DB.tareas.unshift(t);toast(`⚡ Tarea de renovación creada (${dias}d)`,'warning');}}}closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');}
-function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';const lp=document.getElementById('licencia-preview');if(lp){lp.style.display='none';lp.src='';}const lph=document.getElementById('licencia-placeholder');if(lph)lph.style.display='flex';currentDocumentos=[];renderDocList([]);tempContactLog=[];renderContactHistoryInModal([]);}
+function saveCliente(){const id=document.getElementById('cliente-id').value||uid();const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};if(!obj.nombre){toast('Ingresa el nombre','warning');return;}const idx=DB.clientes.findIndex(c=>c.id===id);if(idx>=0)DB.clientes[idx]=obj;else DB.clientes.unshift(obj);saveLocal();if(sbConnected)upsertTable('clientes',[obj]);if(obj.vencimiento){const dias=daysDiff(obj.vencimiento);if(dias!==null&&dias>0&&dias<=60){const t={id:uid(),titulo:`Renovación — ${obj.nombre}`,cliente:obj.nombre,vence:obj.vencimiento,prioridad:dias<=30?'Alta':'Media',estado:'Pendiente',notas:`Póliza ${obj.numpoliza||''} vence en ${dias}d`,created_at:new Date().toISOString()};const exists=DB.tareas.some(x=>x.titulo===t.titulo&&x.cliente===t.cliente);if(!exists){DB.tareas.unshift(t);toast(`⚡ Tarea de renovación creada (${dias}d)`,'warning');}}}closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');}
+function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
 function renderClientes(){const tbody=document.getElementById('clientes-body');if(!DB.clientes.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👤</div><p>No hay clientes. Agrega el primero.</p></div></td></tr>';return;}tbody.innerHTML=DB.clientes.map(c=>{const dias=daysDiff(c.vencimiento);const cls=renoClass(dias);const venceCell=c.vencimiento?`<div><span class="badge ${cls==='urgent'?'badge-danger':cls==='soon'?'badge-warning':cls==='ok'?'badge-success':'badge-neutral'}">${c.vencimiento}</span><div style="font-size:10px;color:var(--text-muted);margin-top:1px;">${dias!==null?renoLabel(dias):''}</div></div>`:'—';const pagoCell=c.pago?`<span class="payment-badge ${c.pago==='Al día'?'al-dia':c.pago==='Atrasado'?'atrasado':'pendiente'}">${c.pago==='Al día'?'✅':c.pago==='Atrasado'?'⚠️':'🔵'} ${c.pago}</span>`:'—';const histCount=(c.historial||[]).length;return`<tr><td><div style="display:flex;align-items:center;gap:8px;">${c.foto_vehiculo?`<img src="${c.foto_vehiculo}" style="width:32px;height:32px;border-radius:6px;object-fit:cover;flex-shrink:0;">`:'<div style="width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚗</div>'}<div><strong style="font-size:12px;">${c.nombre}</strong>${c.email?`<div style="font-size:10px;color:var(--text-muted);">${c.email}</div>`:''}</div></div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${c.tel||'—'}</span>${c.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${c.tel}','${c.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[c.anio,c.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${c.aseguradora||'—'}</td><td>${venceCell}</td><td><strong>${(c.prima_anual||c.prima_m)?'$'+parseFloat(c.prima_anual||c.prima_m).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td>${pagoCell}</td><td><span class="badge ${c.estado==='Activo'?'badge-success':c.estado==='Prospecto'?'badge-warning':'badge-neutral'}">${c.estado||'Activo'}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewCliente(\'${c.id}\')" title="Ver" style="font-size:13px;">👁</button><button class="btn btn-outline btn-sm" onclick="openHistorial('${c.id}')" title="Historial">💬${histCount>0?`<span style="font-size:9px;font-weight:700;margin-left:1px;">${histCount}</span>`:''}</button><button class="btn btn-outline btn-sm" onclick="editCliente('${c.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">✕</button></div></td></tr>`;}).join('');}
-function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';if(c.licencia){const lp=document.getElementById('licencia-preview');const lph=document.getElementById('licencia-placeholder');if(lp){lp.src=c.licencia;lp.style.display='block';}if(lph)lph.style.display='none';}currentDocumentos=c.documentos||[];renderDocList(currentDocumentos);tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
+function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
 function viewCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;const flds=[['Nombre',c.nombre],['Tel',c.tel||'--'],['Email',c.email||'--'],['Direccion',c.direccion||'--'],['Vehiculo',[c.anio,c.vehiculo,c.color].filter(Boolean).join(' ')||'--'],['Aseguradora',c.aseguradora||'--'],['Poliza',c.numpoliza||'--'],['Inicio',c.inicio||'--'],['Vence',c.vencimiento||'--'],['Prima anual','$'+(parseFloat(c.prima_anual||c.prima_m)||0).toLocaleString('en-US',{minimumFractionDigits:2})],['Pago',c.pago||'--'],['Deducible',c.deducible?'$'+c.deducible:'--'],['Liability',c.liab||'--'],['PIP',c.pip?'$'+c.pip:'--'],['UM',c.um||'--'],['Estado',c.estado||'--'],['Coberturas',c.coberturas||'--']];const mb=document.querySelector('#modal-cliente .modal-body');const mf=document.querySelector('#modal-cliente .modal-footer');const mt=document.getElementById('modal-cliente-title');const origHTML=mb.innerHTML;const origClose=document.querySelector('#modal-cliente .modal-close').onclick;mt.textContent='Expediente - '+c.nombre;mb.innerHTML='<div style="padding:8px 0;max-height:65vh;overflow-y:auto;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;"><div style="width:48px;height:48px;border-radius:10px;background:#0B1F3A;display:flex;align-items:center;justify-content:center;font-size:22px;">&#x1F697;</div><div><div style="font-size:16px;font-weight:700;color:#0B1F3A;">'+c.nombre+'</div><div style="font-size:12px;color:#888;">'+(c.aseguradora||'')+' '+(c.numpoliza||'')+'</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">'+flds.map(function(x){return'<div style="background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">'+x[0]+'</div><div style="font-size:12px;font-weight:500;color:#0B1F3A;word-break:break-word;">'+x[1]+'</div></div>';}).join('')+'</div></div>';mf.style.display='none';const cb=document.querySelector('#modal-cliente .modal-close');cb.onclick=function(){closeModal('modal-cliente');setTimeout(function(){mb.innerHTML=origHTML;mf.style.display='';mt.textContent='Nuevo Cliente';cb.onclick=origClose;},300);};openModal('modal-cliente');}
 function deleteCliente(id){if(!confirm('¿Eliminar este cliente?'))return;DB.clientes=DB.clientes.filter(c=>c.id!==id);saveLocal();renderClientes();refreshDashboard();if(sbConnected){sbClient.from('clientes').delete().eq('id',id).then(r=>{if(r.error)toast('Error nube','error');else toast('Cliente eliminado ✓','warning');});}else toast('Cliente eliminado','warning');}
 
