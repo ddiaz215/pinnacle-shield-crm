@@ -1013,6 +1013,50 @@ const PLANTILLAS=[{titulo:'Bienvenida nuevo cliente',tipo:'WhatsApp',contenido:'
 function renderPlantillas(){const grid=document.getElementById('plantillas-grid');grid.innerHTML=PLANTILLAS.map((p,i)=>`<div class="card"><div class="card-header"><span class="card-title">${p.titulo}</span><span class="badge ${p.tipo==='WhatsApp'?'badge-success':'badge-info'}">${p.tipo}</span></div><div class="card-body"><p style="font-size:12px;color:var(--text-muted);line-height:1.6;margin-bottom:12px;white-space:pre-line;">${p.contenido}</p><button class="btn btn-outline btn-sm" onclick="copyPlantilla(${i})">📋 Copiar</button></div></div>`).join('');}
 function copyPlantilla(i){navigator.clipboard.writeText(PLANTILLAS[i].contenido).then(()=>toast('Plantilla copiada ✓','success'));}
 
+let segFiltroActivo='todos';
+function filterSeguimiento(filtro,btn){segFiltroActivo=filtro;document.querySelectorAll('.seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderSeguimiento();}
+function renderSeguimiento(){
+  if(!DB.seguimiento)DB.seguimiento=[];
+  const search=(document.getElementById('seg-search')?.value||'').toLowerCase();
+  let items=DB.seguimiento;
+  if(segFiltroActivo!=='todos')items=items.filter(s=>s.estado===segFiltroActivo);
+  if(search)items=items.filter(s=>(s.nombre||'').toLowerCase().includes(search)||(s.aseguradora||'').toLowerCase().includes(search)||(s.vehiculo||'').toLowerCase().includes(search));
+  document.getElementById('seg-total').textContent=DB.seguimiento.length;
+  document.getElementById('seg-urgentes').textContent=DB.seguimiento.filter(s=>{const d=daysDiff(s.vence);return d!==null&&d>=0&&d<=30;}).length;
+  document.getElementById('seg-contactados').textContent=DB.seguimiento.filter(s=>s.estado==='Contactado'||s.estado==='Cotización enviada').length;
+  document.getElementById('seg-convertidos').textContent=DB.seguimiento.filter(s=>s.estado==='Convertido').length;
+  document.getElementById('badge-seguimiento').textContent=DB.seguimiento.filter(s=>s.estado!=='Convertido'&&s.estado!=='No interesado').length;
+  const grid=document.getElementById('seg-grid');
+  if(!items.length){grid.innerHTML='<div class="seg-empty"><div class="seg-empty-icon">📋</div><p>No hay registros en seguimiento.</p></div>';return;}
+  grid.innerHTML=items.map(s=>{
+    const dias=daysDiff(s.vence);
+    const vcls=dias===null?'':dias<0?'seg-vence-urgent':dias<=30?'seg-vence-urgent':dias<=60?'seg-vence-soon':'seg-vence-ok';
+    const vlbl=dias===null?'Sin fecha':dias<0?`Venció hace ${Math.abs(dias)}d`:dias===0?'⚠️ Vence HOY':`${dias}d para vencer`;
+    const estadoBadge=s.estado==='Convertido'?'badge-success':s.estado==='No interesado'?'badge-danger':s.estado==='Cotización enviada'?'badge-info':'badge-warning';
+    return`<div class="seg-card">
+      <div class="seg-card-header">
+        <div><div class="seg-card-name">${s.nombre||'—'}</div><div class="seg-card-aseg">${s.aseguradora||'—'} ${s.poliza?'· '+s.poliza:''}</div></div>
+        <span class="badge ${estadoBadge}" style="font-size:9px;">${s.estado||'—'}</span>
+      </div>
+      <div class="seg-card-body">
+        <div class="seg-field"><div class="seg-field-label">Vehículo</div><div class="seg-field-val">${s.vehiculo||'—'}</div></div>
+        <div class="seg-field"><div class="seg-field-label">Prima actual</div><div class="seg-field-val">${s.prima?'$'+parseFloat(s.prima).toLocaleString('en-US',{maximumFractionDigits:0})+'/año':'—'}</div></div>
+        <div class="seg-field"><div class="seg-field-label">Teléfono</div><div class="seg-field-val">${s.tel||'—'}</div></div>
+        <div class="seg-field"><div class="seg-field-label">Referido por</div><div class="seg-field-val">${s.referido||'—'}</div></div>
+      </div>
+      ${s.notas?`<div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;border-top:1px solid var(--border);padding-top:8px;">${s.notas}</div>`:''}
+      <div class="seg-card-footer">
+        <div class="seg-status">${s.vence?`<span class="seg-vence-badge ${vcls}">${vlbl}</span>`:''}${s.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${s.tel}','${(s.nombre||'').split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}
+        </div>
+        <div style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" onclick="editSeguimiento('${s.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="deleteSeguimiento('${s.id}')">✕</button></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function saveSeguimiento(){const id=document.getElementById('seg-id').value||uid();const obj={id,nombre:document.getElementById('seg-nombre').value.trim(),tel:document.getElementById('seg-tel').value.trim(),email:document.getElementById('seg-email').value.trim(),vehiculo:document.getElementById('seg-vehiculo').value.trim(),aseguradora:document.getElementById('seg-aseguradora').value.trim(),poliza:document.getElementById('seg-poliza').value.trim(),vence:document.getElementById('seg-vence').value,prima:document.getElementById('seg-prima').value,estado:document.getElementById('seg-estado').value,referido:document.getElementById('seg-referido').value.trim(),nacimiento:document.getElementById('seg-nacimiento').value,notas:document.getElementById('seg-notas').value,created_at:new Date().toISOString()};if(!obj.nombre){toast('Ingresa el nombre','warning');return;}if(!DB.seguimiento)DB.seguimiento=[];const idx=DB.seguimiento.findIndex(s=>s.id===id);if(idx>=0)DB.seguimiento[idx]=obj;else DB.seguimiento.unshift(obj);saveLocal();if(sbConnected)upsertTable('seguimiento',[obj]);closeModal('modal-seguimiento');document.getElementById('seg-id').value='';['seg-nombre','seg-tel','seg-email','seg-vehiculo','seg-aseguradora','seg-poliza','seg-vence','seg-prima','seg-referido','seg-nacimiento','seg-notas'].forEach(f=>{const el=document.getElementById(f);if(el)el.value='';});document.getElementById('seg-estado').value='Pendiente llamar';renderSeguimiento();refreshDashboard();toast('Guardado ✓','success');}
+function editSeguimiento(id){if(!DB.seguimiento)return;const s=DB.seguimiento.find(x=>x.id===id);if(!s)return;document.getElementById('seg-id').value=s.id;document.getElementById('seg-nombre').value=s.nombre||'';document.getElementById('seg-tel').value=s.tel||'';document.getElementById('seg-email').value=s.email||'';document.getElementById('seg-vehiculo').value=s.vehiculo||'';document.getElementById('seg-aseguradora').value=s.aseguradora||'';document.getElementById('seg-poliza').value=s.poliza||'';document.getElementById('seg-vence').value=s.vence||'';document.getElementById('seg-prima').value=s.prima||'';document.getElementById('seg-estado').value=s.estado||'Pendiente llamar';document.getElementById('seg-referido').value=s.referido||'';document.getElementById('seg-nacimiento').value=s.nacimiento||'';document.getElementById('seg-notas').value=s.notas||'';document.getElementById('modal-seg-title').textContent='Editar Seguimiento';openModal('modal-seguimiento');}
+function deleteSeguimiento(id){if(!confirm('¿Eliminar este registro?'))return;if(!DB.seguimiento)return;DB.seguimiento=DB.seguimiento.filter(s=>s.id!==id);if(sbConnected)sbClient.from('seguimiento').delete().eq('id',id);saveLocal();renderSeguimiento();toast('Eliminado','warning');}
+
 function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pinnacle-shield-v17-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('JSON descargado ✓','success');}
 function exportCSV(){if(!DB.clientes.length){toast('Sin clientes','warning');return;}const keys=['nombre','tel','email','vehiculo','aseguradora','prima_m','pago','estado','numpoliza','inicio','vencimiento'];const header=keys.join(',');const rows=DB.clientes.map(c=>keys.map(k=>'"'+(c[k]||'').toString().replace(/"/g,'""')+'"').join(','));const blob=new Blob([header+'\n'+rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='clientes-'+new Date().toISOString().slice(0,10)+'.csv';a.click();toast('CSV descargado ✓','success');}
 function importJSON(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);['clientes','polizas','prospectos','comisiones','referidos','tareas'].forEach(t=>{if(data[t])DB[t]=data[t];});saveLocal();refreshAll();toast('Datos restaurados ✓','success');}catch(err){toast('Error al leer el archivo','error');}};reader.readAsText(file);}
