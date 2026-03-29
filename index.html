@@ -153,6 +153,24 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
 .payment-badge.atrasado{background:var(--danger-bg);color:var(--danger);}
 .payment-badge.pendiente{background:var(--warning-bg);color:var(--warning);}
 .reno-preview{padding:10px 14px;border-radius:8px;margin-top:8px;font-size:12px;display:none;}
+
+/* PIPELINE */
+.pipeline-board{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;overflow-x:auto;padding-bottom:8px;}
+.pipeline-col{background:#f4f6f9;border-radius:12px;padding:12px;min-height:400px;min-width:180px;}
+.pipeline-col-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--border);}
+.pipeline-col-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.pipeline-col-count{background:white;border-radius:20px;padding:2px 8px;font-size:10px;font-weight:700;color:var(--navy);}
+.pipeline-card{background:white;border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid var(--border);box-shadow:var(--shadow);cursor:grab;transition:all 0.2s;}
+.pipeline-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px);}
+.pipeline-card-name{font-size:12px;font-weight:700;color:var(--navy);margin-bottom:4px;}
+.pipeline-card-sub{font-size:10px;color:var(--text-muted);margin-bottom:8px;}
+.pipeline-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.pipeline-stage-contactado{border-top:3px solid #3b82f6;}
+.pipeline-stage-cotizacion{border-top:3px solid var(--gold);}
+.pipeline-stage-negociacion{border-top:3px solid #f97316;}
+.pipeline-stage-cerrado{border-top:3px solid var(--success);}
+.pipeline-stage-perdido{border-top:3px solid var(--danger);}
+.pipeline-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px;}
 ::-webkit-scrollbar{width:6px;height:6px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:rgba(11,31,58,0.15);border-radius:3px;}
 .seg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-top:16px;}
 .seg-card{background:white;border-radius:12px;border:1px solid var(--border);padding:14px;transition:box-shadow 0.2s;}
@@ -212,6 +230,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item active" onclick="showSection('dashboard')"><span class="nav-icon">◎</span><span class="nav-label">Dashboard</span></div>
   <div class="nav-item" onclick="showSection('clientes')"><span class="nav-icon">👤</span><span class="nav-label">Clientes</span><span class="nav-badge" id="badge-clientes">0</span></div>
   <div class="nav-item" onclick="showSection('prospectos')"><span class="nav-icon">🎯</span><span class="nav-label">Prospectos</span><span class="nav-badge" id="badge-prospectos">0</span></div>
+  <div class="nav-item" onclick="showSection('pipeline')"><span class="nav-icon">📊</span><span class="nav-label">Pipeline</span><span class="nav-badge" id="badge-pipeline">0</span></div>
   <div class="nav-item" onclick="showSection('referidos')"><span class="nav-icon">🤝</span><span class="nav-label">Referidos</span><span class="nav-badge" id="badge-referidos">0</span></div>
   <div class="nav-section-label">Gestión</div>
   <div class="nav-item" onclick="showSection('comisiones')"><span class="nav-icon">💰</span><span class="nav-label">Comisiones</span></div>
@@ -447,6 +466,22 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
 
 </main>
 
+<!-- PIPELINE -->
+<div id="sec-pipeline" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Pipeline</div><div class="page-sub">Prospectos por etapa de venta</div></div>
+    <button class="btn btn-primary" onclick="openModalProspecto()">+ Nuevo Prospecto</button>
+  </div>
+  <div class="pipeline-stats">
+    <div class="stat-card" style="border-left-color:#3b82f6;"><div class="stat-label">Contactados</div><div class="stat-value" id="pip-contactado" style="color:#3b82f6;">0</div></div>
+    <div class="stat-card" style="border-left-color:var(--gold);"><div class="stat-label">Cotización</div><div class="stat-value" id="pip-cotizacion" style="color:var(--gold);">0</div></div>
+    <div class="stat-card" style="border-left-color:#f97316;"><div class="stat-label">Negociación</div><div class="stat-value" id="pip-negociacion" style="color:#f97316;">0</div></div>
+    <div class="stat-card" style="border-left-color:var(--success);"><div class="stat-label">Cerrados</div><div class="stat-value" id="pip-cerrado" style="color:var(--success);">0</div></div>
+    <div class="stat-card" style="border-left-color:var(--danger);"><div class="stat-label">Perdidos</div><div class="stat-value" id="pip-perdido" style="color:var(--danger);">0</div></div>
+  </div>
+  <div class="pipeline-board" id="pipeline-board"></div>
+</div>
+
 <!-- MODALS -->
 
 <div class="modal-overlay" id="modal-cliente">
@@ -661,7 +696,7 @@ function showSection(id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const sec=document.getElementById('sec-'+id);if(sec)sec.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
-  const fns={dashboard:refreshDashboard,clientes:renderClientes,prospectos:renderProspectos,referidos:renderReferidos,comisiones:renderComisiones,renovaciones:renderRenovaciones,seguimiento:renderSeguimiento,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas};
+  const fns={dashboard:refreshDashboard,clientes:renderClientes,prospectos:renderProspectos,pipeline:renderPipeline,referidos:renderReferidos,comisiones:renderComisiones,renovaciones:renderRenovaciones,seguimiento:renderSeguimiento,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas};
   if(fns[id])fns[id]();
   if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');}
 }
@@ -827,7 +862,73 @@ async function handleScannerFile(file){if(!file)return;const sEl=document.getEle
 function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file);});}
 function applyScannerData(){const d=scannerExtracted;if(scannerTarget==='prospecto'){closeModal('modal-scanner');openModalProspecto();setTimeout(()=>{if(d.nombre)document.getElementById('pros-nombre').value=d.nombre;if(d.nacimiento)document.getElementById('pros-nacimiento').value=d.nacimiento;if(d.anio)document.getElementById('pros-anio').value=d.anio;if(d.vehiculo)document.getElementById('pros-vehiculo').value=d.vehiculo;if(d.color)document.getElementById('pros-color').value=d.color;if(d.aseguradora)document.getElementById('pros-aseguradora').value=d.aseguradora;if(d.numpoliza)document.getElementById('pros-poliza-actual').value=d.numpoliza;if(d.vencimiento)document.getElementById('pros-reno-fecha').value=d.vencimiento;if(d.prima_anual||d.prima_m){const val=d.prima_anual||((parseFloat(d.prima_m)||0)*12);document.getElementById('pros-costo').value=val;}if(d.liab)document.getElementById('pros-liab').value=d.liab;},300);}else{closeModal('modal-scanner');openModal('modal-cliente');setTimeout(()=>{if(d.nombre)document.getElementById('c-nombre').value=d.nombre;if(d.nacimiento)document.getElementById('c-nacimiento').value=d.nacimiento;if(d.anio)document.getElementById('c-anio').value=d.anio;if(d.vehiculo)document.getElementById('c-vehiculo').value=d.vehiculo;if(d.color)document.getElementById('c-color').value=d.color;if(d.numpoliza)document.getElementById('c-numpoliza').value=d.numpoliza;if(d.aseguradora)document.getElementById('c-aseguradora').value=d.aseguradora;if(d.prima_anual||d.prima_m){const val=d.prima_anual||((parseFloat(d.prima_m)||0)*12);document.getElementById('c-prima').value=val;}if(d.deducible)document.getElementById('c-deducible').value=d.deducible;if(d.liab)document.getElementById('c-liab').value=d.liab;if(d.pip)document.getElementById('c-pip').value=d.pip;if(d.um)document.getElementById('c-um').value=d.um;if(d.inicio)document.getElementById('c-inicio').value=d.inicio;if(d.vencimiento){document.getElementById('c-vencimiento').value=d.vencimiento;updateClienteRenoPreview();}},300);}toast('✅ Datos aplicados','success');}
 
-function refreshAll(){refreshDashboard();renderClientes();renderProspectos();renderComisiones();renderRenovaciones();renderSeguimiento();renderTareas();renderReportes();renderPlantillas();renderReferidos();}
+
+// ─── PIPELINE ───
+const PIPELINE_STAGES=[
+  {id:'Contactado',label:'📞 Contactado',cls:'pipeline-stage-contactado'},
+  {id:'Cotización',label:'📋 Cotización',cls:'pipeline-stage-cotizacion'},
+  {id:'Negociación',label:'🤝 Negociación',cls:'pipeline-stage-negociacion'},
+  {id:'Cerrado',label:'✅ Cerrado',cls:'pipeline-stage-cerrado'},
+  {id:'Perdido',label:'❌ Perdido',cls:'pipeline-stage-perdido'}
+];
+
+function renderPipeline(){
+  const board=document.getElementById('pipeline-board');
+  if(!board)return;
+  const stages={};
+  PIPELINE_STAGES.forEach(s=>stages[s.id]=[]);
+  DB.prospectos.forEach(p=>{
+    const stage=p.pipeline_stage||'Contactado';
+    if(stages[stage])stages[stage].push(p);
+    else stages['Contactado'].push(p);
+  });
+  setEl('pip-contactado',stages['Contactado'].length);
+  setEl('pip-cotizacion',stages['Cotización'].length);
+  setEl('pip-negociacion',stages['Negociación'].length);
+  setEl('pip-cerrado',stages['Cerrado'].length);
+  setEl('pip-perdido',stages['Perdido'].length);
+  setEl('badge-pipeline',DB.prospectos.filter(p=>p.pipeline_stage!=='Cerrado'&&p.pipeline_stage!=='Perdido').length);
+  board.innerHTML=PIPELINE_STAGES.map(stage=>{
+    const cards=stages[stage.id];
+    return`<div class="pipeline-col" ondragover="event.preventDefault()" ondrop="dropCard(event,'${stage.id}')">
+      <div class="pipeline-col-header">
+        <span class="pipeline-col-title">${stage.label}</span>
+        <span class="pipeline-col-count">${cards.length}</span>
+      </div>
+      ${cards.map(p=>`
+        <div class="pipeline-card ${stage.cls}" draggable="true" ondragstart="dragCard(event,'${p.id}')">
+          <div class="pipeline-card-name">${p.nombre}</div>
+          <div class="pipeline-card-sub">${p.aseguradora||'Sin aseguradora'} · ${p.vehiculo||'Sin vehículo'}</div>
+          <div class="pipeline-card-footer">
+            <span style="font-size:10px;color:var(--text-muted);">${p.reno_fecha||'Sin fecha'}</span>
+            <div style="display:flex;gap:4px;">
+              ${p.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${p.tel}','${p.nombre.split(' ')[0]}')" style="padding:2px 6px;font-size:9px;">💬</button>`:''}
+              <button class="btn btn-outline btn-sm" onclick="editProspecto('${p.id}')" style="padding:2px 6px;font-size:9px;">✏</button>
+            </div>
+          </div>
+          ${p.costo?`<div style="margin-top:6px;font-size:11px;font-weight:700;color:var(--navy);">$${parseFloat(p.costo).toLocaleString('en-US',{maximumFractionDigits:0})}/año</div>`:''}
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+let draggedId=null;
+function dragCard(e,id){draggedId=id;e.dataTransfer.effectAllowed='move';}
+function dropCard(e,stage){
+  e.preventDefault();
+  if(!draggedId)return;
+  const p=DB.prospectos.find(x=>x.id===draggedId);
+  if(p){
+    p.pipeline_stage=stage;
+    saveLocal();
+    if(sbConnected)upsertTable('prospectos',[p]);
+    renderPipeline();
+    toast(`${p.nombre.split(' ')[0]} → ${stage} ✓`,'success');
+  }
+  draggedId=null;
+}
+
+function refreshAll(){refreshDashboard();renderClientes();renderProspectos();renderPipeline();renderComisiones();renderRenovaciones();renderSeguimiento();renderTareas();renderReportes();renderPlantillas();renderReferidos();}
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadLocal();initSupabase();refreshAll();
