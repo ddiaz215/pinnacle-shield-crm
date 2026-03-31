@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v21</title>
+<title>Pinnacle Shield CRM v22</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" id="pwa-manifest">
@@ -32,8 +32,14 @@ body{font-family:'Montserrat',sans-serif;background:var(--bg);color:var(--text-m
 #sync-bar .sync-dot.connected{background:#4ade80;}
 #sync-bar .sync-dot.syncing{background:var(--gold);animation:pulse 1s infinite;}
 #sync-bar .sync-dot.error{background:#f87171;}
-#sync-bar button{background:rgba(201,162,39,0.25);border:1px solid rgba(201,162,39,0.5);color:var(--gold-light);padding:3px 10px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;cursor:pointer;}
+#sync-bar .realtime-dot{width:7px;height:7px;border-radius:50%;background:#ccc;transition:background 0.3s;margin-left:4px;}
+#sync-bar .realtime-dot.live{background:#4ade80;animation:pulseLive 2s infinite;}
+#sync-bar .realtime-dot.connecting{background:var(--gold);animation:pulse 1s infinite;}
+#sync-bar .realtime-dot.off{background:#f87171;}
+#sync-bar button{background:rgba(201,162,39,0.25);border:1px solid rgba(201,162,39,0.5);color:var(--gold-light);padding:3px 10px;border-radius:5px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+#sync-bar button:hover{background:rgba(201,162,39,0.45);}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+@keyframes pulseLive{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(1.3)}}
 header{position:fixed;top:32px;left:0;right:0;z-index:1000;height:var(--header-h);background:var(--navy);display:flex;align-items:center;padding:0 20px 0 16px;border-bottom:1px solid rgba(201,162,39,0.2);}
 .header-logo{display:flex;align-items:center;gap:10px;width:var(--sidebar-w);flex-shrink:0;}
 .header-logo .shield-icon{width:32px;height:32px;flex-shrink:0;}
@@ -194,8 +200,8 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
 <body>
 
 <div id="sync-bar">
-  <div class="sync-left"><div class="sync-dot" id="sync-dot"></div><span id="sync-status-text">Iniciando...</span></div>
-  <div style="display:flex;align-items:center;gap:10px;"><span id="last-sync-text" style="opacity:0.5;font-size:10px;"></span><button onclick="syncAll()">⟳ Sincronizar</button></div>
+  <div class="sync-left"><div class="sync-dot" id="sync-dot"></div><span id="sync-status-text">Iniciando...</span><div class="realtime-dot off" id="realtime-dot" title="Realtime sync"></div><span id="realtime-status-text" style="opacity:0.6;font-size:10px;">Realtime: —</span></div>
+  <div style="display:flex;align-items:center;gap:8px;"><span id="last-sync-text" style="opacity:0.5;font-size:10px;"></span><button onclick="forceSyncFromSupabase()" title="Borrar caché local y recargar todo desde Supabase">🔄 Forzar Sync</button><button onclick="syncAll()">⬆ Guardar</button></div>
 </div>
 
 <header>
@@ -206,7 +212,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <path d="M20 7L8 13v10c0 7 5 13 12 15 7-2 12-8 12-15V13L20 7z" fill="#C9A227" opacity="0.25"/>
       <path d="M14 22l4 4 8-8" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · v21</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · v22</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -242,7 +248,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item" onclick="showSection('plantillas')"><span class="nav-icon">📝</span><span class="nav-label">Plantillas</span></div>
   <div class="nav-item" onclick="showSection('respaldo')"><span class="nav-icon">☁</span><span class="nav-label">Respaldo</span></div>
   <div class="nav-item" onclick="showSection('config')"><span class="nav-icon">⚙</span><span class="nav-label">Config</span></div>
-  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v21</div></div>
+  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v22</div></div>
 </nav>
 
 <main id="content">
@@ -701,10 +707,12 @@ function showSection(id){
   if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');}
 }
 
-function saveLocal(){try{localStorage.setItem('ps_crm_v21',JSON.stringify(DB));}catch(e){}}
+// ─── STORAGE ───
+function saveLocal(){try{localStorage.setItem('ps_crm_v22',JSON.stringify(DB));}catch(e){}}
 function loadLocal(){
   try{
-    const raw=localStorage.getItem('ps_crm_v21')||localStorage.getItem('ps_crm_v20')||localStorage.getItem('ps_crm_v17');
+    // v22 first, then fallback to older versions
+    const raw=localStorage.getItem('ps_crm_v22')||localStorage.getItem('ps_crm_v21')||localStorage.getItem('ps_crm_v20')||localStorage.getItem('ps_crm_v17');
     if(raw){
       const p=JSON.parse(raw);
       DB={...DB,...p};
@@ -715,14 +723,178 @@ function loadLocal(){
   }catch(e){}
 }
 
-function initSupabase(){const url=DB.config.sbUrl||DEFAULT_CFG.sbUrl,key=DB.config.sbKey||DEFAULT_CFG.sbKey;if(!url||!key)return;try{sbClient=supabase.createClient(url,key);checkSupabaseConnection();}catch(e){setSyncStatus('error','Error config');}}
-async function checkSupabaseConnection(){if(!sbClient){initSupabase();return;}setSyncStatus('syncing','Conectando...');try{const{error}=await sbClient.from('clientes').select('id').limit(1);if(error&&error.code!=='PGRST116'&&error.code!=='42P01'){setSyncStatus('error','Sin conexión');sbConnected=false;}else{sbConnected=true;setSyncStatus('connected','Supabase conectado');const r=document.getElementById('test-result');if(r){r.style.display='inline';r.className='test-result ok';r.textContent='✓ Conectado';}loadFromSupabase();}}catch(e){setSyncStatus('error','Sin conexión');sbConnected=false;}}
-function setSyncStatus(state,msg){setEl('sync-dot','');document.getElementById('sync-dot').className='sync-dot '+state;setEl('sync-status-text',msg);}
-async function syncAll(){if(!sbClient||!sbConnected){toast('Sin conexión Supabase','warning');saveLocal();return;}setSyncStatus('syncing','Sincronizando...');await pushToSupabase();setSyncStatus('connected','Sincronizado');setEl('last-sync-text','Sync: '+new Date().toLocaleTimeString('es-PR'));toast('Sincronizado ✓','success');}
-async function upsertTable(table,rows){if(!rows||!rows.length)return;try{const{error}=await sbClient.from(table).upsert(rows,{onConflict:'id'});if(error)console.warn(table,error.message);}catch(e){}}
-async function pushToSupabase(){for(const t of['clientes','polizas','prospectos','comisiones','referidos','tareas','seguimiento']){if(DB[t]?.length)await upsertTable(t,DB[t]);}saveLocal();}
-async function loadFromSupabase(){if(!sbClient||!sbConnected)return;const tables=['clientes','polizas','prospectos','comisiones','referidos','tareas'];let sbHasData=false;const sbData={};for(const t of tables){try{const{data,error}=await sbClient.from(t).select('*').order('created_at',{ascending:false});if(!error&&data){sbData[t]=data;if(data.length>0)sbHasData=true;}else sbData[t]=[];}catch(e){sbData[t]=[];}}const localHasData=tables.some(t=>DB[t]&&DB[t].length>0);if(sbHasData){for(const t of tables){if(sbData[t]&&sbData[t].length>0)DB[t]=sbData[t];}saveLocal();refreshAll();toast('Datos cargados ✓','success');}else if(localHasData){await pushToSupabase();toast('Datos locales sincronizados ✓','success');}else{saveLocal();refreshAll();toast('CRM listo','success');}}
-function startAutoSave(){if(autoSaveInterval)clearInterval(autoSaveInterval);autoSaveInterval=setInterval(()=>{if(DB.config.autosave!==false){saveLocal();if(sbConnected)pushToSupabase().then(()=>{setEl('autosave-status','Guardado '+new Date().toLocaleTimeString('es-PR'));});}},30000);}
+// ─── SUPABASE CORE ───
+let realtimeChannel=null;
+function initSupabase(){
+  const url=DB.config.sbUrl||DEFAULT_CFG.sbUrl,key=DB.config.sbKey||DEFAULT_CFG.sbKey;
+  if(!url||!key)return;
+  try{sbClient=supabase.createClient(url,key);checkSupabaseConnection();}
+  catch(e){setSyncStatus('error','Error config');}
+}
+
+async function checkSupabaseConnection(){
+  if(!sbClient){initSupabase();return;}
+  setSyncStatus('syncing','Conectando...');
+  try{
+    const{error}=await sbClient.from('clientes').select('id').limit(1);
+    if(error&&error.code!=='PGRST116'&&error.code!=='42P01'){setSyncStatus('error','Sin conexión');sbConnected=false;}
+    else{
+      sbConnected=true;
+      setSyncStatus('connected','Supabase conectado');
+      const r=document.getElementById('test-result');
+      if(r){r.style.display='inline';r.className='test-result ok';r.textContent='✓ Conectado';}
+      await loadFromSupabase();
+      initRealtime();
+    }
+  }catch(e){setSyncStatus('error','Sin conexión');sbConnected=false;}
+}
+
+function setSyncStatus(state,msg){
+  const dot=document.getElementById('sync-dot');
+  if(dot)dot.className='sync-dot '+state;
+  setEl('sync-status-text',msg);
+}
+
+function setRealtimeStatus(state,msg){
+  const dot=document.getElementById('realtime-dot');
+  if(dot)dot.className='realtime-dot '+state;
+  setEl('realtime-status-text',msg);
+}
+
+// ─── REALTIME SUBSCRIPTIONS ───
+const REALTIME_TABLES=['clientes','prospectos','tareas','referidos','comisiones'];
+
+function initRealtime(){
+  if(!sbClient||!sbConnected)return;
+  // Clean up existing channel
+  if(realtimeChannel){try{sbClient.removeChannel(realtimeChannel);}catch(e){}}
+  setRealtimeStatus('connecting','Realtime: conectando...');
+  realtimeChannel=sbClient.channel('crm-realtime-v22');
+  REALTIME_TABLES.forEach(table=>{
+    realtimeChannel
+      .on('postgres_changes',{event:'INSERT',schema:'public',table},payload=>{handleRealtimeChange('INSERT',table,payload.new);})
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table},payload=>{handleRealtimeChange('UPDATE',table,payload.new);})
+      .on('postgres_changes',{event:'DELETE',schema:'public',table},payload=>{handleRealtimeChange('DELETE',table,payload.old);});
+  });
+  realtimeChannel.subscribe(status=>{
+    if(status==='SUBSCRIBED'){
+      setRealtimeStatus('live','Realtime: ● Live');
+      toast('🟢 Sync en tiempo real activo','success');
+    }else if(status==='CLOSED'||status==='CHANNEL_ERROR'){
+      setRealtimeStatus('off','Realtime: desconectado');
+      // Auto-reconnect after 5s
+      setTimeout(()=>{if(sbConnected)initRealtime();},5000);
+    }else{
+      setRealtimeStatus('connecting','Realtime: conectando...');
+    }
+  });
+}
+
+function handleRealtimeChange(event,table,record){
+  if(!record)return;
+  const arr=DB[table];
+  if(!arr)return;
+  // Ignore changes triggered by THIS device (same timestamp within 2s)
+  if(event==='INSERT'){
+    const exists=arr.some(x=>x.id===record.id);
+    if(!exists){
+      if(table==='prospectos')record={...record,costo:record.costo||record.prima_m||0,tipo:'prospecto'};
+      arr.unshift(record);
+      saveLocal();refreshAll();
+      toast(`📲 Nuevo ${table.slice(0,-1)}: ${record.nombre||record.titulo||'registro'}`,'info');
+    }
+  }else if(event==='UPDATE'){
+    const idx=arr.findIndex(x=>x.id===record.id);
+    if(idx>=0){
+      if(table==='prospectos')record={...record,costo:record.costo||record.prima_m||0,tipo:'prospecto'};
+      arr[idx]=record;
+      saveLocal();refreshAll();
+    }
+  }else if(event==='DELETE'){
+    const idx=arr.findIndex(x=>x.id===record.id);
+    if(idx>=0){arr.splice(idx,1);saveLocal();refreshAll();}
+  }
+}
+
+// ─── FORCE SYNC (nuke local cache, pull fresh from Supabase) ───
+async function forceSyncFromSupabase(){
+  if(!sbClient||!sbConnected){toast('Sin conexión Supabase','warning');return;}
+  if(!confirm('¿Recargar todos los datos desde Supabase?\n\nEsto borrará el caché local y cargará la versión más reciente de la nube.\n\nCualquier dato no sincronizado se perderá.'))return;
+  // Clear old localStorage keys
+  ['ps_crm_v22','ps_crm_v21','ps_crm_v20','ps_crm_v17'].forEach(k=>localStorage.removeItem(k));
+  setSyncStatus('syncing','Recargando desde Supabase...');
+  toast('🔄 Cargando datos frescos...','info');
+  await loadFromSupabase();
+  toast('✅ Sync forzado completado','success');
+}
+
+// ─── PUSH / PULL ───
+async function syncAll(){
+  if(!sbClient||!sbConnected){toast('Sin conexión Supabase','warning');saveLocal();return;}
+  setSyncStatus('syncing','Guardando...');
+  await pushToSupabase();
+  setSyncStatus('connected','Guardado ✓');
+  setEl('last-sync-text',new Date().toLocaleTimeString('es-PR'));
+  toast('Guardado en Supabase ✓','success');
+}
+
+async function upsertTable(table,rows){
+  if(!rows||!rows.length)return;
+  try{const{error}=await sbClient.from(table).upsert(rows,{onConflict:'id'});if(error)console.warn(table,error.message);}
+  catch(e){}
+}
+
+async function pushToSupabase(){
+  for(const t of['clientes','polizas','prospectos','comisiones','referidos','tareas','seguimiento']){
+    if(DB[t]?.length)await upsertTable(t,DB[t]);
+  }
+  saveLocal();
+}
+
+async function loadFromSupabase(){
+  if(!sbClient||!sbConnected)return;
+  const tables=['clientes','polizas','prospectos','comisiones','referidos','tareas'];
+  let sbHasData=false;
+  const sbData={};
+  for(const t of tables){
+    try{
+      const{data,error}=await sbClient.from(t).select('*').order('created_at',{ascending:false});
+      if(!error&&data){sbData[t]=data;if(data.length>0)sbHasData=true;}
+      else sbData[t]=[];
+    }catch(e){sbData[t]=[];}
+  }
+  const localHasData=tables.some(t=>DB[t]&&DB[t].length>0);
+  if(sbHasData){
+    for(const t of tables){if(sbData[t]&&sbData[t].length>0)DB[t]=sbData[t];}
+    // Normalize prospectos
+    DB.prospectos=DB.prospectos.map(p=>({...p,costo:p.costo||p.prima_m||0,seguimiento_fecha:p.seguimiento_fecha||p.reno_fecha||'',tipo:'prospecto'}));
+    saveLocal();refreshAll();
+    setSyncStatus('connected','Supabase conectado');
+    setEl('last-sync-text',new Date().toLocaleTimeString('es-PR'));
+    toast('Datos cargados desde Supabase ✓','success');
+  }else if(localHasData){
+    await pushToSupabase();
+    toast('Datos locales subidos a Supabase ✓','success');
+  }else{
+    saveLocal();refreshAll();
+    toast('CRM listo','success');
+  }
+}
+
+function startAutoSave(){
+  if(autoSaveInterval)clearInterval(autoSaveInterval);
+  autoSaveInterval=setInterval(()=>{
+    if(DB.config.autosave!==false){
+      saveLocal();
+      if(sbConnected){
+        pushToSupabase().then(()=>{
+          setEl('autosave-status','Guardado '+new Date().toLocaleTimeString('es-PR'));
+          setEl('last-sync-text',new Date().toLocaleTimeString('es-PR'));
+        });
+      }
+    }
+  },30000);
+}
 function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
 
 function refreshDashboard(){
@@ -852,7 +1024,7 @@ function exportJSON(){const blob=new Blob([JSON.stringify(DB,null,2)],{type:'app
 function exportCSV(){if(!DB.clientes.length){toast('Sin clientes','warning');return;}const keys=['nombre','tel','email','vehiculo','aseguradora','prima_anual','pago','estado','numpoliza','inicio','vencimiento'];const header=keys.join(',');const rows=DB.clientes.map(c=>keys.map(k=>'"'+(c[k]||'').toString().replace(/"/g,'""')+'"').join(','));const blob=new Blob([header+'\n'+rows.join('\n')],{type:'text/csv'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='clientes-'+new Date().toISOString().slice(0,10)+'.csv';a.click();toast('CSV descargado ✓','success');}
 function importJSON(input){const file=input.files[0];if(!file)return;const reader=new FileReader();reader.onload=e=>{try{const data=JSON.parse(e.target.result);['clientes','polizas','prospectos','comisiones','referidos','tareas','seguimiento'].forEach(t=>{if(data[t])DB[t]=data[t];});saveLocal();refreshAll();toast('Datos restaurados ✓','success');}catch(err){toast('Error al leer archivo','error');}};reader.readAsText(file);}
 
-function saveSupabaseConfig(){DB.config.sbUrl=document.getElementById('sb-url').value.trim();DB.config.sbKey=document.getElementById('sb-key').value.trim();saveLocal();sbClient=null;sbConnected=false;initSupabase();toast('Guardado. Conectando...','info');}
+function saveSupabaseConfig(){DB.config.sbUrl=document.getElementById('sb-url').value.trim();DB.config.sbKey=document.getElementById('sb-key').value.trim();saveLocal();sbClient=null;sbConnected=false;if(realtimeChannel){try{sbClient&&sbClient.removeChannel(realtimeChannel);}catch(e){}}realtimeChannel=null;setRealtimeStatus('off','Realtime: —');initSupabase();toast('Guardado. Conectando...','info');}
 function saveAgencyConfig(){DB.config.agencia=document.getElementById('cfg-agencia').value;DB.config.productor=document.getElementById('cfg-productor').value;DB.config.tel=document.getElementById('cfg-tel').value;DB.config.email=document.getElementById('cfg-email').value;DB.config.override=parseFloat(document.getElementById('cfg-override').value)||6;DB.config.comisionBase=parseFloat(document.getElementById('cfg-comision').value)||15;saveLocal();toast('Guardado ✓','success');}
 
 let scannerTarget='cliente',scannerExtracted={};
@@ -931,10 +1103,20 @@ function dropCard(e,stage){
 function refreshAll(){refreshDashboard();renderClientes();renderProspectos();renderPipeline();renderComisiones();renderRenovaciones();renderSeguimiento();renderTareas();renderReportes();renderPlantillas();renderReferidos();}
 
 document.addEventListener('DOMContentLoaded',()=>{
+  // Migrate v21 data to v22 key on first load
+  if(!localStorage.getItem('ps_crm_v22')&&localStorage.getItem('ps_crm_v21')){
+    localStorage.setItem('ps_crm_v22',localStorage.getItem('ps_crm_v21'));
+  }
   loadLocal();initSupabase();refreshAll();
   document.getElementById('ref-fecha').value=new Date().toISOString().slice(0,10);
   document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
   startAutoSave();
+  // Page visibility — reconnect realtime when tab becomes visible again
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden&&sbConnected){
+      if(!realtimeChannel||realtimeChannel.state==='closed'){initRealtime();}
+    }
+  });
 });
 </script>
 </body>
