@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v22</title>
+<title>Pinnacle Shield CRM v23</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" id="pwa-manifest">
@@ -212,7 +212,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <path d="M20 7L8 13v10c0 7 5 13 12 15 7-2 12-8 12-15V13L20 7z" fill="#C9A227" opacity="0.25"/>
       <path d="M14 22l4 4 8-8" stroke="#C9A227" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · v22</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · v23</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -248,7 +248,7 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
   <div class="nav-item" onclick="showSection('plantillas')"><span class="nav-icon">📝</span><span class="nav-label">Plantillas</span></div>
   <div class="nav-item" onclick="showSection('respaldo')"><span class="nav-icon">☁</span><span class="nav-label">Respaldo</span></div>
   <div class="nav-item" onclick="showSection('config')"><span class="nav-icon">⚙</span><span class="nav-label">Config</span></div>
-  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v22</div></div>
+  <div class="nav-footer"><div class="version-tag">PINNACLE SHIELD ADVISORS LLC · v23</div></div>
 </nav>
 
 <main id="content">
@@ -289,6 +289,12 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <button class="btn btn-primary" onclick="openModal('modal-cliente')">+ Nuevo Cliente</button>
     </div>
   </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;">
+    <span style="font-size:11px;color:var(--text-muted);font-weight:600;">Ordenar Vence:</span>
+    <button class="seg-filter-btn active" id="cli-sort-asc" onclick="sortClientes('asc',this)">📅 Más pronto</button>
+    <button class="seg-filter-btn" id="cli-sort-desc" onclick="sortClientes('desc',this)">📅 Más tarde</button>
+    <button class="seg-filter-btn" onclick="filterTareas('PorVencer',null);showSection('tareas')" style="background:#fff8e6;color:#a06000;border-color:#a06000;">🔔 Ver tareas por vencer</button>
+  </div>
   <div class="card">
     <table class="crm-table">
       <thead><tr><th>Cliente</th><th>Teléfono</th><th>Vehículo</th><th>Aseguradora</th><th>Vence</th><th>Prima/año</th><th>Pago</th><th>Estado</th><th>Acciones</th></tr></thead>
@@ -306,6 +312,12 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
       <button class="btn btn-gold" onclick="openScannerFor('prospecto')">📄 Escanear Póliza</button>
       <button class="btn btn-primary" onclick="openModalProspecto()">+ Nuevo Prospecto</button>
     </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:10px;align-items:center;flex-wrap:wrap;">
+    <span style="font-size:11px;color:var(--text-muted);font-weight:600;">Ordenar Renueva:</span>
+    <button class="seg-filter-btn active" id="pros-sort-asc" onclick="sortProspectos('asc',this)">📅 Más pronto</button>
+    <button class="seg-filter-btn" id="pros-sort-desc" onclick="sortProspectos('desc',this)">📅 Más tarde</button>
+    <button class="seg-filter-btn" onclick="filterSeguimiento('Vence30-60',null);showSection('seguimiento')" style="background:#fff8e6;color:#a06000;border-color:#a06000;">🔔 Ver seguimiento 30-60d</button>
   </div>
   <div class="card">
     <table class="crm-table">
@@ -410,6 +422,12 @@ table.crm-table tr:hover td{background:rgba(11,31,58,0.02);}
     <button class="seg-filter-btn" onclick="filterTareas('En progreso',this)">🔄 En progreso</button>
     <button class="seg-filter-btn" onclick="filterTareas('Completada',this)">✅ Completada</button>
     <button class="seg-filter-btn" onclick="filterTareas('Alta',this)">🔴 Alta prioridad</button>
+    <button class="seg-filter-btn" onclick="filterTareas('PorVencer',this)" style="background:#fff8e6;color:#a06000;border-color:#a06000;">🔔 Por vencer ≤60d</button>
+    <select id="sort-tareas" onchange="renderTareas()" style="padding:5px 10px;border:1px solid var(--border);border-radius:20px;font-size:11px;outline:none;font-family:'Montserrat',sans-serif;background:white;cursor:pointer;">
+      <option value="pronto">📅 Vence más pronto</option>
+      <option value="lejano">📅 Vence más tarde</option>
+      <option value="reciente">🆕 Más reciente</option>
+    </select>
   </div>
   <div class="card">
     <table class="crm-table">
@@ -945,10 +963,17 @@ function saveCliente(){
   closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');
 }
 function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
+let cliSortDir='asc', prosSortDir='asc';
+function sortClientes(dir,btn){cliSortDir=dir;document.querySelectorAll('#sec-clientes .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderClientes();}
+function sortProspectos(dir,btn){prosSortDir=dir;document.querySelectorAll('#sec-prospectos .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderProspectos();}
 function renderClientes(){
   const tbody=document.getElementById('clientes-body');
-  if(!DB.clientes.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👤</div><p>No hay clientes.</p></div></td></tr>';return;}
-  tbody.innerHTML=DB.clientes.map(c=>{
+  let items=[...DB.clientes];
+  const q=(document.getElementById('search-clientes')?.value||'').toLowerCase();
+  if(q)items=items.filter(c=>(c.nombre||'').toLowerCase().includes(q)||(c.aseguradora||'').toLowerCase().includes(q));
+  items.sort((a,b)=>{const da=daysDiff(a.vencimiento)??9999,db=daysDiff(b.vencimiento)??9999;return cliSortDir==='asc'?da-db:db-da;});
+  if(!items.length){tbody.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">👤</div><p>No hay clientes.</p></div></td></tr>';return;}
+  tbody.innerHTML=items.map(c=>{
     const dias=daysDiff(c.vencimiento);const cls=renoClass(dias);
     const venceCell=c.vencimiento?`<div><span class="badge ${cls==='urgent'?'badge-danger':cls==='soon'?'badge-warning':cls==='ok'?'badge-success':'badge-neutral'}">${c.vencimiento}</span><div style="font-size:10px;color:var(--text-muted);margin-top:1px;">${dias!==null?renoLabel(dias):''}</div></div>`:'—';
     const pagoCell=c.pago?`<span class="payment-badge ${c.pago==='Al día'?'al-dia':c.pago==='Atrasado'?'atrasado':'pendiente'}">${c.pago==='Al día'?'✅':c.pago==='Atrasado'?'⚠️':'🔵'} ${c.pago}</span>`:'—';
@@ -982,8 +1007,12 @@ function saveProspecto(){
 }
 function renderProspectos(){
   const tbody=document.getElementById('prospectos-body');
-  if(!DB.prospectos.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎯</div><p>No hay prospectos.</p></div></td></tr>';return;}
-  tbody.innerHTML=DB.prospectos.map(p=>{
+  let items=[...DB.prospectos];
+  const q=(document.getElementById('search-prospectos')?.value||'').toLowerCase();
+  if(q)items=items.filter(p=>(p.nombre||'').toLowerCase().includes(q)||(p.aseguradora||'').toLowerCase().includes(q));
+  items.sort((a,b)=>{const da=daysDiff(a.reno_fecha)??9999,db=daysDiff(b.reno_fecha)??9999;return prosSortDir==='asc'?da-db:db-da;});
+  if(!items.length){tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">🎯</div><p>No hay prospectos.</p></div></td></tr>';return;}
+  tbody.innerHTML=items.map(p=>{
     const diasReno=daysDiff(p.reno_fecha);const clsReno=renoClass(diasReno);
     const diasSeg=daysDiff(p.seguimiento_fecha);
     const renoCell=p.reno_fecha?`<span class="badge ${clsReno==='urgent'?'badge-danger':clsReno==='soon'?'badge-warning':clsReno==='ok'?'badge-success':'badge-neutral'}">${p.reno_fecha}</span><div style="font-size:10px;color:var(--text-muted);">${diasReno!==null?renoLabel(diasReno):''}</div>`:'—';
@@ -1016,7 +1045,25 @@ function updateSegEstado(ref,id,estado){if(ref==='cliente'){const c=DB.clientes.
 
 function filterTareas(filtro,btn){tareaFiltroActivo=filtro;document.querySelectorAll('#sec-tareas .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderTareas();}
 function saveTarea(){const id=document.getElementById('tarea-id').value||uid();const obj={id,titulo:document.getElementById('t-titulo').value.trim(),cliente:document.getElementById('t-cliente').value.trim(),tipo:document.getElementById('t-tipo').value,vence:document.getElementById('t-vence').value,prioridad:document.getElementById('t-prioridad').value,estado:document.getElementById('t-estado').value,notas:document.getElementById('t-notas').value,created_at:new Date().toISOString()};if(!obj.titulo){toast('Ingresa la tarea','warning');return;}const idx=DB.tareas.findIndex(t=>t.id===id);if(idx>=0)DB.tareas[idx]=obj;else DB.tareas.unshift(obj);saveLocal();if(sbConnected)upsertTable('tareas',[obj]);closeModal('modal-tarea');document.getElementById('tarea-id').value='';document.getElementById('modal-tarea-title').textContent='Nueva Tarea';renderTareas();refreshDashboard();toast('Tarea guardada ✓','success');}
-function renderTareas(){let items=DB.tareas;if(tareaFiltroActivo==='Alta')items=items.filter(t=>t.prioridad==='Alta');else if(tareaFiltroActivo!=='Todos')items=items.filter(t=>t.estado===tareaFiltroActivo);const tbody=document.getElementById('tareas-body');if(!items.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">✓</div><p>No hay tareas en este filtro.</p></div></td></tr>';return;}tbody.innerHTML=items.map(t=>`<tr><td><strong>${t.titulo}</strong>${t.notas?`<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${t.notas.substring(0,50)}${t.notas.length>50?'...':''}</div>`:''}</td><td style="font-size:11px;">${t.cliente||'—'}</td><td><span class="badge ${t.tipo==='Cliente'?'badge-info':t.tipo==='Prospecto'?'badge-gold':t.tipo==='Referido'?'badge-warning':'badge-neutral'}">${t.tipo||'General'}</span></td><td style="font-size:11px;">${t.vence||'—'}</td><td><span class="badge ${t.prioridad==='Alta'?'badge-danger':t.prioridad==='Media'?'badge-warning':'badge-neutral'}">${t.prioridad}</span></td><td><span class="badge ${t.estado==='Completada'?'badge-success':t.estado==='En progreso'?'badge-info':'badge-neutral'}">${t.estado}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewTarea('${t.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="editTarea('${t.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="deleteTarea('${t.id}')">✕</button></div></td></tr>`).join('');}
+function renderTareas(){
+  const sortVal=document.getElementById('sort-tareas')?.value||'pronto';
+  let items=[...DB.tareas];
+  if(tareaFiltroActivo==='Alta')items=items.filter(t=>t.prioridad==='Alta');
+  else if(tareaFiltroActivo==='PorVencer')items=items.filter(t=>{if(t.estado==='Completada')return false;const d=daysDiff(t.vence);return d!==null&&d>=0&&d<=60;});
+  else if(tareaFiltroActivo!=='Todos')items=items.filter(t=>t.estado===tareaFiltroActivo);
+  items.sort((a,b)=>{
+    if(sortVal==='pronto'){const da=daysDiff(a.vence)??9999,db=daysDiff(b.vence)??9999;return da-db;}
+    if(sortVal==='lejano'){const da=daysDiff(a.vence)??-1,db=daysDiff(b.vence)??-1;return db-da;}
+    return new Date(b.created_at||0)-new Date(a.created_at||0);
+  });
+  const tbody=document.getElementById('tareas-body');
+  if(!items.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">✓</div><p>No hay tareas en este filtro.</p></div></td></tr>';return;}
+  tbody.innerHTML=items.map(t=>{
+    const dias=daysDiff(t.vence);
+    const diasLabel=dias===null?'':dias<0?`<span style="color:var(--danger);font-size:10px;">Venció hace ${Math.abs(dias)}d</span>`:dias===0?`<span style="color:var(--danger);font-size:10px;">⚠️ HOY</span>`:dias<=30?`<span style="color:var(--danger);font-size:10px;">🚨 ${dias}d</span>`:dias<=60?`<span style="color:var(--warning);font-size:10px;">⏰ ${dias}d</span>`:`<span style="color:var(--text-muted);font-size:10px;">${dias}d</span>`;
+    return`<tr><td><strong>${t.titulo}</strong>${t.notas?`<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">${t.notas.substring(0,50)}${t.notas.length>50?'...':''}</div>`:''}</td><td style="font-size:11px;">${t.cliente||'—'}</td><td><span class="badge ${t.tipo==='Cliente'?'badge-info':t.tipo==='Prospecto'?'badge-gold':t.tipo==='Referido'?'badge-warning':'badge-neutral'}">${t.tipo||'General'}</span></td><td style="font-size:11px;">${t.vence||'—'}<br>${diasLabel}</td><td><span class="badge ${t.prioridad==='Alta'?'badge-danger':t.prioridad==='Media'?'badge-warning':'badge-neutral'}">${t.prioridad}</span></td><td><span class="badge ${t.estado==='Completada'?'badge-success':t.estado==='En progreso'?'badge-info':'badge-neutral'}">${t.estado}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewTarea('${t.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="editTarea('${t.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="deleteTarea('${t.id}')">✕</button></div></td></tr>`;
+  }).join('');
+}
 function viewTarea(id){const t=DB.tareas.find(x=>x.id===id);if(!t)return;const prioColor=t.prioridad==='Alta'?'var(--danger)':t.prioridad==='Media'?'var(--warning)':'var(--text-muted)';const estColor=t.estado==='Completada'?'var(--success)':t.estado==='En progreso'?'var(--info)':'var(--text-muted)';const html=`<div><div style="display:flex;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);"><div style="width:44px;height:44px;border-radius:10px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">✓</div><div><div style="font-size:15px;font-weight:700;color:var(--navy);">${t.titulo}</div><div style="display:flex;gap:8px;margin-top:4px;"><span style="font-size:11px;font-weight:600;color:${prioColor};">● ${t.prioridad}</span><span style="font-size:11px;font-weight:600;color:${estColor};">● ${t.estado}</span></div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><div style="background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Relacionado a</div><div style="font-size:13px;font-weight:500;">${t.cliente||'—'}</div></div><div style="background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Tipo</div><div style="font-size:13px;font-weight:500;">${t.tipo||'General'}</div></div><div style="background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Fecha vence</div><div style="font-size:13px;font-weight:500;">${t.vence||'—'}</div></div><div style="background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Prioridad</div><div style="font-size:13px;font-weight:600;color:${prioColor};">${t.prioridad}</div></div>${t.notas?`<div style="background:#f8f9fa;border-radius:8px;padding:10px;grid-column:1/-1;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">Notas</div><div style="font-size:12px;line-height:1.6;white-space:pre-wrap;">${t.notas}</div></div>`:''}</div></div>`;const overlay=document.createElement('div');overlay.className='modal-overlay open';overlay.innerHTML=`<div class="modal" style="max-width:480px;"><div class="modal-header"><span class="modal-title">Tarea · Detalle</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div><div class="modal-body">${html}</div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();editTarea('${t.id}')">✏ Editar</button><button class="btn btn-danger" onclick="if(confirm('¿Eliminar?')){this.closest('.modal-overlay').remove();deleteTarea('${t.id}')}">✕ Eliminar</button></div></div>`;document.body.appendChild(overlay);}
 function editTarea(id){const t=DB.tareas.find(x=>x.id===id);if(!t)return;document.getElementById('tarea-id').value=t.id;document.getElementById('modal-tarea-title').textContent='Editar Tarea';document.getElementById('t-titulo').value=t.titulo||'';document.getElementById('t-cliente').value=t.cliente||'';document.getElementById('t-tipo').value=t.tipo||'General';document.getElementById('t-vence').value=t.vence||'';document.getElementById('t-prioridad').value=t.prioridad||'Alta';document.getElementById('t-estado').value=t.estado||'Pendiente';document.getElementById('t-notas').value=t.notas||'';openModal('modal-tarea');}
 function deleteTarea(id){if(!confirm('¿Eliminar?'))return;DB.tareas=DB.tareas.filter(t=>t.id!==id);if(sbConnected)sbClient.from('tareas').delete().eq('id',id);saveLocal();renderTareas();refreshDashboard();}
