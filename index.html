@@ -1438,6 +1438,38 @@ function renderCalcBestRates(){
 }
 
 // ─── COMISIONES DESGLOSE POR ASEGURADORA ───
+// Fuzzy match company name to COMMISSION_RATES
+function fuzzyMatchCompany(name){
+  if(!name)return null;
+  const n=name.toUpperCase().trim();
+  // Exact match first
+  let found=COMMISSION_RATES.find(r=>r.company.toUpperCase()===n);
+  if(found)return found.company;
+  // Keyword match — check if key words from the rate company appear in the client name or vice versa
+  const keywords={
+    'MULTINATIONAL':['MULTINATIONAL INSURANCE CO'],
+    'CHUBB':['CHUBB INSURANCE CO'],
+    'AIG':['AIG INSURANCE CO'],
+    'GUARDIAN':['GUARDIAN INSURANCE'],
+    'ONE ALLIANCE':['ONE ALLIANCE INSURANCE CO.'],
+    'COOPERATIVA':['COOPERATIVA DE SEGUROS MULTIPLES'],
+    'SEGUROS MULTIPLES':['COOPERATIVA DE SEGUROS MULTIPLES'],
+    'ANTILLES':['ANTILLES INSURANCE CO.'],
+    'USIC':['USIC'],
+    'BLUE WATERS':['BLUE WATERS INSURERS CORP'],
+  };
+  for(const[kw,companies] of Object.entries(keywords)){
+    if(n.includes(kw))return companies[0];
+  }
+  // Partial: check if any rate company keyword appears in the client name
+  const rateCompanies=[...new Set(COMMISSION_RATES.map(r=>r.company))];
+  for(const rc of rateCompanies){
+    const rcWords=rc.replace(/[^A-Z ]/g,'').split(' ').filter(w=>w.length>3);
+    if(rcWords.some(w=>n.includes(w)))return rc;
+  }
+  return null;
+}
+
 function renderComisionesDesglose(){
   const el=document.getElementById('com-desglose-aseg');if(!el)return;
   const override=parseFloat(DB.config.override||6)/100;
@@ -1445,23 +1477,40 @@ function renderComisionesDesglose(){
   DB.clientes.forEach(c=>{
     if(!c.aseguradora)return;
     const prima=parseFloat(c.prima_anual||c.prima_m)||0;if(!prima)return;
-    if(!map[c.aseguradora])map[c.aseguradora]={prima:0,comBruta:0,comNeto:0,count:0};
-    map[c.aseguradora].prima+=prima;
-    map[c.aseguradora].count++;
-    // Try to get real rate
+    const key=c.aseguradora;
+    if(!map[key])map[key]={prima:0,comBruta:0,comNeto:0,count:0,matched:null};
+    map[key].prima+=prima;
+    map[key].count++;
+    // Fuzzy match to find real rate
+    const matchedCompany=fuzzyMatchCompany(c.aseguradora);
     const lob=c.lob||'';
-    const rateEntry=COMMISSION_RATES.find(r=>r.company===c.aseguradora&&(lob?r.lob===lob:true));
+    const rateEntry=matchedCompany?COMMISSION_RATES.find(r=>r.company===matchedCompany&&(lob?r.lob===lob:true)):null;
     const rate=rateEntry?rateEntry.rate/100:(parseFloat(DB.config.comisionBase||15)/100);
     const bruta=prima*rate;
-    map[c.aseguradora].comBruta+=bruta;
-    map[c.aseguradora].comNeto+=bruta*(1-override);
-    map[c.aseguradora].rate=rateEntry?rateEntry.rate:null;
+    map[key].comBruta+=bruta;
+    map[key].comNeto+=bruta*(1-override);
+    if(rateEntry)map[key].matched={company:matchedCompany,rate:rateEntry.rate};
   });
   const entries=Object.entries(map).sort((a,b)=>b[1].prima-a[1].prima);
   if(!entries.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><p>Agrega clientes para ver el desglose.</p></div>';return;}
-  el.innerHTML='<table class="crm-table"><thead><tr><th>Aseguradora</th><th>Clientes</th><th>Prima/año</th><th>Tasa</th><th>Com. bruta</th><th>Neto Pinnacle</th></tr></thead><tbody>'+
-    entries.map(([aseg,v])=>{const rateEntry=COMMISSION_RATES.find(r=>r.company===aseg);const pct=rateEntry?rateEntry.rate:null;const netoPct=pct?(pct*(1-(parseFloat(DB.config.override||6)/100))).toFixed(1):null;return`<tr><td style="font-size:12px;font-weight:600;">${aseg}</td><td>${v.count}</td><td>$${v.prima.toLocaleString('en-US',{maximumFractionDigits:0})}</td><td>${pct?`<span style="font-weight:700;color:${pct>=17?'var(--success)':pct>=12?'var(--warning)':'var(--text-muted)'}">${pct}%</span><div style="font-size:9px;color:var(--text-muted);">neto ${netoPct}%</div>`:'<span style="color:var(--text-muted);">—</span>'}</td><td style="color:var(--gold);font-weight:600;">$${v.comBruta.toFixed(2)}</td><td style="color:var(--success);font-weight:700;">$${v.comNeto.toFixed(2)}</td></tr>`;}).join('')
-    +'</tbody></table>';
+  const ovPct=parseFloat(DB.config.override||6);
+  el.innerHTML='<table class="crm-table"><thead><tr><th>Aseguradora</th><th>Clientes</th><th>Prima/año</th><th>Tasa Reborn</th><th>Com. bruta</th><th>Neto Pinnacle</th></tr></thead><tbody>'+
+    entries.map(([aseg,v])=>{
+      const pct=v.matched?v.matched.rate:null;
+      const netoPct=pct?(pct*(1-ovPct/100)).toFixed(1):null;
+      const rateColor=pct>=17?'var(--success)':pct>=12?'#a06000':'var(--text-muted)';
+      const tasa=pct
+        ?`<span style="font-weight:700;color:${rateColor};font-size:14px;">${pct}%</span><div style="font-size:9px;color:var(--text-muted);">neto ${netoPct}%</div>`
+        :`<span style="color:var(--text-muted);font-size:11px;">ver tarifa</span>`;
+      return`<tr>
+        <td style="font-size:12px;font-weight:600;">${aseg}</td>
+        <td>${v.count}</td>
+        <td>$${v.prima.toLocaleString('en-US',{maximumFractionDigits:0})}</td>
+        <td>${tasa}</td>
+        <td style="color:var(--gold);font-weight:600;">$${v.comBruta.toFixed(2)}</td>
+        <td style="color:var(--success);font-weight:700;">$${v.comNeto.toFixed(2)}</td>
+      </tr>`;
+    }).join('')+'</tbody></table>';
 }
 
 function renderComisiones(){
