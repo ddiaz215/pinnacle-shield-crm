@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pinnacle Shield CRM v24</title>
+<title>Pinnacle Shield CRM v25</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" id="pwa-manifest">
@@ -340,30 +340,160 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
 
 <!-- COMISIONES -->
 <div id="sec-comisiones" class="section">
-  <div class="page-header"><div><div class="page-title">Comisiones</div><div class="page-sub">Reborn Agency (6% override)</div></div></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
-    <div class="card"><div class="card-header"><span class="card-title">Resumen del mes</span></div>
-      <div class="card-body">
-        <div class="comision-row"><span class="comision-label">Prima anual cartera</span><span class="comision-est" id="com-prima-total">$0</span></div>
-        <div class="comision-row"><span class="comision-label">Comisión estimada (15%)</span><span class="comision-est" id="com-est">$0</span></div>
-        <div class="comision-row"><span class="comision-label">Override Reborn (6%)</span><span class="comision-est" id="com-override">$0</span></div>
-        <div class="comision-row" style="background:#f9fafb;margin:0 -18px;padding:10px 18px;"><span class="comision-label" style="font-weight:700;">Neto Pinnacle Shield</span><span class="comision-real" id="com-neto" style="font-size:16px;">$0</span></div>
+  <div class="page-header">
+    <div><div class="page-title">Comisiones</div><div class="page-sub">Reborn Agency (6% override) · Vigente 03/24/2026</div></div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('com-tab-resumen').click()">📊 Resumen</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('com-tab-tabla').click()">📋 Tabla Tarifas</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('com-tab-calc').click()">🧮 Calculadora</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div style="display:flex;gap:0;margin-bottom:20px;border-bottom:2px solid var(--border);">
+    <button id="com-tab-resumen" class="com-tab active" onclick="showComTab('resumen',this)" style="padding:8px 18px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--navy);border-bottom:2px solid var(--navy);margin-bottom:-2px;">📊 Mi Cartera</button>
+    <button id="com-tab-tabla" class="com-tab" onclick="showComTab('tabla',this)" style="padding:8px 18px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;">📋 Tarifas Reborn</button>
+    <button id="com-tab-calc" class="com-tab" onclick="showComTab('calc',this)" style="padding:8px 18px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;">🧮 Calculadora</button>
+    <button id="com-tab-hist" class="com-tab" onclick="showComTab('hist',this)" style="padding:8px 18px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;">💳 Pagos recibidos</button>
+  </div>
+
+  <!-- TAB: RESUMEN CARTERA -->
+  <div id="com-pane-resumen">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;">
+      <div class="stat-card"><div class="stat-label">Prima anual cartera</div><div class="stat-value" id="com-prima-total">$0</div></div>
+      <div class="stat-card"><div class="stat-label">Comisión bruta estimada</div><div class="stat-value" id="com-est" style="color:var(--gold);">$0</div><div class="stat-sub" id="com-pct-label">15% base</div></div>
+      <div class="stat-card"><div class="stat-label">Override Reborn (6%)</div><div class="stat-value" id="com-override" style="color:var(--danger);font-size:18px;">-$0</div></div>
+      <div class="stat-card" style="border-left-color:#1a7a4a;"><div class="stat-label">Neto Pinnacle Shield</div><div class="stat-value" id="com-neto" style="color:var(--success);">$0</div></div>
+      <div class="stat-card"><div class="stat-label">Pagos recibidos</div><div class="stat-value" id="com-recibido" style="color:var(--info);">$0</div></div>
+    </div>
+
+    <!-- Desglose por aseguradora -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><span class="card-title">Desglose por aseguradora</span><span style="font-size:11px;color:var(--text-muted);">Comisiones reales según tarifas Reborn</span></div>
+      <div class="card-body" id="com-desglose-aseg">
+        <div class="empty-state"><div class="empty-icon">📊</div><p>Agrega clientes para ver el desglose.</p></div>
       </div>
     </div>
-    <div class="card"><div class="card-header"><span class="card-title">Registrar pago</span></div>
+
+    <!-- Registrar pago -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">Registrar pago recibido</span></div>
       <div class="card-body">
-        <div class="form-grid">
+        <div class="form-grid form-grid-2" style="margin-bottom:12px;">
           <div class="form-group"><label>Período</label><input type="month" id="com-periodo"></div>
-          <div class="form-group"><label>Aseguradora</label><input type="text" id="com-aseguradora" placeholder="Universal, MAPFRE..."></div>
-          <div class="form-group"><label>Monto recibido</label><input type="number" id="com-monto" placeholder="0.00" step="0.01"></div>
-          <div class="form-group"><label>Notas</label><input type="text" id="com-notas"></div>
+          <div class="form-group"><label>Aseguradora</label>
+            <select id="com-aseguradora" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+              <option value="">— Seleccionar —</option>
+              <option>AIG INSURANCE CO</option>
+              <option>ANTILLES INSURANCE CO.</option>
+              <option>BLUE WATERS INSURERS CORP</option>
+              <option>CHUBB INSURANCE CO</option>
+              <option>COOPERATIVA DE SEGUROS MULTIPLES</option>
+              <option>GUARDIAN INSURANCE</option>
+              <option>MULTINATIONAL INSURANCE CO</option>
+              <option>ONE ALLIANCE INSURANCE CO.</option>
+              <option>USIC</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Monto recibido ($)</label><input type="number" id="com-monto" placeholder="0.00" step="0.01"></div>
+          <div class="form-group"><label>Notas</label><input type="text" id="com-notas" placeholder="Detalle opcional"></div>
         </div>
-        <button class="btn btn-primary" style="margin-top:12px;" onclick="saveComision()">Guardar pago</button>
+        <button class="btn btn-primary" onclick="saveComision()">💾 Guardar pago</button>
       </div>
     </div>
   </div>
-  <div class="card"><div class="card-header"><span class="card-title">Historial de pagos</span></div>
-    <table class="crm-table"><thead><tr><th>Período</th><th>Aseguradora</th><th>Monto</th><th>Notas</th><th>Acc.</th></tr></thead><tbody id="comisiones-body"></tbody></table>
+
+  <!-- TAB: TABLA TARIFAS -->
+  <div id="com-pane-tabla" style="display:none;">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;">
+      <div style="position:relative;flex:1;min-width:200px;">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#8a98a8;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="text" id="tarifa-search" placeholder="Buscar línea o aseguradora..." oninput="renderTarifas()" style="width:100%;padding:8px 12px 8px 32px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+      </div>
+      <select id="tarifa-type" onchange="renderTarifas()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;min-width:160px;">
+        <option value="">Todos los tipos</option>
+        <option value="CL">Commercial Lines (CL)</option>
+        <option value="PL">Personal Lines (PL)</option>
+      </select>
+      <select id="tarifa-company" onchange="renderTarifas()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;min-width:200px;">
+        <option value="">Todas las compañías</option>
+        <option>AIG INSURANCE CO</option>
+        <option>ANTILLES INSURANCE CO.</option>
+        <option>BLUE WATERS INSURERS CORP</option>
+        <option>CHUBB INSURANCE CO</option>
+        <option>COOPERATIVA DE SEGUROS MULTIPLES</option>
+        <option>GUARDIAN INSURANCE</option>
+        <option>MULTINATIONAL INSURANCE CO</option>
+        <option>ONE ALLIANCE INSURANCE CO.</option>
+        <option>USIC</option>
+      </select>
+      <select id="tarifa-sort" onchange="renderTarifas()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+        <option value="lob">Línea A-Z</option>
+        <option value="rate_desc">Mayor comisión</option>
+        <option value="rate_asc">Menor comisión</option>
+      </select>
+      <span id="tarifa-count" style="font-size:12px;font-weight:600;color:var(--text-muted);white-space:nowrap;"></span>
+    </div>
+    <div id="tarifa-table-wrap"></div>
+  </div>
+
+  <!-- TAB: CALCULADORA -->
+  <div id="com-pane-calc" style="display:none;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="card">
+        <div class="card-header"><span class="card-title">🧮 Calculadora de comisión</span></div>
+        <div class="card-body">
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Aseguradora</label>
+            <select id="calc-company" onchange="calcUpdateLOBs()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+              <option value="">— Seleccionar —</option>
+              <option>AIG INSURANCE CO</option>
+              <option>ANTILLES INSURANCE CO.</option>
+              <option>BLUE WATERS INSURERS CORP</option>
+              <option>CHUBB INSURANCE CO</option>
+              <option>COOPERATIVA DE SEGUROS MULTIPLES</option>
+              <option>GUARDIAN INSURANCE</option>
+              <option>MULTINATIONAL INSURANCE CO</option>
+              <option>ONE ALLIANCE INSURANCE CO.</option>
+              <option>USIC</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label>Línea de negocio</label>
+            <select id="calc-lob" onchange="calcUpdate()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+              <option value="">— Seleccionar compañía primero —</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:16px;">
+            <label>Prima anual ($)</label>
+            <input type="number" id="calc-prima" placeholder="0.00" step="0.01" oninput="calcUpdate()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+          </div>
+          <div id="calc-result" style="display:none;background:var(--bg);border-radius:10px;padding:16px;">
+            <div style="margin-bottom:8px;"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:2px;">Tasa Reborn</div><div style="font-size:20px;font-weight:700;color:var(--gold);" id="calc-rate">—</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
+              <div style="background:white;border-radius:8px;padding:10px;"><div style="font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Comisión bruta</div><div style="font-size:15px;font-weight:700;color:var(--navy);" id="calc-bruta">$0</div></div>
+              <div style="background:white;border-radius:8px;padding:10px;"><div style="font-size:9px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Override Reborn (6%)</div><div style="font-size:15px;font-weight:700;color:var(--danger);" id="calc-ov">-$0</div></div>
+              <div style="background:linear-gradient(135deg,var(--navy),#2B4277);border-radius:8px;padding:10px;grid-column:1/-1;"><div style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.6);text-transform:uppercase;">Neto Pinnacle Shield</div><div style="font-size:22px;font-weight:700;color:white;" id="calc-neto">$0</div></div>
+            </div>
+          </div>
+          <div id="calc-empty" style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px;">Selecciona compañía, línea y prima para calcular.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">🏆 Mejores tasas por línea</span></div>
+        <div class="card-body" style="max-height:420px;overflow-y:auto;" id="calc-best-rates">
+          <div class="empty-state"><p>Cargando...</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORIAL PAGOS -->
+  <div id="com-pane-hist" style="display:none;">
+    <div class="card">
+      <div class="card-header"><span class="card-title">Historial de pagos recibidos</span></div>
+      <table class="crm-table"><thead><tr><th>Período</th><th>Aseguradora</th><th>Monto</th><th>Notas</th><th>Acc.</th></tr></thead><tbody id="comisiones-body"></tbody></table>
+    </div>
   </div>
 </div>
 
@@ -543,7 +673,25 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
       <div class="form-section-title">📅 Póliza actual</div>
       <div class="form-grid form-grid-3" style="margin-bottom:14px;">
         <div class="form-group"><label>N° Póliza</label><input type="text" id="c-numpoliza" placeholder="MPP-0446798"></div>
-        <div class="form-group"><label>Aseguradora</label><input type="text" id="c-aseguradora"></div>
+        <div class="form-group"><label>Aseguradora</label>
+          <select id="c-aseguradora" onchange="autoFillComisionCliente()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;">
+            <option value="">— Seleccionar —</option>
+            <option>AIG INSURANCE CO</option>
+            <option>ANTILLES INSURANCE CO.</option>
+            <option>BLUE WATERS INSURERS CORP</option>
+            <option>CHUBB INSURANCE CO</option>
+            <option>COOPERATIVA DE SEGUROS MULTIPLES</option>
+            <option>GUARDIAN INSURANCE</option>
+            <option>MULTINATIONAL INSURANCE CO</option>
+            <option>ONE ALLIANCE INSURANCE CO.</option>
+            <option>USIC</option>
+            <option value="Otra">Otra aseguradora</option>
+          </select>
+        </div>
+        <div class="form-group" id="c-lob-group"><label>Línea de negocio</label>
+          <select id="c-lob" onchange="autoFillComisionCliente()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;"><option value="">— Seleccionar línea —</option><option>Private Passenger Auto</option><option>Business Auto</option><option>Homeowners</option><option>Package (Personal)</option><option>Package (Commercial)</option><option>General Liability</option><option>Commercial Property</option><option>Dwelling Fire</option><option>Personal Liability</option><option>Umbrella (Personal)</option><option>Umbrella (Commercial)</option><option>Flood (Personal)</option><option>Flood (Commercial)</option><option>Condominium</option><option>Installation/Builder Risk</option><option>Boiler &amp; Machinery</option><option>Commercial Fire</option><option>Crime</option><option>Commercial Cyber &amp; Privacy Liability</option><option>Directors &amp; Officers</option><option>Errors &amp; Omissions</option><option>Employment Practices Liability</option><option>Fidelity &amp; Forgery</option><option>Farm &amp; Ranch Owners</option><option>Garage &amp; Dealers</option><option>Inland Marine (Commercial)</option><option>Inland Marine (Personal)</option><option>Medical Malpractice</option><option>Ocean Marine (Commercial)</option><option>Pollution Liability</option><option>Special Multi-Peril</option><option>Surety</option><option>Travel</option><option>Workers Compensation</option><option>Yacht (Commercial)</option><option>Yacht (Personal)</option><option>Doble Interés</option><option>Computers</option><option>Glass &amp; Sign</option></select>
+        </div>
+        <div id="c-comision-preview" style="display:none;padding:8px 14px;border-radius:8px;background:#e8f5ee;border:1px solid rgba(26,122,74,0.3);font-size:12px;color:var(--success);font-weight:600;grid-column:1/-1;"></div>
         <div class="form-group"><label>Estado de pago</label><select id="c-pago"><option value="Al día">✅ Al día</option><option value="Atrasado">⚠️ Atrasado</option><option value="Pendiente">🔵 Pendiente</option></select></div>
         <div class="form-group"><label>✅ Inicio</label><input type="date" id="c-inicio" class="date-highlight" onchange="calcVencimientoCliente()"></div>
         <div class="form-group"><label>⚠️ Vencimiento</label><input type="date" id="c-vencimiento" class="date-highlight" onchange="updateClienteRenoPreview()"></div>
@@ -960,7 +1108,7 @@ function renderRenosDashboard(renos){const el=document.getElementById('renos-das
 
 function saveCliente(){
   const id=document.getElementById('cliente-id').value||uid();
-  const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};
+  const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),lob:document.getElementById('c-lob')?.value||'',pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};
   if(!obj.nombre){toast('Ingresa el nombre','warning');return;}
   const idx=DB.clientes.findIndex(c=>c.id===id);
   if(idx>=0)DB.clientes[idx]=obj;else DB.clientes.unshift(obj);
@@ -968,7 +1116,7 @@ function saveCliente(){
   if(obj.vencimiento){const dias=daysDiff(obj.vencimiento);if(dias!==null&&dias>0&&dias<=60){const t={id:uid(),titulo:`Renovación — ${obj.nombre}`,cliente:obj.nombre,tipo:'Cliente',vence:obj.vencimiento,prioridad:dias<=30?'Alta':'Media',estado:'Pendiente',notas:`Póliza ${obj.numpoliza||''} vence en ${dias}d`,created_at:new Date().toISOString()};const exists=DB.tareas.some(x=>x.titulo===t.titulo&&x.cliente===t.cliente);if(!exists){DB.tareas.unshift(t);if(sbConnected)upsertTable('tareas',[t]);toast(`⚡ Tarea de renovación creada (${dias}d)`,'warning');}}}
   closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');
 }
-function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
+function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-lob','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';const cp=document.getElementById('c-comision-preview');if(cp)cp.style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
 let cliSortDir='asc', prosSortDir='asc';
 function sortClientes(dir,btn){cliSortDir=dir;document.querySelectorAll('#sec-clientes .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderClientes();}
 function sortProspectos(dir,btn){prosSortDir=dir;document.querySelectorAll('#sec-prospectos .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderProspectos();}
@@ -987,7 +1135,7 @@ function renderClientes(){
     return`<tr><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚗</div><div><strong style="font-size:12px;">${c.nombre}</strong>${c.email?`<div style="font-size:10px;color:var(--text-muted);">${c.email}</div>`:''}</div></div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${c.tel||'—'}</span>${c.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${c.tel}','${c.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[c.anio,c.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${c.aseguradora||'—'}</td><td>${venceCell}</td><td><strong>${(c.prima_anual||c.prima_m)?'$'+parseFloat(c.prima_anual||c.prima_m).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td>${pagoCell}</td><td><span class="badge ${c.estado==='Activo'?'badge-success':'badge-neutral'}">${c.estado||'Activo'}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewCliente('${c.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="openHistorial('${c.id}')">💬${histCount>0?`<span style="font-size:9px;font-weight:700;margin-left:1px;">${histCount}</span>`:''}</button><button class="btn btn-outline btn-sm" onclick="editCliente('${c.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">✕</button></div></td></tr>`;
   }).join('');
 }
-function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
+function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',lob:'c-lob',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
 function viewCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;const flds=[['Nombre',c.nombre],['Tel',c.tel||'—'],['Email',c.email||'—'],['Dirección',c.direccion||'—'],['Vehículo',[c.anio,c.vehiculo,c.color].filter(Boolean).join(' ')||'—'],['Aseguradora',c.aseguradora||'—'],['Póliza',c.numpoliza||'—'],['Inicio',c.inicio||'—'],['Vence',c.vencimiento||'—'],['Prima/año','$'+(parseFloat(c.prima_anual||c.prima_m)||0).toLocaleString('en-US',{minimumFractionDigits:2})],['Pago',c.pago||'—'],['Estado',c.estado||'—'],['Coberturas',c.coberturas||'—']];const html=`<div style="max-height:65vh;overflow-y:auto;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);"><div style="width:44px;height:44px;border-radius:10px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:20px;">🚗</div><div><div style="font-size:16px;font-weight:700;color:var(--navy);">${c.nombre}</div><div style="font-size:11px;color:var(--text-muted);">${c.aseguradora||''} ${c.numpoliza||''}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${flds.map(x=>`<div style="background:#f8f9fa;border-radius:8px;padding:10px;${x[0]==='Coberturas'?'grid-column:1/-1;':''}"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">${x[0]}</div><div style="font-size:12px;font-weight:500;color:var(--navy);word-break:break-word;">${x[1]}</div></div>`).join('')}</div></div>`;const overlay=document.createElement('div');overlay.className='modal-overlay open';overlay.innerHTML=`<div class="modal" style="max-width:500px;"><div class="modal-header"><span class="modal-title">Expediente · ${c.nombre}</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div><div class="modal-body">${html}</div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();editCliente('${c.id}')">✏ Editar</button></div></div>`;document.body.appendChild(overlay);}
 function deleteCliente(id){if(!confirm('¿Eliminar este cliente?'))return;DB.clientes=DB.clientes.filter(c=>c.id!==id);saveLocal();renderClientes();refreshDashboard();if(sbConnected)sbClient.from('clientes').delete().eq('id',id);toast('Cliente eliminado','warning');}
 
@@ -1038,8 +1186,302 @@ function renderReferidos(){const tbody=document.getElementById('referidos-body')
 function editReferido(id){const r=DB.referidos.find(x=>x.id===id);if(!r)return;document.getElementById('ref-id').value=r.id;document.getElementById('modal-ref-title').textContent='Editar Referido';['nombre','nacimiento','tel','email','por','incentivo','interes','estado','fecha','pagado','notas'].forEach(f=>{const el=document.getElementById('ref-'+f);if(el)el.value=r[f]||'';});openModal('modal-referido');}
 function deleteReferido(id){if(!confirm('¿Eliminar?'))return;DB.referidos=DB.referidos.filter(r=>r.id!==id);if(sbConnected)sbClient.from('referidos').delete().eq('id',id);saveLocal();renderReferidos();refreshDashboard();}
 
-function renderComisiones(){const prima=DB.clientes.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);const override=parseFloat(DB.config.override||6)/100,base=parseFloat(DB.config.comisionBase||15)/100;const est=prima*base,ov=est*override,neto=est-ov;setEl('com-prima-total','$'+prima.toLocaleString('en-US',{minimumFractionDigits:2}));setEl('com-est','$'+est.toLocaleString('en-US',{minimumFractionDigits:2}));setEl('com-override','$'+ov.toLocaleString('en-US',{minimumFractionDigits:2}));setEl('com-neto','$'+neto.toLocaleString('en-US',{minimumFractionDigits:2}));const tbody=document.getElementById('comisiones-body');if(!DB.comisiones.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty-state"><p>Sin pagos</p></div></td></tr>';return;}tbody.innerHTML=DB.comisiones.map(c=>`<tr><td>${c.periodo||'—'}</td><td>${c.aseguradora||'—'}</td><td><strong style="color:var(--success);">$${parseFloat(c.monto||0).toFixed(2)}</strong></td><td style="font-size:11px;">${c.notas||'—'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteComision('${c.id}')">✕</button></td></tr>`).join('');}
-function saveComision(){const obj={id:uid(),periodo:document.getElementById('com-periodo').value,aseguradora:document.getElementById('com-aseguradora').value.trim(),monto:document.getElementById('com-monto').value,notas:document.getElementById('com-notas').value,created_at:new Date().toISOString()};DB.comisiones.unshift(obj);saveLocal();if(sbConnected)upsertTable('comisiones',[obj]);renderComisiones();toast('Pago registrado ✓','success');}
+// ─── COMMISSION RATES DATA (Reborn Agency · Vigente 03/24/2026) ───
+const COMMISSION_RATES=[
+  {lob:'Business Auto',type:'CL',company:'CHUBB INSURANCE CO',rate:11.0},
+  {lob:'Business Auto',type:'CL',company:'AIG INSURANCE CO',rate:13.0},
+  {lob:'Business Auto',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Business Auto',type:'CL',company:'GUARDIAN INSURANCE',rate:15.5},
+  {lob:'Business Auto',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:15.5},
+  {lob:'Business Auto',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:17.0},
+  {lob:'Business Auto',type:'CL',company:'ANTILLES INSURANCE CO.',rate:8.0},
+  {lob:'Private Passenger Auto',type:'PL',company:'GUARDIAN INSURANCE',rate:13.0},
+  {lob:'Private Passenger Auto',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:10.0},
+  {lob:'Private Passenger Auto',type:'PL',company:'ONE ALLIANCE INSURANCE CO.',rate:15.5},
+  {lob:'Private Passenger Auto',type:'PL',company:'ANTILLES INSURANCE CO.',rate:7.0},
+  {lob:'Private Passenger Auto',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:11.5},
+  {lob:'Boiler & Machinery',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:8.0},
+  {lob:'Boiler & Machinery',type:'CL',company:'CHUBB INSURANCE CO',rate:13.0},
+  {lob:'Boiler & Machinery',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Installation/Builder Risk',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:13.5},
+  {lob:'Installation/Builder Risk',type:'CL',company:'USIC',rate:15.0},
+  {lob:'Commercial Fire',type:'CL',company:'CHUBB INSURANCE CO',rate:13.0},
+  {lob:'Commercial Fire',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Commercial Fire',type:'CL',company:'ANTILLES INSURANCE CO.',rate:8.0},
+  {lob:'Commercial Fire',type:'CL',company:'USIC',rate:17.5},
+  {lob:'General Liability',type:'CL',company:'CHUBB INSURANCE CO',rate:18.0},
+  {lob:'General Liability',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:16.5},
+  {lob:'General Liability',type:'CL',company:'GUARDIAN INSURANCE',rate:15.5},
+  {lob:'General Liability',type:'CL',company:'AIG INSURANCE CO',rate:15.5},
+  {lob:'General Liability',type:'CL',company:'ANTILLES INSURANCE CO.',rate:8.0},
+  {lob:'General Liability',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'General Liability',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:15.5},
+  {lob:'Condominium',type:'CL',company:'USIC',rate:7.5},
+  {lob:'Condominium',type:'CL',company:'AIG INSURANCE CO',rate:13.0},
+  {lob:'Condominium',type:'CL',company:'ANTILLES INSURANCE CO.',rate:10.0},
+  {lob:'Condominium',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:15.5},
+  {lob:'Condominium',type:'CL',company:'CHUBB INSURANCE CO',rate:12.5},
+  {lob:'Condominium',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:15.5},
+  {lob:'Package (Commercial)',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:15.5},
+  {lob:'Package (Commercial)',type:'CL',company:'CHUBB INSURANCE CO',rate:13.0},
+  {lob:'Package (Commercial)',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:15.5},
+  {lob:'Package (Commercial)',type:'CL',company:'ANTILLES INSURANCE CO.',rate:10.0},
+  {lob:'Package (Commercial)',type:'CL',company:'GUARDIAN INSURANCE',rate:15.5},
+  {lob:'Package (Commercial)',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:16.0},
+  {lob:'Crime',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:13.0},
+  {lob:'Crime',type:'CL',company:'CHUBB INSURANCE CO',rate:11.0},
+  {lob:'Crime',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Umbrella (Commercial)',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Umbrella (Commercial)',type:'CL',company:'AIG INSURANCE CO',rate:13.0},
+  {lob:'Umbrella (Commercial)',type:'CL',company:'GUARDIAN INSURANCE',rate:13.0},
+  {lob:'Umbrella (Commercial)',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:13.0},
+  {lob:'Umbrella (Commercial)',type:'CL',company:'ANTILLES INSURANCE CO.',rate:6.5},
+  {lob:'Umbrella (Commercial)',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:16.5},
+  {lob:'Umbrella (Commercial)',type:'CL',company:'CHUBB INSURANCE CO',rate:13.0},
+  {lob:'Commercial Cyber & Privacy Liability',type:'CL',company:'AIG INSURANCE CO',rate:10.5},
+  {lob:'Dwelling Fire',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:18.5},
+  {lob:'Dwelling Fire',type:'PL',company:'USIC',rate:17.5},
+  {lob:'Dwelling Fire',type:'PL',company:'ONE ALLIANCE INSURANCE CO.',rate:18.0},
+  {lob:'Dwelling Fire',type:'PL',company:'CHUBB INSURANCE CO',rate:18.0},
+  {lob:'Dwelling Fire',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:15.5},
+  {lob:'Directors & Officers',type:'CL',company:'AIG INSURANCE CO',rate:10.5},
+  {lob:'Directors & Officers',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Directors & Officers',type:'CL',company:'CHUBB INSURANCE CO',rate:14.0},
+  {lob:'Doble Interés',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:13.5},
+  {lob:'Doble Interés',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Computers',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:5.0},
+  {lob:'Errors & Omissions',type:'CL',company:'CHUBB INSURANCE CO',rate:14.0},
+  {lob:'Errors & Omissions',type:'CL',company:'AIG INSURANCE CO',rate:12.0},
+  {lob:'Employment Practices Liability',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Farm & Ranch Owners',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Fidelity & Forgery',type:'CL',company:'ANTILLES INSURANCE CO.',rate:13.0},
+  {lob:'Fidelity & Forgery',type:'CL',company:'CHUBB INSURANCE CO',rate:14.0},
+  {lob:'Fidelity & Forgery',type:'CL',company:'AIG INSURANCE CO',rate:10.5},
+  {lob:'Flood (Commercial)',type:'CL',company:'USIC',rate:17.5},
+  {lob:'Flood (Commercial)',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:13.0},
+  {lob:'Flood (Personal)',type:'PL',company:'USIC',rate:7.5},
+  {lob:'Flood (Personal)',type:'PL',company:'ANTILLES INSURANCE CO.',rate:5.0},
+  {lob:'Flood (Personal)',type:'PL',company:'ONE ALLIANCE INSURANCE CO.',rate:13.0},
+  {lob:'Flood (Personal)',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:13.5},
+  {lob:'Garage & Dealers',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Garage & Dealers',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:13.0},
+  {lob:'Garage & Dealers',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:15.5},
+  {lob:'Garage & Dealers',type:'CL',company:'GUARDIAN INSURANCE',rate:13.0},
+  {lob:'Glass & Sign',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Homeowners',type:'PL',company:'USIC',rate:12.5},
+  {lob:'Homeowners',type:'PL',company:'AIG INSURANCE CO',rate:8.0},
+  {lob:'Homeowners',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Homeowners',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:15.0},
+  {lob:'Inland Marine (Commercial)',type:'CL',company:'CHUBB INSURANCE CO',rate:13.0},
+  {lob:'Inland Marine (Commercial)',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:13.0},
+  {lob:'Inland Marine (Commercial)',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:13.5},
+  {lob:'Inland Marine (Commercial)',type:'CL',company:'ANTILLES INSURANCE CO.',rate:8.0},
+  {lob:'Inland Marine (Commercial)',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Inland Marine (Personal)',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Inland Marine (Personal)',type:'PL',company:'CHUBB INSURANCE CO',rate:13.0},
+  {lob:'Medical Malpractice',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Ocean Marine (Commercial)',type:'CL',company:'BLUE WATERS INSURERS CORP',rate:5.0},
+  {lob:'Pollution Liability',type:'CL',company:'CHUBB INSURANCE CO',rate:13.0},
+  {lob:'Pollution Liability',type:'CL',company:'AIG INSURANCE CO',rate:12.0},
+  {lob:'Package (Personal)',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:16.0},
+  {lob:'Package (Personal)',type:'PL',company:'ONE ALLIANCE INSURANCE CO.',rate:16.5},
+  {lob:'Package (Personal)',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:18.5},
+  {lob:'Package (Personal)',type:'PL',company:'USIC',rate:17.5},
+  {lob:'Commercial Property',type:'CL',company:'USIC',rate:17.5},
+  {lob:'Commercial Property',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Commercial Property',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:15.0},
+  {lob:'Commercial Property',type:'CL',company:'GUARDIAN INSURANCE',rate:17.0},
+  {lob:'Commercial Property',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:15.5},
+  {lob:'Personal Liability',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Personal Liability',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:18.5},
+  {lob:'Personal Liability',type:'PL',company:'ONE ALLIANCE INSURANCE CO.',rate:15.5},
+  {lob:'Personal Liability',type:'PL',company:'ANTILLES INSURANCE CO.',rate:8.0},
+  {lob:'Umbrella (Personal)',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:18.5},
+  {lob:'Umbrella (Personal)',type:'PL',company:'GUARDIAN INSURANCE',rate:13.0},
+  {lob:'Umbrella (Personal)',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Special Multi-Peril',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:15.0},
+  {lob:'Surety',type:'CL',company:'USIC',rate:22.5},
+  {lob:'Surety',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:18.0},
+  {lob:'Surety',type:'CL',company:'AIG INSURANCE CO',rate:23.0},
+  {lob:'Surety',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:22.5},
+  {lob:'Travel',type:'PL',company:'CHUBB INSURANCE CO',rate:18.5},
+  {lob:'Travel',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:10.5},
+  {lob:'Workers Compensation',type:'CL',company:'CHUBB INSURANCE CO',rate:8.0},
+  {lob:'Yacht (Commercial)',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:8.0},
+  {lob:'Yacht (Commercial)',type:'CL',company:'ANTILLES INSURANCE CO.',rate:6.5},
+  {lob:'Yacht (Commercial)',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:8.5},
+  {lob:'Yacht (Personal)',type:'PL',company:'GUARDIAN INSURANCE',rate:11.0},
+  {lob:'Yacht (Personal)',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+];
+
+function getRate(company,lob){const r=COMMISSION_RATES.find(x=>x.company===company&&x.lob===lob);return r?r.rate:null;}
+
+// ─── AUTO-FILL COMISION IN CLIENTE FORM ───
+function autoFillComisionCliente(){
+  const aseg=document.getElementById('c-aseguradora')?.value;
+  const lob=document.getElementById('c-lob')?.value;
+  const preview=document.getElementById('c-comision-preview');
+  const lobGroup=document.getElementById('c-lob-group');
+  if(!preview)return;
+  if(aseg&&aseg!=='Otra'){
+    if(lobGroup)lobGroup.style.display='';
+  }else{
+    if(lobGroup)lobGroup.style.display='none';
+    preview.style.display='none';
+    return;
+  }
+  if(!aseg||!lob){preview.style.display='none';return;}
+  const rate=getRate(aseg,lob);
+  if(rate===null){preview.style.display='none';return;}
+  const override=parseFloat(DB.config.override||6)/100;
+  const bruta=rate/100;const neta=bruta*(1-override);
+  preview.style.display='block';
+  preview.innerHTML=`✅ Tasa Reborn: <strong>${rate}%</strong> · Override 6% → <strong>Neto Pinnacle: ${(neta*100).toFixed(2)}%</strong> · Ejemplo $1,000 prima = <strong>$${(1000*neta).toFixed(2)} neto</strong>`;
+}
+
+// ─── TAB CONTROL ───
+function showComTab(id,btn){
+  ['resumen','tabla','calc','hist'].forEach(t=>{
+    const p=document.getElementById('com-pane-'+t);if(p)p.style.display=t===id?'':'none';
+  });
+  document.querySelectorAll('.com-tab').forEach(b=>{b.style.color='var(--text-muted)';b.style.borderBottomColor='transparent';});
+  if(btn){btn.style.color='var(--navy)';btn.style.borderBottomColor='var(--navy)';}
+  if(id==='tabla')renderTarifas();
+  if(id==='calc'){renderCalcBestRates();calcUpdateLOBs();}
+}
+
+// ─── RENDER TARIFAS TABLE ───
+function renderTarifas(){
+  const q=(document.getElementById('tarifa-search')?.value||'').toLowerCase();
+  const typeF=document.getElementById('tarifa-type')?.value||'';
+  const compF=document.getElementById('tarifa-company')?.value||'';
+  const sortF=document.getElementById('tarifa-sort')?.value||'lob';
+  let data=[...COMMISSION_RATES];
+  if(typeF)data=data.filter(d=>d.type===typeF);
+  if(compF)data=data.filter(d=>d.company===compF);
+  if(q)data=data.filter(d=>d.lob.toLowerCase().includes(q)||d.company.toLowerCase().includes(q));
+  if(sortF==='rate_desc')data.sort((a,b)=>b.rate-a.rate);
+  else if(sortF==='rate_asc')data.sort((a,b)=>a.rate-b.rate);
+  else data.sort((a,b)=>a.lob.localeCompare(b.lob)||a.company.localeCompare(b.company));
+  setEl('tarifa-count',data.length+' registros');
+  const wrap=document.getElementById('tarifa-table-wrap');
+  if(!wrap)return;
+  if(!data.length){wrap.innerHTML='<div class="empty-state"><div class="empty-icon">🔍</div><p>Sin resultados.</p></div>';return;}
+  // Group by LOB when sorted by lob
+  if(sortF==='lob'){
+    const groups={};
+    data.forEach(d=>{if(!groups[d.lob])groups[d.lob]=[];groups[d.lob].push(d);});
+    let html='';
+    Object.entries(groups).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lob,rows])=>{
+      const best=Math.max(...rows.map(r=>r.rate));
+      const rateColor=r=>r>=17?'#1a7a4a':r>=12?'#7a5c00':'#5a6a7e';
+      html+=`<div style="margin-bottom:16px;"><div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:2px solid var(--border);margin-bottom:8px;"><span style="font-size:12px;font-weight:700;color:var(--navy);flex:1;">${lob}</span><span style="font-size:10px;font-weight:600;color:${rateColor(best)};background:#f0f2f5;padding:2px 8px;border-radius:4px;">Mejor: ${best}%</span></div><table class="crm-table" style="margin:0;"><thead><tr><th>Tipo</th><th>Aseguradora</th><th style="text-align:center;">Comisión</th><th>Neto (6%)</th></tr></thead><tbody>`;
+      rows.sort((a,b)=>b.rate-a.rate).forEach(r=>{
+        const neto=(r.rate*(1-0.06)).toFixed(2);
+        html+=`<tr><td><span class="badge ${r.type==='PL'?'badge-info':'badge-gold'}" style="font-size:9px;">${r.type}</span></td><td style="font-size:11px;">${r.company}</td><td style="text-align:center;"><strong style="font-size:13px;color:${rateColor(r.rate)};">${r.rate.toFixed(1)}%</strong></td><td style="font-size:11px;color:var(--success);font-weight:600;">${neto}%</td></tr>`;
+      });
+      html+='</tbody></table></div>';
+    });
+    wrap.innerHTML=html;
+  }else{
+    const rateColor=r=>r>=17?'#1a7a4a':r>=12?'#7a5c00':'#5a6a7e';
+    let html='<table class="crm-table"><thead><tr><th>Tipo</th><th>Línea de negocio</th><th>Aseguradora</th><th style="text-align:center;">Comisión</th><th>Neto (6%)</th></tr></thead><tbody>';
+    data.forEach(r=>{
+      const neto=(r.rate*(1-0.06)).toFixed(2);
+      html+=`<tr><td><span class="badge ${r.type==='PL'?'badge-info':'badge-gold'}" style="font-size:9px;">${r.type}</span></td><td style="font-size:12px;font-weight:600;">${r.lob}</td><td style="font-size:11px;">${r.company}</td><td style="text-align:center;"><strong style="font-size:13px;color:${rateColor(r.rate)};">${r.rate.toFixed(1)}%</strong></td><td style="font-size:11px;color:var(--success);font-weight:600;">${neto}%</td></tr>`;
+    });
+    html+='</tbody></table>';
+    wrap.innerHTML=html;
+  }
+}
+
+// ─── CALCULADORA ───
+function calcUpdateLOBs(){
+  const company=document.getElementById('calc-company')?.value;
+  const lobSel=document.getElementById('calc-lob');
+  if(!lobSel)return;
+  const lobs=company?[...new Set(COMMISSION_RATES.filter(r=>r.company===company).map(r=>r.lob))].sort():[];
+  lobSel.innerHTML='<option value="">— Seleccionar línea —</option>'+lobs.map(l=>`<option>${l}</option>`).join('');
+  calcUpdate();
+}
+
+function calcUpdate(){
+  const company=document.getElementById('calc-company')?.value;
+  const lob=document.getElementById('calc-lob')?.value;
+  const prima=parseFloat(document.getElementById('calc-prima')?.value)||0;
+  const res=document.getElementById('calc-result');
+  const emp=document.getElementById('calc-empty');
+  if(!company||!lob||!prima){if(res)res.style.display='none';if(emp)emp.style.display='block';return;}
+  const rate=getRate(company,lob);
+  if(rate===null){if(res)res.style.display='none';if(emp){emp.style.display='block';emp.textContent='No hay tarifa para esta combinación.';}return;}
+  const override=parseFloat(DB.config.override||6)/100;
+  const bruta=prima*(rate/100),ov=bruta*override,neto=bruta-ov;
+  if(res)res.style.display='block';if(emp)emp.style.display='none';
+  setEl('calc-rate',rate.toFixed(1)+'%');
+  setEl('calc-bruta','$'+bruta.toFixed(2));
+  setEl('calc-ov','-$'+ov.toFixed(2));
+  setEl('calc-neto','$'+neto.toFixed(2));
+}
+
+function renderCalcBestRates(){
+  const el=document.getElementById('calc-best-rates');if(!el)return;
+  const override=parseFloat(DB.config.override||6)/100;
+  // Best rate per LOB
+  const bestByLob={};
+  COMMISSION_RATES.forEach(r=>{if(!bestByLob[r.lob]||r.rate>bestByLob[r.lob].rate)bestByLob[r.lob]=r;});
+  const sorted=Object.values(bestByLob).sort((a,b)=>b.rate-a.rate).slice(0,20);
+  const rateColor=r=>r>=17?'var(--success)':r>=12?'var(--warning)':'var(--text-muted)';
+  el.innerHTML=sorted.map(r=>{
+    const neto=(r.rate*(1-override)).toFixed(2);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--navy);">${r.lob}</div><div style="font-size:10px;color:var(--text-muted);">${r.company}</div></div><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:${rateColor(r.rate)};">${r.rate}%</div><div style="font-size:10px;color:var(--success);">Neto ${neto}%</div></div></div>`;
+  }).join('');
+}
+
+// ─── COMISIONES DESGLOSE POR ASEGURADORA ───
+function renderComisionesDesglose(){
+  const el=document.getElementById('com-desglose-aseg');if(!el)return;
+  const override=parseFloat(DB.config.override||6)/100;
+  const map={};
+  DB.clientes.forEach(c=>{
+    if(!c.aseguradora)return;
+    const prima=parseFloat(c.prima_anual||c.prima_m)||0;if(!prima)return;
+    if(!map[c.aseguradora])map[c.aseguradora]={prima:0,comBruta:0,comNeto:0,count:0};
+    map[c.aseguradora].prima+=prima;
+    map[c.aseguradora].count++;
+    // Try to get real rate
+    const lob=c.lob||'';
+    const rateEntry=COMMISSION_RATES.find(r=>r.company===c.aseguradora&&(lob?r.lob===lob:true));
+    const rate=rateEntry?rateEntry.rate/100:(parseFloat(DB.config.comisionBase||15)/100);
+    const bruta=prima*rate;
+    map[c.aseguradora].comBruta+=bruta;
+    map[c.aseguradora].comNeto+=bruta*(1-override);
+    map[c.aseguradora].rate=rateEntry?rateEntry.rate:null;
+  });
+  const entries=Object.entries(map).sort((a,b)=>b[1].prima-a[1].prima);
+  if(!entries.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><p>Agrega clientes para ver el desglose.</p></div>';return;}
+  el.innerHTML='<table class="crm-table"><thead><tr><th>Aseguradora</th><th>Clientes</th><th>Prima/año</th><th>Com. bruta</th><th>Neto Pinnacle</th></tr></thead><tbody>'+
+    entries.map(([aseg,v])=>`<tr><td style="font-size:12px;font-weight:600;">${aseg}</td><td>${v.count}</td><td>$${v.prima.toLocaleString('en-US',{maximumFractionDigits:0})}</td><td style="color:var(--gold);font-weight:600;">$${v.comBruta.toFixed(2)}</td><td style="color:var(--success);font-weight:700;">$${v.comNeto.toFixed(2)}</td></tr>`).join('')
+    +'</tbody></table>';
+}
+
+function renderComisiones(){
+  const prima=DB.clientes.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
+  const override=parseFloat(DB.config.override||6)/100,base=parseFloat(DB.config.comisionBase||15)/100;
+  const est=prima*base,ov=est*override,neto=est-ov;
+  const recibido=DB.comisiones.reduce((s,c)=>s+(parseFloat(c.monto)||0),0);
+  setEl('com-prima-total','$'+prima.toLocaleString('en-US',{minimumFractionDigits:2}));
+  setEl('com-est','$'+est.toLocaleString('en-US',{minimumFractionDigits:2}));
+  setEl('com-pct-label',(DB.config.comisionBase||15)+'% base estimado');
+  setEl('com-override','$'+ov.toLocaleString('en-US',{minimumFractionDigits:2}));
+  setEl('com-neto','$'+neto.toLocaleString('en-US',{minimumFractionDigits:2}));
+  setEl('com-recibido','$'+recibido.toLocaleString('en-US',{minimumFractionDigits:2}));
+  renderComisionesDesglose();
+  const tbody=document.getElementById('comisiones-body');
+  if(!tbody)return;
+  if(!DB.comisiones.length){tbody.innerHTML='<tr><td colspan="5"><div class="empty-state"><p>Sin pagos registrados</p></div></td></tr>';return;}
+  tbody.innerHTML=DB.comisiones.map(c=>`<tr><td>${c.periodo||'—'}</td><td>${c.aseguradora||'—'}</td><td><strong style="color:var(--success);">$${parseFloat(c.monto||0).toFixed(2)}</strong></td><td style="font-size:11px;">${c.notas||'—'}</td><td><button class="btn btn-danger btn-sm" onclick="deleteComision('${c.id}')">✕</button></td></tr>`).join('');
+}
+function saveComision(){const obj={id:uid(),periodo:document.getElementById('com-periodo').value,aseguradora:document.getElementById('com-aseguradora')?.value||'',monto:document.getElementById('com-monto').value,notas:document.getElementById('com-notas').value,created_at:new Date().toISOString()};DB.comisiones.unshift(obj);saveLocal();if(sbConnected)upsertTable('comisiones',[obj]);renderComisiones();toast('Pago registrado ✓','success');}
 function deleteComision(id){DB.comisiones=DB.comisiones.filter(c=>c.id!==id);if(sbConnected)sbClient.from('comisiones').delete().eq('id',id);saveLocal();renderComisiones();}
 
 let renoMaxDias=90;let renoTipo='todos';
