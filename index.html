@@ -1443,29 +1443,30 @@ function fuzzyMatchCompany(name){
   if(!name)return null;
   const n=name.toUpperCase().trim();
   // Exact match first
-  let found=COMMISSION_RATES.find(r=>r.company.toUpperCase()===n);
-  if(found)return found.company;
-  // Keyword match — check if key words from the rate company appear in the client name or vice versa
-  const keywords={
-    'MULTINATIONAL':['MULTINATIONAL INSURANCE CO'],
-    'CHUBB':['CHUBB INSURANCE CO'],
-    'AIG':['AIG INSURANCE CO'],
-    'GUARDIAN':['GUARDIAN INSURANCE'],
-    'ONE ALLIANCE':['ONE ALLIANCE INSURANCE CO.'],
-    'COOPERATIVA':['COOPERATIVA DE SEGUROS MULTIPLES'],
-    'SEGUROS MULTIPLES':['COOPERATIVA DE SEGUROS MULTIPLES'],
-    'ANTILLES':['ANTILLES INSURANCE CO.'],
-    'USIC':['USIC'],
-    'BLUE WATERS':['BLUE WATERS INSURERS CORP'],
-  };
-  for(const[kw,companies] of Object.entries(keywords)){
-    if(n.includes(kw))return companies[0];
+  const exact=COMMISSION_RATES.find(r=>r.company.toUpperCase()===n);
+  if(exact)return exact.company;
+  // Keyword map — any of these substrings in the client name → map to canonical company
+  const kwMap=[
+    ['MULTINATIONAL','MULTINATIONAL INSURANCE CO'],
+    ['CHUBB','CHUBB INSURANCE CO'],
+    ['AIG','AIG INSURANCE CO'],
+    ['GUARDIAN','GUARDIAN INSURANCE'],
+    ['ONE ALLIANCE','ONE ALLIANCE INSURANCE CO.'],
+    ['COOPERATIVA','COOPERATIVA DE SEGUROS MULTIPLES'],
+    ['SEGUROS MULTIPLES','COOPERATIVA DE SEGUROS MULTIPLES'],
+    ['ANTILLES','ANTILLES INSURANCE CO.'],
+    ['USIC','USIC'],
+    ['BLUE WATERS','BLUE WATERS INSURERS CORP'],
+  ];
+  for(const[kw,canonical] of kwMap){
+    if(n.includes(kw))return canonical;
   }
-  // Partial: check if any rate company keyword appears in the client name
+  // Reverse: check if any significant word from each canonical company appears in the client name
   const rateCompanies=[...new Set(COMMISSION_RATES.map(r=>r.company))];
   for(const rc of rateCompanies){
-    const rcWords=rc.replace(/[^A-Z ]/g,'').split(' ').filter(w=>w.length>3);
-    if(rcWords.some(w=>n.includes(w)))return rc;
+    const words=rc.toUpperCase().split(' ').filter(w=>w.length>4&&!['INSURANCE','COMPANY','CORPORATION','INSURERS'].includes(w));
+    if(words.length&&words.every(w=>n.includes(w)))return rc;
+    if(words.length&&words.some(w=>n.includes(w)&&w.length>6))return rc;
   }
   return null;
 }
