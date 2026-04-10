@@ -6,7 +6,6 @@
 <title>Pinnacle Shield CRM v29</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="manifest" id="pwa-manifest">
 <meta name="theme-color" content="#1E2E53">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1223,7 +1222,7 @@ function renderProspectos(){
     const diasSeg=daysDiff(p.seguimiento_fecha);
     const renoCell=p.reno_fecha?`<span class="badge ${clsReno==='urgent'?'badge-danger':clsReno==='soon'?'badge-warning':clsReno==='ok'?'badge-success':'badge-neutral'}">${p.reno_fecha}</span><div style="font-size:10px;color:var(--text-muted);">${diasReno!==null?renoLabel(diasReno):''}</div>`:'—';
     const segCell=p.seguimiento_fecha?`<span class="badge ${diasSeg!==null&&diasSeg<=3?'badge-danger':diasSeg!==null&&diasSeg<=7?'badge-warning':'badge-neutral'}">${p.seguimiento_fecha}</span>`:'—';
-    return`<tr><td><div><strong style="font-size:12px;">${p.nombre}</strong>${p.email?`<div style="font-size:10px;color:var(--text-muted);">${p.email}</div>`:''}</div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${p.tel||'—'}</span>${p.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${p.tel}','${p.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[p.anio,p.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${p.aseguradora||'—'}</td><td>${renoCell}</td><td>${segCell}</td><td><strong>${p.costo?'$'+parseFloat(p.costo).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewProspecto('${p.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="editProspecto('${p.id}')">✏</button><button class="btn btn-sm" onclick="cotizarProspecto('${p.id}')" title="PDF Cotización" style="background:var(--navy);color:var(--gold);border:1px solid var(--navy);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;">📋</button><button class="btn btn-gold btn-sm" onclick="convertirProspectoAClienteById('${p.id}')" title="Convertir a cliente">⭐</button><button class="btn btn-danger btn-sm" onclick="deleteProspecto('${p.id}')">✕</button></div></td></tr>`;
+    return`<tr><td><div><strong style="font-size:12px;">${p.nombre}</strong>${p.email?`<div style="font-size:10px;color:var(--text-muted);">${p.email}</div>`:''}</div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${p.tel||'—'}</span>${p.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${p.tel}','${p.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[p.anio,p.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${p.aseguradora||'—'}</td><td>${renoCell}</td><td>${segCell}</td><td><strong>${p.costo?'$'+parseFloat(p.costo).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewProspecto('${p.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="editProspecto('${p.id}')">✏</button><button class="btn btn-sm" onclick="abrirCotizacion('${p.id}')" title="Generar Cotización" style="background:var(--navy);color:var(--gold);border:1px solid var(--navy);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:11px;">📋</button><button class="btn btn-gold btn-sm" onclick="convertirProspectoAClienteById('${p.id}')" title="Convertir a cliente">⭐</button><button class="btn btn-danger btn-sm" onclick="deleteProspecto('${p.id}')">✕</button></div></td></tr>`;
   }).join('');
 }
 function filterProspectos(q){document.querySelectorAll('#prospectos-body tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none');}
@@ -2197,265 +2196,69 @@ document.addEventListener('DOMContentLoaded',()=>{
   });
 });
 
-
 // ══════════════════════════════════════════════════════════
-// COTIZACIÓN → PDF (Pinnacle Shield v29)
+// COTIZACIÓN — abre formulario en nueva pestaña con datos
 // ══════════════════════════════════════════════════════════
-function cotizarProspecto(id){
+function abrirCotizacion(id){
   const p=DB.prospectos.find(x=>x.id===id);
   if(!p){toast('Prospecto no encontrado','warning');return;}
-  window._cotizaProsId=id;
+  
   const ov=document.createElement('div');
   ov.className='modal-overlay open';
   ov.innerHTML=`<div class="modal" style="max-width:370px;" onclick="event.stopPropagation()">
-    <div class="modal-header"><h3 class="modal-title">📋 Generar Cotización PDF</h3>
-      <button class="btn btn-outline btn-sm" onclick="this.closest('.modal-overlay').remove()">✕</button></div>
+    <div class="modal-header">
+      <h3 class="modal-title">📋 Generar Cotización</h3>
+      <button class="btn btn-outline btn-sm" onclick="this.closest('.modal-overlay').remove()">✕</button>
+    </div>
     <div style="padding:24px;text-align:center;">
       <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;">${p.nombre}</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:18px;">El PDF se descargará automáticamente</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:18px;">Se abrirá el formulario en una nueva pestaña con los datos pre-completados.<br>Llénalo, imprímelo o envíalo por email.</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-        <button class="btn btn-primary" style="padding:12px;flex-direction:column;display:flex;align-items:center;gap:4px;"
-          onclick="this.closest('.modal-overlay').remove();generarPDF('personal','${p.id}')">
-          <span style="font-size:20px;">🏠</span><strong style="font-size:12px;">Personal</strong>
-          <span style="font-size:9px;opacity:0.8;">⬇ Descarga PDF</span></button>
-        <button class="btn btn-gold" style="padding:12px;flex-direction:column;display:flex;align-items:center;gap:4px;"
-          onclick="this.closest('.modal-overlay').remove();generarPDF('comercial','${p.id}')">
-          <span style="font-size:20px;">🏢</span><strong style="font-size:12px;">Comercial</strong>
-          <span style="font-size:9px;opacity:0.8;">⬇ Descarga PDF</span></button>
-        <button class="btn btn-outline btn-sm" style="grid-column:span 2;padding:10px;font-size:11px;"
-          onclick="this.closest('.modal-overlay').remove();enviarEmailProspecto('${p.id}')">
-          ✉ Enviar datos por Email (sin PDF)</button>
-      </div></div></div>`;
+        <button class="btn btn-primary" style="padding:14px;flex-direction:column;display:flex;align-items:center;gap:6px;"
+          onclick="this.closest('.modal-overlay').remove();abrirFormaCotiza('personal','${p.id}')">
+          <span style="font-size:22px;">🏠</span>
+          <strong>Personal</strong>
+          <span style="font-size:10px;opacity:0.8;">Auto · Hogar</span>
+        </button>
+        <button class="btn btn-gold" style="padding:14px;flex-direction:column;display:flex;align-items:center;gap:6px;"
+          onclick="this.closest('.modal-overlay').remove();abrirFormaCotiza('comercial','${p.id}')">
+          <span style="font-size:22px;">🏢</span>
+          <strong>Comercial</strong>
+          <span style="font-size:10px;opacity:0.8;">Package</span>
+        </button>
+      </div>
+    </div>
+  </div>`;
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
   document.body.appendChild(ov);
 }
 
-function generarPDF(tipo,pid){
-  const p=DB.prospectos.find(x=>x.id===pid);
-  if(!p){toast('Prospecto no encontrado','warning');return;}
-  if(!window.jspdf){toast('jsPDF cargando, intenta de nuevo en 2 segundos','warning');return;}
-  const {jsPDF}=window.jspdf;
-  const doc=new jsPDF({unit:'mm',format:'letter',orientation:'portrait'});
-  const PW=215.9,PH=279.4;
-  const N=[11,31,58],G=[201,162,39],LG=[245,245,245],MG=[130,130,130],DG=[60,60,60];
-  let y=0;
-
-  // ── Helpers ──────────────────────────────────────────────────────────────
-  function hdr(t){
-    doc.setFillColor(...N);doc.rect(10,y,PW-20,6,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...G);
-    doc.text(t.toUpperCase(),(PW)/2,y+4.5,{align:'center'});y+=8;
-  }
-  function subhdr(t,x,w){
-    doc.setFillColor(...LG);doc.rect(x,y,w,5,'F');
-    doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(...N);
-    doc.text(t.toUpperCase(),x+w/2,y+3.8,{align:'center'});y+=7;
-  }
-  // Draw a field box - returns nothing, just draws
-  function fld(label,val,x,w,fh){
-    fh=fh||7;
-    doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...MG);
-    doc.text(label.toUpperCase(),x,y);
-    doc.setFillColor(250,250,250);doc.rect(x,y+0.8,w,fh,'F');
-    doc.setDrawColor(200,200,200);doc.setLineWidth(0.15);doc.rect(x,y+0.8,w,fh,'S');
-    if(val){doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...DG);
-      doc.text(String(val).substring(0,Math.floor(w/1.9)),x+1,y+fh-0.8);}
-    y+=fh+2;
-  }
-  // Two fields side by side (does NOT advance y - caller must)
-  function f2(l1,v1,l2,v2,x,hw){
-    x=x||10;hw=hw||((PW-22)/2);
-    const oy=y;
-    fld(l1,v1,x,hw);const ny1=y;
-    y=oy;fld(l2,v2,x+hw+2,hw);const ny2=y;
-    y=Math.max(ny1,ny2);
-  }
-  function chkrow(label,opts,x,w){
-    x=x||10;w=w||PW-20;
-    doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...MG);
-    doc.text(label.toUpperCase(),x,y);y+=3.5;
-    let cx=x;
-    opts.forEach(function(o){
-      doc.setFillColor(255,255,255);doc.setDrawColor(...N);doc.setLineWidth(0.25);
-      doc.rect(cx,y-2.5,2.8,2.8,'S');
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...DG);
-      doc.text(o,cx+3.5,y);
-      cx+=3.5+doc.getTextWidth(o)+3;
-    });y+=5;
-  }
-
-  // ── HEADER ───────────────────────────────────────────────────────────────
-  doc.setFillColor(...N);doc.rect(0,0,PW,22,'F');
-  try{doc.addImage(logoSrc,'PNG',6,2,55,17);}catch(e){}
-  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(255,255,255);
-  doc.text('INFORMACIÓN PARA COTIZACIÓN',PW-8,9,{align:'right'});
-  const badge=tipo==='personal'?'PERSONAL':'COMMERCIAL PACKAGE';
-  const bw=doc.getTextWidth(badge)+8;
-  doc.setFillColor(...G);doc.roundedRect(PW-8-bw,11,bw,6,1,1,'F');
-  doc.setFontSize(6.5);doc.setTextColor(...N);doc.text(badge,PW-8,15.5,{align:'right'});
-  doc.setFillColor(...G);doc.rect(0,22,PW,1,'F');
-  y=26;
-
-  if(tipo==='personal'){
-    // ── ASEGURADO ───────────────────────────────────────────────────────
-    hdr('Información del Asegurado (A)');
-    f2('Nombre',p.nombre,'Dirección Física',p.direccion||'');
-    f2('Teléfono',p.tel,'Email',p.email);
-    f2('Estado Civil','','Dirección Postal','');
-    f2('# Licencia','','Fecha de Nacimiento',p.nacimiento||'');
-    y+=1;
-
-    // ── VIVIENDA + RESP ─────────────────────────────────────────────────
-    hdr('Vivienda & Responsabilidad Pública');
-    const hw=(PW-22)/2,sy=y;
-    // Left: Vivienda
-    subhdr('Vivienda',10,hw);
-    chkrow('Estructura',['1 Planta','2 Plantas'],10,hw);
-    fld('Tipo Construcción','',10,hw);fld('Año Construcción','',10,hw);
-    fld('Valor Estructura','',10,hw);fld('Valor Contenido','',10,hw);
-    const ly=y;
-    // Right: Resp
-    y=sy;subhdr('Responsabilidad Pública',12+hw,hw);
-    ['$100,000','$300,000','$500,000','$1,000,000'].forEach(function(o){
-      doc.setFillColor(255,255,255);doc.setDrawColor(...N);doc.setLineWidth(0.25);
-      doc.rect(12+hw,y-2.5,2.8,2.8,'S');
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...DG);
-      doc.text(o,12+hw+4,y);y+=5.5;
-    });
-    doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...MG);
-    doc.text('NOTAS ADICIONALES',12+hw,y);
-    doc.setFillColor(250,250,250);doc.rect(12+hw,y+0.8,hw,12,'F');
-    doc.setDrawColor(200,200,200);doc.rect(12+hw,y+0.8,hw,12,'S');
-    y=Math.max(ly,y+14)+2;
-
-    // ── VEHÍCULO ────────────────────────────────────────────────────────
-    hdr('Información Vehículo');
-    const hv=(PW-22)/2,svy=y;
-    const vp=(p.vehiculo||'').split(' ');
-    // Left col: vehicle data (2 per row)
-    f2('Año',p.anio||'','Marca',vp[0]||'');
-    f2('Modelo',vp.slice(1).join(' ')||'','# Tablilla','');
-    f2('VIN #','','Fecha de Compra','');
-    f2('Costo Nuevo','','Costo Actual','');
-    f2('Uso','','Banco','');
-    f2('Préstamo','','Conductor',p.nombre||'');
-    fld('DOB Conductor',p.nacimiento||'',10,hv);
-    const lvy=y;
-    // Right col: coverages
-    y=svy;
-    const rx=12+hv;
-    chkrow('Bodily + Personal Injury',['$50k/$100k','$100k/$300k','$300k/$300k'],rx,hv);
-    chkrow('Property Damage',['$20,000','$25,000','$50,000','$100,000'],rx,hv);
-    chkrow('Medical Payments',['$1,000','$2,000','$5,000'],rx,hv);
-    chkrow('Rental',['$20/$600','$30/$900','$40/$1,200','$50/$1,500'],rx,hv);
-    const gw=hv/3;
-    ['Road Assist.','GAP','Remolque'].forEach(function(l,i){
-      const gx=rx+i*gw;
-      doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...MG);doc.text(l.toUpperCase(),gx,y);
-      ['Sí','No'].forEach(function(o,j){
-        doc.setFillColor(255,255,255);doc.setDrawColor(...N);doc.setLineWidth(0.25);
-        doc.rect(gx,y+1.5+j*5,2.8,2.8,'S');
-        doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...DG);
-        doc.text(o,gx+4,y+4+j*5);
-      });
-    });
-    y=Math.max(lvy,y+12)+2;
-
-  } else {
-    // ── COMERCIAL ──────────────────────────────────────────────────────
-    hdr('Información del Asegurado (A)');
-    fld('Nombre Asegurado, Comercio y/o DBA',p.neg_nombre||p.nombre||'',10,PW-20);
-    f2('Teléfono',p.tel,'Email',p.email);
-    f2('Dirección Postal','','Dirección Física',p.direccion||'');
-    y+=1;
-
-    hdr('Información de Negocio y Estructura');
-    const hn=(PW-22)/2,sn=y;
-    subhdr('Descripción de Negocio',10,hn);
-    fld('* Nómina','',10,hn);fld('* Ingresos','',10,hn);
-    fld('Ventas','',10,hn);fld('* Cantidad Empleados','',10,hn);
-    doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...MG);
-    doc.text('DESCRIPCIÓN DE OPERACIONES',10,y);
-    doc.setFillColor(250,250,250);doc.rect(10,y+0.8,hn,12,'F');
-    doc.setDrawColor(200,200,200);doc.rect(10,y+0.8,hn,12,'S');
-    const lny=y+14;
-    y=sn;subhdr('Estructura / Propiedad',12+hn,hn);
-    chkrow('Estructura',['1 Planta','2 Plantas'],12+hn,hn);
-    fld('Tipo Construcción','',12+hn,hn);fld('Año Construcción','',12+hn,hn);
-    fld('Valor Estructura','',12+hn,hn);fld('Valor Contenido','',12+hn,hn);
-    fld('Acreedor Hipotecario','',12+hn,hn);fld('# Préstamo','',12+hn,hn);
-    y=Math.max(lny,y)+2;
-
-    hdr('Cubierta Solicitada');
-    const hc=(PW-22)/2,sc=y;
-    ['Crime','Stop Gap','Inland Marine','Spoilage','Equipment Breakdown','Business Interruption','Otros'].forEach(function(l){
-      fld(l,'',10,hc);
-    });
-    const lcy=y;y=sc;
-    doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...MG);
-    doc.text('RESPONSABILIDAD PÚBLICA',12+hc,y);y+=3.5;
-    ['$100,000','$300,000','$500,000','$1,000,000'].forEach(function(o){
-      doc.setFillColor(255,255,255);doc.setDrawColor(...N);doc.setLineWidth(0.25);
-      doc.rect(12+hc,y-2.5,2.8,2.8,'S');
-      doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...DG);
-      doc.text(o,12+hc+4,y);y+=5.5;
-    });
-    fld('Límite Solicitado','',12+hc,hc);
-    doc.setFont('helvetica','bold');doc.setFontSize(5.5);doc.setTextColor(...MG);
-    doc.text('INFORMACIÓN ADICIONAL',12+hc,y);
-    doc.setFillColor(250,250,250);doc.rect(12+hc,y+0.8,hc,12,'F');
-    doc.setDrawColor(200,200,200);doc.rect(12+hc,y+0.8,hc,12,'S');
-    y=Math.max(lcy,y+14)+2;
-  }
-
-  // ── NOTICE ───────────────────────────────────────────────────────────────
-  doc.setFillColor(255,253,245);doc.rect(10,y,PW-20,9,'F');
-  doc.setFillColor(...G);doc.rect(10,y,1.5,9,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(6);doc.setTextColor(154,120,32);
-  doc.text('IMPORTANTE',13,y+4);
-  doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(80,80,80);
-  doc.text(tipo==='personal'
-    ?'Favor incluir licencia de cada unidad y de cada conductor. En caso de estructura, incluir fotos.'
-    :'* Nómina, Ingresos y Empleados son requeridos. Incluir documentación adicional del negocio.',
-    13,y+8,{maxWidth:PW-26});
-  y+=12;
-
-  // ── FOOTER ───────────────────────────────────────────────────────────────
-  doc.setFillColor(...N);doc.rect(0,PH-14,PW,14,'F');
-  doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...G);
-  doc.text('Every Life. Fully Protected.',10,PH-7);
-  doc.setFont('helvetica','normal');doc.setFontSize(6);doc.setTextColor(192,199,209);
-  doc.text('ddiaz@pinnacleshieldpr.com  |  (939) 392-5008  |  Pinnacle Shield Advisors LLC  |  EIN 66-1128092  |  Caguas, PR',PW-8,PH-7,{align:'right'});
-
-  const fn=(p.nombre||p.neg_nombre||'Cotizacion').replace(/[^a-zA-Z0-9]/g,'_');
-  doc.save('Cotizacion_'+(tipo==='personal'?'Personal':'Comercial')+'_'+fn+'.pdf');
-  toast('✓ PDF descargado','success');
-}
-
-
-function enviarEmailProspecto(pid){
+function abrirFormaCotiza(tipo, pid){
   const p=DB.prospectos.find(x=>x.id===pid);
   if(!p) return;
-  const sub=encodeURIComponent('Solicitud de Cotizacion - '+p.nombre);
-  const veh=[p.anio,p.vehiculo,p.color].filter(Boolean).join(' ')||'No especificado';
-  const body=
-    'PINNACLE SHIELD ADVISORS%0A'
-    +'Solicitud de Cotizacion Personal%0A'
-    +'============================================================%0A%0A'
-    +'Nombre: '+encodeURIComponent(p.nombre||'')+'%0A'
-    +'Telefono: '+(p.tel||'')+'%0A'
-    +'Email: '+(p.email||'')+'%0A'
-    +'Direccion: '+encodeURIComponent(p.direccion||'')+'%0A'
-    +'Fecha Nacimiento: '+(p.nacimiento||'')+'%0A%0A'
-    +'VEHICULO%0A'
-    +'Vehiculo: '+encodeURIComponent(veh)+'%0A'
-    +'Aseguradora actual: '+encodeURIComponent(p.aseguradora||'')+'%0A'
-    +'Poliza actual: '+(p.poliza_actual||'')+'%0A'
-    +'Vencimiento: '+(p.reno_fecha||'')+'%0A'
-    +'Liability actual: '+(p.liab||'')+'%0A%0A'
-    +'NOTA: Adjuntar PDF de cotizacion generado desde el CRM.%0A%0A'
-    +'Pinnacle Shield Advisors LLC | (939) 392-5008';
-  window.location.href='mailto:info@pinnacleshieldpr.com?subject='+sub+'&body='+body;
+  // Build URL params with prospecto data
+  const vp=(p.vehiculo||'').split(' ');
+  const params=new URLSearchParams({
+    nombre: p.nombre||'',
+    tel: p.tel||'',
+    email: p.email||'',
+    dob: p.nacimiento||'',
+    dir: p.direccion||'',
+    anio: p.anio||'',
+    marca: vp[0]||'',
+    modelo: vp.slice(1).join(' ')||'',
+    color: p.color||'',
+    banco: p.aseguradora||'',
+    conductor: p.nombre||'',
+    dob_cond: p.nacimiento||''
+  });
+  const base = window.location.origin + window.location.pathname.replace('pinnacle-shield-crm-v29.html','');
+  const fname = tipo==='personal'
+    ? 'cotizacion_personal_pinnacle_shield.html'
+    : 'cotizacion_comercial_pinnacle_shield.html';
+  const url = base + fname + '?' + params.toString();
+  window.open(url, '_blank');
+  toast('Formulario de cotización abierto en nueva pestaña ✓','success');
 }
 
 </script>
