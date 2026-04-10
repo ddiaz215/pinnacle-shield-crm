@@ -1187,7 +1187,64 @@ function renderClientes(){
   }).join('');
 }
 function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',lob:'c-lob',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
-function viewCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;const flds=[['Nombre',c.nombre],['Tel',c.tel||'—'],['Email',c.email||'—'],['Dirección',c.direccion||'—'],['Vehículo',[c.anio,c.vehiculo,c.color].filter(Boolean).join(' ')||'—'],['Aseguradora',c.aseguradora||'—'],['Póliza',c.numpoliza||'—'],['Inicio',c.inicio||'—'],['Vence',c.vencimiento||'—'],['Prima/año','$'+(parseFloat(c.prima_anual||c.prima_m)||0).toLocaleString('en-US',{minimumFractionDigits:2})],['Pago',c.pago||'—'],['Estado',c.estado||'—'],['Coberturas',c.coberturas||'—']];const html=`<div style="max-height:65vh;overflow-y:auto;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);"><div style="width:44px;height:44px;border-radius:10px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:20px;">🚗</div><div><div style="font-size:16px;font-weight:700;color:var(--navy);">${c.nombre}</div><div style="font-size:11px;color:var(--text-muted);">${c.aseguradora||''} ${c.numpoliza||''}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${flds.map(x=>`<div style="background:#f8f9fa;border-radius:8px;padding:10px;${x[0]==='Coberturas'?'grid-column:1/-1;':''}"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">${x[0]}</div><div style="font-size:12px;font-weight:500;color:var(--navy);word-break:break-word;">${x[1]}</div></div>`).join('')}</div></div>`;const overlay=document.createElement('div');overlay.className='modal-overlay open';overlay.innerHTML=`<div class="modal" style="max-width:500px;"><div class="modal-header"><span class="modal-title">Expediente · ${c.nombre}</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div><div class="modal-body">${html}</div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();editCliente('${c.id}')">✏ Editar</button></div></div>`;document.body.appendChild(overlay);}
+function viewCliente(id){
+  const c=DB.clientes.find(x=>x.id===id);if(!c)return;
+  function row(lbl,val){
+    if(!val||val==='—'||val==='$0.00')return '';
+    return `<div style="background:#f8f9fa;border-radius:8px;padding:9px 12px;">
+      <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">${lbl}</div>
+      <div style="font-size:12px;font-weight:500;color:var(--navy);word-break:break-word;">${val}</div></div>`;
+  }
+  function secHdr(title){
+    return `<div style="background:var(--navy);color:var(--gold);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 10px;border-radius:6px;margin:10px 0 6px;text-align:center;">${title}</div>`;
+  }
+  const prima='$'+(parseFloat(c.prima_anual||c.prima_m)||0).toLocaleString('en-US',{minimumFractionDigits:2});
+  const html=`<div style="max-height:72vh;overflow-y:auto;padding-right:4px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+      <div style="width:48px;height:48px;border-radius:12px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🚗</div>
+      <div><div style="font-size:17px;font-weight:700;color:var(--navy);">${c.nombre}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${c.aseguradora||''} ${c.numpoliza?'· '+c.numpoliza:''}</div></div>
+    </div>
+    ${secHdr('Información del Asegurado')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">
+      ${row('Nombre',c.nombre)}
+      ${row('Teléfono',c.tel)}
+      ${row('Email',c.email)}
+      ${row('Dirección',c.direccion)}
+      ${row('Fecha de Nacimiento',c.nacimiento)}
+      ${row('Estado',c.estado)}
+    </div>
+    ${secHdr('Información de la Póliza')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">
+      ${row('Aseguradora',c.aseguradora)}
+      ${row('# Póliza',c.numpoliza)}
+      ${row('Inicio',c.inicio)}
+      ${row('Vencimiento',c.vencimiento)}
+      ${row('Prima Anual',prima)}
+      ${row('Forma de Pago',c.pago)}
+    </div>
+    ${secHdr('Información del Vehículo')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">
+      ${row('Año',c.anio)}
+      ${row('Marca / Modelo',c.vehiculo)}
+      ${row('Color',c.color)}
+      ${row('Deducible',c.deducible)}
+      ${row('Liability',c.liab)}
+      ${row('PIP',c.pip)}
+      ${row('UM/UIM',c.um)}
+    </div>
+    ${c.coberturas?secHdr('Coberturas')+'<div style="background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:11px;color:var(--navy);">'+c.coberturas+'</div></div>':''}
+  </div>`;
+  const overlay=document.createElement('div');overlay.className='modal-overlay open';
+  overlay.innerHTML=`<div class="modal" style="max-width:600px;">
+    <div class="modal-header"><span class="modal-title">🚗 Expediente · ${c.nombre}</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div>
+    <div class="modal-body">${html}</div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+      <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();editCliente('${c.id}')">✏ Editar</button>
+    </div></div>`;
+  document.body.appendChild(overlay);
+}
 function deleteCliente(id){if(!confirm('¿Eliminar este cliente?'))return;DB.clientes=DB.clientes.filter(c=>c.id!==id);saveLocal();renderClientes();refreshDashboard();if(sbConnected)sbClient.from('clientes').delete().eq('id',id);toast('Cliente eliminado','warning');}
 
 let tempContactLog=[];
@@ -1227,7 +1284,62 @@ function renderProspectos(){
 }
 function filterProspectos(q){document.querySelectorAll('#prospectos-body tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none');}
 function editProspecto(id){const p=DB.prospectos.find(x=>x.id===id);if(!p)return;document.getElementById('pros-id').value=p.id;document.getElementById('modal-pros-title').textContent='Editar Prospecto';document.getElementById('btn-convertir').style.display='inline-flex';const flds={nombre:'pros-nombre',nacimiento:'pros-nacimiento',tel:'pros-tel',email:'pros-email',anio:'pros-anio',vehiculo:'pros-vehiculo',color:'pros-color',aseguradora:'pros-aseguradora',poliza_actual:'pros-poliza-actual',reno_fecha:'pros-reno-fecha',seguimiento_fecha:'pros-seguimiento-fecha',costo:'pros-costo',liab:'pros-liab',mpp_prop:'pros-mpp-prop',mpp_auto:'pros-mpp-auto',mpp_liab:'pros-mpp-liab',mpp_prima:'pros-mpp-prima',neg_nombre:'pros-neg-nombre',neg_tipo:'pros-neg-tipo',neg_dir:'pros-neg-dir',neg_cob:'pros-neg-cob',notas:'pros-notas'};for(const[key,elId]of Object.entries(flds)){const el=document.getElementById(elId);if(el)el.value=p[key]||'';}openModal('modal-prospecto');}
-function viewProspecto(id){const p=DB.prospectos.find(x=>x.id===id);if(!p)return;const flds=[['Nombre',p.nombre||'—'],['Teléfono',p.tel||'—'],['Email',p.email||'—'],['Dirección',p.direccion||'—'],['Vehículo',[p.anio,p.vehiculo,p.color].filter(Boolean).join(' ')||'—'],['Aseguradora actual',p.aseguradora||'—'],['Póliza actual',p.poliza_actual||'—'],['Fecha renovación',p.reno_fecha||'—'],['Fecha seguimiento',p.seguimiento_fecha||'—'],['Costo póliza',p.costo?'$'+parseFloat(p.costo).toLocaleString('en-US',{maximumFractionDigits:2}):'—'],['Liability',p.liab||'—'],['MPP — Propiedad',p.mpp_prop||'—'],['MPP — Auto',p.mpp_auto||'—'],['MPP — Liability',p.mpp_liab||'—'],['MPP — Prima',p.mpp_prima?'$'+p.mpp_prima:'—'],['Negocio',p.neg_nombre||'—'],['Tipo negocio',p.neg_tipo||'—'],['Dir. negocio',p.neg_dir||'—'],['Cobertura comercial',p.neg_cob||'—'],['Notas',p.notas||'—']];const html=`<div style="max-height:65vh;overflow-y:auto;"><div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);"><div style="width:44px;height:44px;border-radius:10px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎯</div><div><div style="font-size:16px;font-weight:700;color:var(--navy);">${p.nombre}</div><div style="font-size:11px;color:var(--text-muted);">${p.aseguradora||''}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${flds.filter(x=>x[1]&&x[1]!=='—').map(x=>`<div style="background:#f8f9fa;border-radius:8px;padding:10px;${x[0]==='Notas'||x[0]==='Cobertura comercial'?'grid-column:1/-1;':''}"><div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-bottom:3px;">${x[0]}</div><div style="font-size:12px;font-weight:500;color:var(--navy);word-break:break-word;">${x[1]}</div></div>`).join('')}</div></div>`;const overlay=document.createElement('div');overlay.className='modal-overlay open';overlay.innerHTML=`<div class="modal" style="max-width:560px;"><div class="modal-header"><span class="modal-title">Prospecto · ${p.nombre}</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div><div class="modal-body">${html}</div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button><button class="btn btn-gold" onclick="this.closest('.modal-overlay').remove();convertirProspectoAClienteById('${p.id}')">⭐ Convertir a Cliente</button><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();editProspecto('${p.id}')">✏ Editar</button><button class="btn btn-danger" onclick="if(confirm('¿Eliminar?')){this.closest('.modal-overlay').remove();deleteProspecto('${p.id}')}">✕ Eliminar</button></div></div>`;document.body.appendChild(overlay);}
+function viewProspecto(id){
+  const p=DB.prospectos.find(x=>x.id===id);if(!p)return;
+  function row(lbl,val){
+    if(!val||val==='—')return '';
+    return `<div style="background:#f8f9fa;border-radius:8px;padding:9px 12px;">
+      <div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px;">${lbl}</div>
+      <div style="font-size:12px;font-weight:500;color:var(--navy);word-break:break-word;">${val}</div></div>`;
+  }
+  function secHdr(title){
+    return `<div style="background:var(--navy);color:var(--gold);font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:5px 10px;border-radius:6px;margin:10px 0 6px;text-align:center;">${title}</div>`;
+  }
+  const veh=[p.anio,p.vehiculo,p.color].filter(Boolean).join(' ')||'—';
+  const costo=p.costo?'$'+parseFloat(p.costo).toLocaleString('en-US',{maximumFractionDigits:2}):'—';
+  const html=`<div style="max-height:72vh;overflow-y:auto;padding-right:4px;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border);">
+      <div style="width:48px;height:48px;border-radius:12px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🎯</div>
+      <div><div style="font-size:17px;font-weight:700;color:var(--navy);">${p.nombre}</div>
+      <div style="font-size:11px;color:var(--text-muted);">${p.aseguradora||''} ${p.poliza_actual?'· Póliza: '+p.poliza_actual:''}</div></div>
+    </div>
+    ${secHdr('Información del Asegurado')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">
+      ${row('Nombre',p.nombre)}
+      ${row('Teléfono',p.tel)}
+      ${row('Email',p.email)}
+      ${row('Dirección',p.direccion)}
+      ${row('Fecha de Nacimiento',p.nacimiento)}
+      ${row('Aseguradora Actual',p.aseguradora)}
+      ${row('Póliza Actual',p.poliza_actual)}
+      ${row('Costo Póliza',costo)}
+    </div>
+    ${secHdr('Información del Vehículo')}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">
+      ${row('Año',p.anio)}
+      ${row('Marca / Modelo',p.vehiculo)}
+      ${row('Color',p.color)}
+      ${row('Liability',p.liab)}
+      ${row('Fecha Renovación',p.reno_fecha)}
+      ${row('Fecha Seguimiento',p.seguimiento_fecha)}
+    </div>
+    ${(p.mpp_prop||p.mpp_auto||p.mpp_prima)?secHdr('MPP')+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">'+row('MPP Propiedad',p.mpp_prop)+row('MPP Auto',p.mpp_auto)+row('MPP Liability',p.mpp_liab)+row('MPP Prima',p.mpp_prima?'$'+p.mpp_prima:'')+'</div>':''}
+    ${(p.neg_nombre)?secHdr('Negocio')+'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">'+row('Nombre Negocio',p.neg_nombre)+row('Tipo',p.neg_tipo)+row('Dirección',p.neg_dir)+row('Cobertura Comercial',p.neg_cob)+'</div>':''}
+    ${p.notas?'<div style="margin-top:8px;background:#f8f9fa;border-radius:8px;padding:10px;"><div style="font-size:9px;font-weight:700;color:var(--text-muted);text-transform:uppercase;margin-bottom:4px;">Notas</div><div style="font-size:12px;color:var(--navy);">'+p.notas+'</div></div>':''}
+  </div>`;
+  const overlay=document.createElement('div');overlay.className='modal-overlay open';
+  overlay.innerHTML=`<div class="modal" style="max-width:600px;">
+    <div class="modal-header"><span class="modal-title">🎯 Prospecto · ${p.nombre}</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div>
+    <div class="modal-body">${html}</div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button>
+      <button class="btn btn-sm" onclick="this.closest('.modal-overlay').remove();abrirCotizacion('${p.id}')" style="background:var(--navy);color:var(--gold);border:1px solid var(--navy);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:11px;">📋 Cotización</button>
+      <button class="btn btn-gold" onclick="this.closest('.modal-overlay').remove();convertirProspectoAClienteById('${p.id}')">⭐ Convertir</button>
+      <button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();editProspecto('${p.id}')">✏ Editar</button>
+      <button class="btn btn-danger" onclick="if(confirm('¿Eliminar?')){this.closest('.modal-overlay').remove();deleteProspecto('${p.id}')}">✕</button>
+    </div></div>`;
+  document.body.appendChild(overlay);
+}
 function deleteProspecto(id){if(!confirm('¿Eliminar este prospecto?'))return;DB.prospectos=DB.prospectos.filter(p=>p.id!==id);if(sbConnected)sbClient.from('prospectos').delete().eq('id',id);saveLocal();renderProspectos();refreshDashboard();toast('Prospecto eliminado','warning');}
 function convertirProspectoAClienteById(id){const p=DB.prospectos.find(x=>x.id===id);if(!p)return;if(!confirm(`¿Convertir a ${p.nombre} en cliente activo?`))return;const c={id:uid(),nombre:p.nombre,nacimiento:p.nacimiento||'',tel:p.tel||'',email:p.email||'',anio:p.anio||'',vehiculo:p.vehiculo||'',color:p.color||'',aseguradora:p.aseguradora||'',prima_anual:p.costo||0,prima_m:p.costo||0,liab:p.liab||'',vencimiento:p.reno_fecha||'',pago:'Al día',estado:'Activo',coberturas:[p.mpp_prop?`MPP Propiedad: ${p.mpp_prop}`:'',p.mpp_auto?`MPP Auto: ${p.mpp_auto}`:'',p.neg_nombre?`Negocio: ${p.neg_nombre} (${p.neg_tipo||''})`:'',p.notas||''].filter(Boolean).join('\n'),historial:[],created_at:new Date().toISOString()};DB.clientes.unshift(c);if(sbConnected)upsertTable('clientes',[c]);DB.prospectos=DB.prospectos.filter(x=>x.id!==id);if(sbConnected)sbClient.from('prospectos').delete().eq('id',p.id);saveLocal();renderProspectos();renderClientes();refreshDashboard();toast(`✅ ${p.nombre} convertido a cliente ✓`,'success');}
 function convertirProspectoACliente(){const id=document.getElementById('pros-id').value;if(id){closeModal('modal-prospecto');convertirProspectoAClienteById(id);}}
@@ -2197,12 +2309,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 });
 
 // ══════════════════════════════════════════════════════════
-// COTIZACIÓN — abre formulario en nueva pestaña con datos
+// COTIZACIÓN PDF
 // ══════════════════════════════════════════════════════════
 function abrirCotizacion(id){
   const p=DB.prospectos.find(x=>x.id===id);
   if(!p){toast('Prospecto no encontrado','warning');return;}
-  
   const ov=document.createElement('div');
   ov.className='modal-overlay open';
   ov.innerHTML=`<div class="modal" style="max-width:370px;" onclick="event.stopPropagation()">
@@ -2212,53 +2323,39 @@ function abrirCotizacion(id){
     </div>
     <div style="padding:24px;text-align:center;">
       <div style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:4px;">${p.nombre}</div>
-      <div style="font-size:11px;color:var(--text-muted);margin-bottom:18px;">Se abrirá el formulario en una nueva pestaña con los datos pre-completados.<br>Llénalo, imprímelo o envíalo por email.</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:18px;">Se abrirá la forma en una nueva pestaña con los datos pre-completados</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <button class="btn btn-primary" style="padding:14px;flex-direction:column;display:flex;align-items:center;gap:6px;"
           onclick="this.closest('.modal-overlay').remove();abrirFormaCotiza('personal','${p.id}')">
-          <span style="font-size:22px;">🏠</span>
-          <strong>Personal</strong>
+          <span style="font-size:22px;">🏠</span><strong>Personal</strong>
           <span style="font-size:10px;opacity:0.8;">Auto · Hogar</span>
         </button>
         <button class="btn btn-gold" style="padding:14px;flex-direction:column;display:flex;align-items:center;gap:6px;"
           onclick="this.closest('.modal-overlay').remove();abrirFormaCotiza('comercial','${p.id}')">
-          <span style="font-size:22px;">🏢</span>
-          <strong>Comercial</strong>
+          <span style="font-size:22px;">🏢</span><strong>Comercial</strong>
           <span style="font-size:10px;opacity:0.8;">Package</span>
         </button>
       </div>
-    </div>
-  </div>`;
+    </div></div>`;
   ov.addEventListener('click',e=>{if(e.target===ov)ov.remove();});
   document.body.appendChild(ov);
 }
 
-function abrirFormaCotiza(tipo, pid){
+function abrirFormaCotiza(tipo,pid){
   const p=DB.prospectos.find(x=>x.id===pid);
-  if(!p) return;
-  // Build URL params with prospecto data
+  if(!p)return;
   const vp=(p.vehiculo||'').split(' ');
   const params=new URLSearchParams({
-    nombre: p.nombre||'',
-    tel: p.tel||'',
-    email: p.email||'',
-    dob: p.nacimiento||'',
-    dir: p.direccion||'',
-    anio: p.anio||'',
-    marca: vp[0]||'',
-    modelo: vp.slice(1).join(' ')||'',
-    color: p.color||'',
-    banco: p.aseguradora||'',
-    conductor: p.nombre||'',
-    dob_cond: p.nacimiento||''
+    nombre:p.nombre||'',tel:p.tel||'',email:p.email||'',
+    dob:p.nacimiento||'',dir:p.direccion||'',lic:'',
+    anio:p.anio||'',marca:vp[0]||'',modelo:vp.slice(1).join(' ')||'',
+    color:p.color||'',tab:'',vin:'',banco:p.aseguradora||'',
+    conductor:p.nombre||'',dob_cond:p.nacimiento||''
   });
-  const base = window.location.origin + window.location.pathname.replace('pinnacle-shield-crm-v29.html','');
-  const fname = tipo==='personal'
-    ? 'cotizacion_personal_pinnacle_shield.html'
-    : 'cotizacion_comercial_pinnacle_shield.html';
-  const url = base + fname + '?' + params.toString();
-  window.open(url, '_blank');
-  toast('Formulario de cotización abierto en nueva pestaña ✓','success');
+  const base=window.location.origin+window.location.pathname.replace('pinnacle-shield-crm-v29.html','');
+  const fname=tipo==='personal'?'cotizacion_personal_pinnacle_shield.html':'cotizacion_comercial_pinnacle_shield.html';
+  window.open(base+fname+'?'+params.toString(),'_blank');
+  toast('Forma de cotización abierta ✓','success');
 }
 
 </script>
