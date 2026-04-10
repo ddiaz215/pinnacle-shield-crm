@@ -306,7 +306,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <div><div class="page-title">Prospectos</div><div class="page-sub">Gestión de prospectos activos</div></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
       <input type="text" id="search-prospectos" placeholder="Buscar..." oninput="filterProspectos(this.value)" style="padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
-      <button class="btn btn-gold" onclick="openScannerFor('prospecto')">📄 Escanear Póliza</button>
+      <button class="btn btn-gold" onclick="openScannerFor('prospecto','poliza')">📄 Escanear Póliza</button>
       <button class="btn btn-primary" onclick="openModalProspecto()">+ Nuevo Prospecto</button>
     </div>
   </div>
@@ -790,8 +790,13 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
 <div class="modal-overlay" id="modal-scanner">
   <div class="modal" style="max-width:540px;">
     <div class="modal-header"><span class="modal-title">📄 Escáner de Póliza</span><button class="modal-close" onclick="closeModal('modal-scanner')">✕</button></div>
+    <div style="display:flex;gap:8px;padding:10px 16px 0;border-bottom:1px solid var(--border);padding-bottom:10px;">
+      <button onclick="setScanDoc('poliza',this)" class="btn btn-primary btn-sm scan-doc-btn active-scan-doc" style="flex:1;font-size:10px;padding:6px 4px;">📄 Póliza</button>
+      <button onclick="setScanDoc('licencia',this)" class="btn btn-outline btn-sm scan-doc-btn" style="flex:1;font-size:10px;padding:6px 4px;">🪪 Licencia</button>
+      <button onclick="setScanDoc('tablilla',this)" class="btn btn-outline btn-sm scan-doc-btn" style="flex:1;font-size:10px;padding:6px 4px;">🚗 Tablilla</button>
+    </div>
     <div class="modal-body">
-      <p style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Sube la declaración de póliza en PDF o imagen. <strong>Claude IA</strong> extrae todos los datos automáticamente.</p>
+      <p class="scanner-hint" style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Sube la declaración de póliza en PDF o imagen. <strong>Claude IA</strong> extrae todos los datos automáticamente.</p>
       <div id="scanner-drop-zone" style="border:2px dashed var(--border-gold);border-radius:12px;padding:32px;text-align:center;cursor:pointer;background:var(--gold-pale);" onclick="document.getElementById('scanner-file-input').click()" ondragover="event.preventDefault()" ondrop="handleScannerDrop(event)">
         <div style="font-size:32px;margin-bottom:8px;">📁</div>
         <div style="font-size:13px;font-weight:600;color:var(--navy);">Arrastra la declaración de póliza</div>
@@ -802,7 +807,8 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
       <div id="scanner-status" style="display:none;margin-top:14px;padding:12px;border-radius:8px;background:var(--info-bg);color:var(--info);font-size:12px;text-align:center;"><span id="scanner-status-text"></span></div>
       <div id="scanner-result" style="display:none;margin-top:14px;"><div style="font-size:12px;font-weight:600;color:var(--navy);margin-bottom:8px;">✅ Datos extraídos:</div><div id="scanner-fields" style="background:var(--bg);border-radius:8px;padding:12px;font-size:12px;max-height:260px;overflow-y:auto;"></div></div>
     </div>
-    <div class="modal-footer" id="scanner-footer" style="display:none;"><button class="btn btn-outline" onclick="closeModal('modal-scanner')">Cancelar</button><button class="btn btn-gold" onclick="applyScannerData()">✓ Llenar formulario</button></div>
+    <div class="modal-footer" id="scanner-footer" style="display:none;"><button class="btn btn-outline" onclick="closeModal('modal-scanner')">Cancelar</button><button class="btn btn-gold" onclick="applyScannerData()" style="flex:1;">Aplicar al CRM</button>
+        <button class="btn btn-gold btn-sm" onclick="aplicarScannerACotizacion()" style="flex:1;">📋 Llenar Cotización>✓ Llenar formulario</button></div>
   </div>
 </div>
 
@@ -1221,7 +1227,7 @@ function renderProspectos(){
     const diasSeg=daysDiff(p.seguimiento_fecha);
     const renoCell=p.reno_fecha?`<span class="badge ${clsReno==='urgent'?'badge-danger':clsReno==='soon'?'badge-warning':clsReno==='ok'?'badge-success':'badge-neutral'}">${p.reno_fecha}</span><div style="font-size:10px;color:var(--text-muted);">${diasReno!==null?renoLabel(diasReno):''}</div>`:'—';
     const segCell=p.seguimiento_fecha?`<span class="badge ${diasSeg!==null&&diasSeg<=3?'badge-danger':diasSeg!==null&&diasSeg<=7?'badge-warning':'badge-neutral'}">${p.seguimiento_fecha}</span>`:'—';
-    return`<tr><td><div><strong style="font-size:12px;">${p.nombre}</strong>${p.email?`<div style="font-size:10px;color:var(--text-muted);">${p.email}</div>`:''}</div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${p.tel||'—'}</span>${p.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${p.tel}','${p.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[p.anio,p.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${p.aseguradora||'—'}</td><td>${renoCell}</td><td>${segCell}</td><td><strong>${p.costo?'$'+parseFloat(p.costo).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewProspecto('${p.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="editProspecto('${p.id}')">✏</button><button class="btn btn-gold btn-sm" onclick="convertirProspectoAClienteById('${p.id}')" title="Convertir a cliente">⭐</button><button class="btn btn-danger btn-sm" onclick="deleteProspecto('${p.id}')">✕</button></div></td></tr>`;
+    return`<tr><td><div><strong style="font-size:12px;">${p.nombre}</strong>${p.email?`<div style="font-size:10px;color:var(--text-muted);">${p.email}</div>`:''}</div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${p.tel||'—'}</span>${p.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${p.tel}','${p.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[p.anio,p.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${p.aseguradora||'—'}</td><td>${renoCell}</td><td>${segCell}</td><td><strong>${p.costo?'$'+parseFloat(p.costo).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewProspecto('${p.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="editProspecto('${p.id}')">✏</button><button class="btn btn-primary btn-sm" onclick="cotizarProspecto('${p.id}')" title="Generar Cotización" style="background:var(--navy);color:#C9A227;border-color:var(--navy);">📋</button><button class="btn btn-gold btn-sm" onclick="convertirProspectoAClienteById('${p.id}')" title="Convertir a cliente">⭐</button><button class="btn btn-danger btn-sm" onclick="deleteProspecto('${p.id}')">✕</button></div></td></tr>`;
   }).join('');
 }
 function filterProspectos(q){document.querySelectorAll('#prospectos-body tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q.toLowerCase())?'':'none');}
@@ -2092,12 +2098,208 @@ function importJSON(input){const file=input.files[0];if(!file)return;const reade
 function saveSupabaseConfig(){DB.config.sbUrl=document.getElementById('sb-url').value.trim();DB.config.sbKey=document.getElementById('sb-key').value.trim();saveLocal();sbClient=null;sbConnected=false;if(realtimeChannel){try{sbClient&&sbClient.removeChannel(realtimeChannel);}catch(e){}}realtimeChannel=null;setRealtimeStatus('off','Realtime: —');initSupabase();toast('Guardado. Conectando...','info');}
 function saveAgencyConfig(){DB.config.agencia=document.getElementById('cfg-agencia').value;DB.config.productor=document.getElementById('cfg-productor').value;DB.config.tel=document.getElementById('cfg-tel').value;DB.config.email=document.getElementById('cfg-email').value;DB.config.override=parseFloat(document.getElementById('cfg-override').value)||6;DB.config.comisionBase=parseFloat(document.getElementById('cfg-comision').value)||15;saveLocal();toast('Guardado ✓','success');}
 
-let scannerTarget='cliente',scannerExtracted={};
-function openScannerFor(t){scannerTarget=t;scannerExtracted={};['scanner-status','scanner-result','scanner-footer'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('scanner-file-input').value='';openModal('modal-scanner');}
+let scannerTarget='cliente',scannerExtracted={},scannerDocType='poliza';
+function openScannerFor(t,docType){scannerTarget=t;scannerExtracted={};scannerDocType=docType||'poliza';['scanner-status','scanner-result','scanner-footer'].forEach(id=>document.getElementById(id).style.display='none');document.getElementById('scanner-file-input').value='';
+  // Update modal title and hint based on docType
+  const titles={poliza:'📄 Escáner de Póliza',licencia:'🪪 Escáner de Licencia',tablilla:'🚗 Escáner de Tablilla / Registro'};
+  const hints={poliza:'Sube la declaración de póliza en PDF o imagen. Multinational, Universal, MAPFRE, Triple-S...',licencia:'Sube foto o scan de la licencia de conducir. Se extraerán nombre, DOB, dirección y número.',tablilla:'Sube foto o scan del registro/tablilla del vehículo. Se extraerán año, marca, modelo, VIN y número de tablilla.'};
+  const titleEl=document.querySelector('#modal-scanner .modal-title');
+  const hintEl=document.querySelector('#modal-scanner .scanner-hint');
+  if(titleEl)titleEl.textContent=titles[scannerDocType]||titles.poliza;
+  if(hintEl)hintEl.textContent=hints[scannerDocType]||hints.poliza;
+  openModal('modal-scanner');}
 function handleScannerDrop(e){e.preventDefault();if(e.dataTransfer.files[0])handleScannerFile(e.dataTransfer.files[0]);}
-async function handleScannerFile(file){if(!file)return;const sEl=document.getElementById('scanner-status'),sTxt=document.getElementById('scanner-status-text'),rEl=document.getElementById('scanner-result'),fEl=document.getElementById('scanner-fields'),footEl=document.getElementById('scanner-footer');sEl.style.display='block';rEl.style.display='none';footEl.style.display='none';sTxt.textContent='📄 Preparando documento...';try{const base64=await fileToBase64(file);const mediaType=file.type||'application/pdf';sTxt.textContent='🧠 Claude IA analizando la póliza...';const EDGE_URL='https://oljsjvsakzymxrsfkbda.supabase.co/functions/v1/scan-poliza';const ANON_KEY='sb_publishable_x8DOB_xZ-umyV0eIbP9B7Q_dfXfaIaO';const response=await fetch(EDGE_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':ANON_KEY},body:JSON.stringify({fileBase64:base64,mediaType})});const parsed=await response.json();if(!response.ok)throw new Error(parsed.error||'Error IA');if(!parsed.prima_m&&parsed.prima_anual){const anual=parseFloat(String(parsed.prima_anual).replace(/[,$]/g,''));if(anual>0)parsed.prima_m=(anual/12).toFixed(2);}scannerExtracted=parsed;const labels={nombre:'Nombre',nacimiento:'Nacimiento',direccion:'Dirección',anio:'Año vehículo',vehiculo:'Marca/Modelo',color:'Color',vin:'VIN',placa:'Placa',numpoliza:'N° Póliza',aseguradora:'Aseguradora',inicio:'Inicio',vencimiento:'Vencimiento',prima_anual:'Prima ANUAL',prima_m:'Prima mensual',deducible:'Deducible',liab:'Liability',pip:'PIP',um:'UM/UIM',coberturas:'Coberturas'};let html='',found=0;for(const[k,v] of Object.entries(parsed)){if(!v||!String(v).trim())continue;html+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:11px;color:var(--text-muted);">${labels[k]||k}</span><span style="font-size:12px;font-weight:600;color:var(--navy);">${v}</span></div>`;found++;}if(!found)throw new Error('No se pudieron extraer datos.');sEl.style.display='none';fEl.innerHTML=html+`<div style="margin-top:8px;padding:6px;background:var(--success-bg);border-radius:6px;font-size:10px;color:var(--success);text-align:center;">✅ Extraído por Claude IA</div>`;rEl.style.display='block';footEl.style.display='flex';}catch(err){sEl.style.display='block';sTxt.textContent='❌ '+err.message;}}
+async function handleScannerFile(file){if(!file)return;const sEl=document.getElementById('scanner-status'),sTxt=document.getElementById('scanner-status-text'),rEl=document.getElementById('scanner-result'),fEl=document.getElementById('scanner-fields'),footEl=document.getElementById('scanner-footer');sEl.style.display='block';rEl.style.display='none';footEl.style.display='none';sTxt.textContent='📄 Preparando documento...';try{const base64=await fileToBase64(file);const mediaType=file.type||'application/pdf';sTxt.textContent='🧠 Claude IA analizando la póliza...';const EDGE_URL='https://oljsjvsakzymxrsfkbda.supabase.co/functions/v1/scan-poliza';const ANON_KEY='sb_publishable_x8DOB_xZ-umyV0eIbP9B7Q_dfXfaIaO';const response=await fetch(EDGE_URL,{method:'POST',headers:{'Content-Type':'application/json','apikey':ANON_KEY},body:JSON.stringify({fileBase64:base64,mediaType,docType:scannerDocType})});const parsed=await response.json();if(!response.ok)throw new Error(parsed.error||'Error IA');if(!parsed.prima_m&&parsed.prima_anual){const anual=parseFloat(String(parsed.prima_anual).replace(/[,$]/g,''));if(anual>0)parsed.prima_m=(anual/12).toFixed(2);}scannerExtracted=parsed;const labels={nombre:'Nombre',nacimiento:'Nacimiento',direccion:'Dirección',anio:'Año vehículo',vehiculo:'Marca/Modelo',color:'Color',vin:'VIN',placa:'Placa',numpoliza:'N° Póliza',aseguradora:'Aseguradora',inicio:'Inicio',vencimiento:'Vencimiento',prima_anual:'Prima ANUAL',prima_m:'Prima mensual',deducible:'Deducible',liab:'Liability',pip:'PIP',um:'UM/UIM',coberturas:'Coberturas'};let html='',found=0;for(const[k,v] of Object.entries(parsed)){if(!v||!String(v).trim())continue;html+=`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span style="font-size:11px;color:var(--text-muted);">${labels[k]||k}</span><span style="font-size:12px;font-weight:600;color:var(--navy);">${v}</span></div>`;found++;}if(!found)throw new Error('No se pudieron extraer datos.');sEl.style.display='none';fEl.innerHTML=html+`<div style="margin-top:8px;padding:6px;background:var(--success-bg);border-radius:6px;font-size:10px;color:var(--success);text-align:center;">✅ Extraído por Claude IA</div>`;rEl.style.display='block';footEl.style.display='flex';}catch(err){sEl.style.display='block';sTxt.textContent='❌ '+err.message;}}
 function fileToBase64(file){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=reject;reader.readAsDataURL(file);});}
 function applyScannerData(){const d=scannerExtracted;if(scannerTarget==='prospecto'){closeModal('modal-scanner');openModalProspecto();setTimeout(()=>{if(d.nombre)document.getElementById('pros-nombre').value=d.nombre;if(d.nacimiento)document.getElementById('pros-nacimiento').value=d.nacimiento;if(d.anio)document.getElementById('pros-anio').value=d.anio;if(d.vehiculo)document.getElementById('pros-vehiculo').value=d.vehiculo;if(d.color)document.getElementById('pros-color').value=d.color;if(d.aseguradora)document.getElementById('pros-aseguradora').value=d.aseguradora;if(d.numpoliza)document.getElementById('pros-poliza-actual').value=d.numpoliza;if(d.vencimiento)document.getElementById('pros-reno-fecha').value=d.vencimiento;if(d.prima_anual||d.prima_m){const val=d.prima_anual||((parseFloat(d.prima_m)||0)*12);document.getElementById('pros-costo').value=val;}if(d.liab)document.getElementById('pros-liab').value=d.liab;},300);}else{closeModal('modal-scanner');openModal('modal-cliente');setTimeout(()=>{if(d.nombre)document.getElementById('c-nombre').value=d.nombre;if(d.nacimiento)document.getElementById('c-nacimiento').value=d.nacimiento;if(d.anio)document.getElementById('c-anio').value=d.anio;if(d.vehiculo)document.getElementById('c-vehiculo').value=d.vehiculo;if(d.color)document.getElementById('c-color').value=d.color;if(d.numpoliza)document.getElementById('c-numpoliza').value=d.numpoliza;if(d.aseguradora)document.getElementById('c-aseguradora').value=d.aseguradora;if(d.prima_anual||d.prima_m){const val=d.prima_anual||((parseFloat(d.prima_m)||0)*12);document.getElementById('c-prima').value=val;}if(d.deducible)document.getElementById('c-deducible').value=d.deducible;if(d.liab)document.getElementById('c-liab').value=d.liab;if(d.pip)document.getElementById('c-pip').value=d.pip;if(d.um)document.getElementById('c-um').value=d.um;if(d.inicio)document.getElementById('c-inicio').value=d.inicio;if(d.vencimiento){document.getElementById('c-vencimiento').value=d.vencimiento;updateClienteRenoPreview();}},300);}toast('✅ Datos aplicados','success');}
+
+
+function setScanDoc(type, btn){
+  scannerDocType=type;
+  document.querySelectorAll('.scan-doc-btn').forEach(b=>{
+    b.classList.remove('active-scan-doc');
+    b.style.background='';b.style.color='';b.style.borderColor='';
+  });
+  btn.classList.add('active-scan-doc');
+  btn.style.background='var(--navy)';btn.style.color='var(--gold)';btn.style.borderColor='var(--navy)';
+  const hints={poliza:'Sube la declaración de póliza en PDF o imagen. Multinational, Universal, MAPFRE, Triple-S...',
+    licencia:'Sube foto o scan de la licencia de conducir. Se extraerán nombre, DOB, dirección y número.',
+    tablilla:'Sube foto o scan del registro/tablilla del vehículo. Se extraerán año, marca, modelo, VIN y tablilla.'};
+  const hintEl=document.querySelector('#modal-scanner .scanner-hint');
+  if(hintEl)hintEl.textContent=hints[type]||hints.poliza;
+  // reset result area
+  ['scanner-status','scanner-result','scanner-footer'].forEach(id=>document.getElementById(id).style.display='none');
+  document.getElementById('scanner-file-input').value='';
+}
+
+function aplicarScannerACotizacion(){
+  const d=scannerExtracted;
+  if(!d||!Object.keys(d).length){toast('No hay datos escaneados','warning');return;}
+  // Store in sessionStorage for the form to pick up
+  const existing = JSON.parse(sessionStorage.getItem('ps_cotiza_data')||'{}');
+  const merged = Object.assign({}, existing);
+  // Map scanned fields to form fields
+  if(d.nombre) merged.nombre = d.nombre;
+  if(d.nacimiento) merged.dob = d.nacimiento;
+  if(d.anio) merged.au_anio = d.anio;
+  if(d.vehiculo){
+    const parts = d.vehiculo.trim().split(' ');
+    merged.au_marca = parts[0]||'';
+    merged.au_modelo = parts.slice(1).join(' ')||'';
+  }
+  if(d.color) merged.au_color = d.color;
+  if(d.placa||d.tablilla) merged.au_tablilla = d.placa||d.tablilla;
+  if(d.vin) merged.au_vin = d.vin;
+  if(d.numpoliza) merged.poliza_actual = d.numpoliza;
+  if(d.aseguradora) merged.aseguradora = d.aseguradora;
+  if(d.direccion) merged.dir_fisica = d.direccion;
+  // licencia number
+  if(d.licencia||d.num_licencia) merged.licencia = d.licencia||d.num_licencia;
+  sessionStorage.setItem('ps_cotiza_data', JSON.stringify(merged));
+  closeModal('modal-scanner');
+  // Show choice modal
+  const overlay=document.createElement('div');
+  overlay.className='modal-overlay open';
+  overlay.innerHTML=`
+    <div class="modal" style="max-width:400px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📋 Llenar Cotización</h3>
+        <button class="btn btn-outline btn-sm" onclick="this.closest('.modal-overlay').remove()">✕</button>
+      </div>
+      <div style="padding:20px;text-align:center;">
+        <div style="font-size:13px;color:var(--navy);margin-bottom:16px;font-weight:600;">¿Qué tipo de cotización quieres generar?</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <button class="btn btn-primary" style="padding:14px;font-size:12px;flex-direction:column;display:flex;align-items:center;gap:6px;"
+            onclick="abrirFormAutoFill(JSON.parse(sessionStorage.getItem('ps_cotiza_data')||'{}'),'personal');this.closest('.modal-overlay').remove();">
+            <span style="font-size:20px;">🏠</span>Personal
+          </button>
+          <button class="btn btn-gold" style="padding:14px;font-size:12px;flex-direction:column;display:flex;align-items:center;gap:6px;"
+            onclick="abrirFormAutoFill(JSON.parse(sessionStorage.getItem('ps_cotiza_data')||'{}'),'comercial');this.closest('.modal-overlay').remove();">
+            <span style="font-size:20px;">🏢</span>Comercial
+          </button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  toast('Datos del escáner listos para la cotización ✓','success');
+}
+
+function cotizarProspecto(id){
+  const p=DB.prospectos.find(x=>x.id===id);
+  if(!p){toast('Prospecto no encontrado','warning');return;}
+  // Determine type: if has neg_nombre = commercial, else personal
+  const esComercial = !!(p.neg_nombre && p.neg_nombre.trim());
+  // Build query string with all prospecto data
+  const params=new URLSearchParams();
+  params.set('tipo', esComercial ? 'comercial' : 'personal');
+  if(p.nombre) params.set('nombre', p.nombre);
+  if(p.tel) params.set('tel', p.tel);
+  if(p.email) params.set('email', p.email);
+  if(p.nacimiento) params.set('dob', p.nacimiento);
+  if(p.anio) params.set('au_anio', p.anio);
+  // split vehiculo into marca/modelo if possible
+  if(p.vehiculo){
+    const parts=p.vehiculo.trim().split(' ');
+    params.set('au_marca', parts[0]||'');
+    params.set('au_modelo', parts.slice(1).join(' ')||'');
+  }
+  if(p.color) params.set('au_color', p.color);
+  if(p.liab) params.set('liab', p.liab);
+  if(p.costo) params.set('costo', p.costo);
+  if(p.poliza_actual) params.set('poliza_actual', p.poliza_actual);
+  if(p.aseguradora) params.set('aseguradora', p.aseguradora);
+  // Commercial fields
+  if(p.neg_nombre) params.set('neg_nombre', p.neg_nombre);
+  if(p.neg_tipo) params.set('neg_tipo', p.neg_tipo);
+  if(p.neg_dir) params.set('neg_dir', p.neg_dir);
+  if(p.neg_cob) params.set('neg_cob', p.neg_cob);
+  // Open cotizacion form in new tab — uses sessionStorage for data transfer
+  const key = 'ps_cotizacion_'+Date.now();
+  sessionStorage.setItem(key, JSON.stringify(Object.fromEntries(params)));
+  sessionStorage.setItem('ps_cotizacion_latest', key);
+  // Show modal with choice
+  const overlay=document.createElement('div');
+  overlay.className='modal-overlay open';
+  overlay.innerHTML=`
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 class="modal-title">📋 Generar Cotización</h3>
+        <button class="btn btn-outline btn-sm" onclick="this.closest('.modal-overlay').remove()">✕</button>
+      </div>
+      <div style="padding:20px;text-align:center;">
+        <div style="width:56px;height:56px;border-radius:12px;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px;">📋</div>
+        <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px;">${p.nombre}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-bottom:20px;">Los datos del prospecto se auto-completarán en la forma</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <button class="btn btn-primary" style="padding:14px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;" onclick="abrirForma('personal','${p.id}');this.closest('.modal-overlay').remove();">
+            <span style="font-size:22px;">🏠</span>
+            <span>Personal</span>
+            <span style="font-size:10px;opacity:0.8;">Auto · Hogar</span>
+          </button>
+          <button class="btn btn-gold" style="padding:14px;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px;" onclick="abrirForma('comercial','${p.id}');this.closest('.modal-overlay').remove();">
+            <span style="font-size:22px;">🏢</span>
+            <span>Comercial</span>
+            <span style="font-size:10px;opacity:0.8;">Package</span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+function abrirForma(tipo, prospectoId){
+  const p=DB.prospectos.find(x=>x.id===prospectoId);
+  if(!p) return;
+  // Store data in sessionStorage
+  const data = {
+    tipo, nombre:p.nombre||'', tel:p.tel||'', email:p.email||'',
+    dob:p.nacimiento||'', au_anio:p.anio||'',
+    au_marca:'', au_modelo:'',
+    au_color:p.color||'', liab:p.liab||'',
+    poliza_actual:p.poliza_actual||'', aseguradora:p.aseguradora||'',
+    neg_nombre:p.neg_nombre||'', neg_tipo:p.neg_tipo||'',
+    neg_dir:p.neg_dir||'', neg_cob:p.neg_cob||''
+  };
+  if(p.vehiculo){const parts=p.vehiculo.trim().split(' ');data.au_marca=parts[0]||'';data.au_modelo=parts.slice(1).join(' ')||'';}
+  sessionStorage.setItem('ps_cotiza_data', JSON.stringify(data));
+  const fname = tipo==='comercial'
+    ? 'cotizacion_comercial_pinnacle_shield.html'
+    : 'cotizacion_personal_pinnacle_shield.html';
+  // Try to open — user needs the file locally
+  toast(`Abriendo forma ${tipo}... Asegúrate de tener el archivo guardado localmente.`,'info');
+  // For now open with data encoded in hash
+  const encoded = encodeURIComponent(JSON.stringify(data));
+  // Open a self-contained autofill window
+  abrirFormAutoFill(data, tipo);
+}
+
+function abrirFormAutoFill(data, tipo){
+  // Build the form inline in a new window with data pre-filled
+  const w = window.open('','_blank','width=900,height=800,scrollbars=yes');
+  if(!w){toast('Activa popups para abrir la forma','warning');return;}
+  // Signal to the form file (if open) via BroadcastChannel
+  try{
+    const bc = new BroadcastChannel('ps_cotizacion');
+    bc.postMessage({action:'autofill', data, tipo});
+    bc.close();
+  }catch(e){}
+  // Write redirect page that loads the form
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cargando cotización...</title>
+  <style>body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background:#0B1F3A;color:#fff;gap:20px;}
+  .spinner{width:48px;height:48px;border:4px solid rgba(255,255,255,0.2);border-top-color:#C9A227;border-radius:50%;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  p{color:#C9A227;font-size:14px;letter-spacing:1px;}</style></head>
+  <body><div class="spinner"></div><p>Preparando cotización para ${data.nombre||'cliente'}...</p>
+  <script>
+    sessionStorage.setItem('ps_cotiza_data', JSON.stringify(${JSON.stringify(data)}));
+    setTimeout(()=>{
+      document.body.innerHTML='<h2 style="color:#C9A227;text-align:center;padding:40px;">✓ Datos listos.<br><br><span style="font-size:14px;color:#fff;">Abre el archivo<br><strong>cotizacion_${tipo}_pinnacle_shield.html</strong><br>desde tu computadora.<br><br>Los datos se cargarán automáticamente.</span></h2>';
+    },2000);
+  <\/script></body></html>`);
+  w.document.close();
+  toast(`Datos de ${data.nombre} listos para la forma ${tipo} ✓`,'success');
+}
+
 
 
 // ─── PIPELINE ───
