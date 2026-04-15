@@ -40,7 +40,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 36px;height:72px;d
 .mobile-menu a:hover{color:var(--gold);}
 .mobile-ctas{display:flex;flex-direction:column;gap:10px;margin-top:18px;}
 .mc-btn{display:flex;align-items:center;gap:8px;padding:13px 20px;border-radius:2px;text-decoration:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;}
-.mc-btn.wa{background:rgba(37,211,102,0.12);border:1px solid rgba(37,211,102,0.3);color:#25D366;}
 .mc-btn.em{background:rgba(253,200,115,0.1);border:1px solid rgba(253,200,115,0.26);color:var(--gold);}
 .mc-btn.ct{background:var(--gold);color:var(--navy);font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;justify-content:center;}
 #hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;text-align:center;padding:100px 32px 100px;}
@@ -68,8 +67,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 36px;height:72px;d
 .btn-gold:hover{background:var(--gold-dk);transform:translateY(-2px);box-shadow:0 8px 30px rgba(253,200,115,0.36);}
 .btn-outline{border:1px solid rgba(180,180,180,0.24);color:var(--silver);padding:14px 28px;border-radius:2px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all 0.22s;}
 .btn-outline:hover{border-color:var(--gold);color:var(--gold);}
-.sticky-wa{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:300;background:#25D366;color:#fff;padding:15px 34px;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;text-decoration:none;align-items:center;gap:10px;box-shadow:0 6px 32px rgba(37,211,102,0.4);transition:all 0.22s;white-space:nowrap;}
-.sticky-wa:hover{background:#1DA851;transform:translateX(-50%) translateY(-2px);}
+
+
 .sec{padding:84px 48px;max-width:1200px;margin:0 auto;}
 .sec-full{padding:84px 48px;}
 .sec-full .inner{max-width:1200px;margin:0 auto;}
@@ -129,8 +128,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 36px;height:72px;d
 .c-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:36px;max-width:600px;margin-left:auto;margin-right:auto;}
 .c-btn{display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:20px 28px;border-radius:3px;text-decoration:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.04em;transition:all 0.25s;white-space:nowrap;min-width:160px;text-align:center;}
 .c-btn svg{margin-bottom:2px;}
-.c-btn.wa{background:rgba(37,211,102,0.07);border:1px solid rgba(37,211,102,0.35);color:#25D366;}
-.c-btn.wa:hover{background:rgba(37,211,102,0.16);border-color:rgba(37,211,102,0.6);transform:translateY(-3px);box-shadow:0 8px 24px rgba(37,211,102,0.15);}
 .c-btn.em{background:rgba(253,200,115,0.07);border:1px solid rgba(253,200,115,0.35);color:var(--gold);}
 .c-btn.em:hover{background:rgba(253,200,115,0.16);border-color:rgba(253,200,115,0.6);transform:translateY(-3px);box-shadow:0 8px 24px rgba(253,200,115,0.12);}
 .c-btn.ct{background:rgba(180,180,220,0.07);border:1px solid rgba(180,180,220,0.3);color:var(--silver);font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0.04em;text-transform:none;}
@@ -153,8 +150,8 @@ footer{background:rgba(7,11,21,0.99);border-top:1px solid rgba(253,200,115,0.1);
   .steps::before{display:none;}
   footer{flex-direction:column;text-align:center;padding:28px 20px;}
   .ft-copy{text-align:center;}
-  .sticky-wa{display:inline-flex;}
-  body{padding-bottom:80px;}
+  
+  
 }
 @media(max-width:480px){
   .hero-acts{flex-direction:column;align-items:center;}
@@ -164,11 +161,71 @@ footer{background:rgba(7,11,21,0.99);border-top:1px solid rgba(253,200,115,0.1);
 .lang-system [data-en]{display:none;}
 .lang-system.en [data-es]{display:none;}
 .lang-system.en [data-en]{display:revert;}
+
+
+.qf-btn-expand{background:none;border:1px dashed rgba(201,162,39,0.4);color:var(--gold);padding:12px 20px;border-radius:4px;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:12px;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s;width:100%;justify-content:center;}
+.qf-btn-expand:hover{background:rgba(201,162,39,0.08);border-color:var(--gold);}
+.qf-divider{text-align:center;margin:28px 0 8px;position:relative;}
+.qf-divider::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:linear-gradient(90deg,transparent,rgba(201,162,39,0.3),transparent);}
+.qf-divider span{background:var(--white);padding:0 16px;font-family:'Cinzel',serif;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:var(--gold);position:relative;}
+
+/* ── QUOTE FORM MODAL ── */
+.qf-overlay{display:none;position:fixed;inset:0;z-index:500;background:rgba(11,17,31,0.85);backdrop-filter:blur(8px);overflow-y:auto;padding:20px;}
+.qf-overlay.open{display:flex;align-items:flex-start;justify-content:center;}
+.qf-modal{background:var(--white);max-width:780px;width:100%;border-radius:6px;margin:20px auto;box-shadow:0 20px 60px rgba(0,0,0,0.5);color:#1a2a40;}
+.qf-header{background:var(--navy);padding:24px 32px;border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--gold);}
+.qf-header-title{font-family:'Cinzel',serif;color:var(--white);font-size:18px;font-weight:600;letter-spacing:0.06em;}
+.qf-header-sub{color:var(--silver);font-size:11px;margin-top:2px;font-family:'DM Sans',sans-serif;}
+.qf-close{background:none;border:none;color:var(--silver);font-size:28px;cursor:pointer;padding:0 8px;line-height:1;transition:color 0.2s;}
+.qf-close:hover{color:var(--gold);}
+.qf-body{padding:28px 32px;}
+.qf-section{font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--navy);border-bottom:2px solid var(--gold);padding-bottom:6px;margin:24px 0 16px;display:flex;align-items:center;gap:8px;}
+.qf-section:first-child{margin-top:0;}
+.qf-section .dot{width:8px;height:8px;background:var(--gold);border-radius:50%;}
+.qf-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 18px;}
+.qf-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px 18px;}
+.qf-full{grid-column:1/-1;}
+.qf-field label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#5a6a7e;margin-bottom:4px;}
+.qf-field input,.qf-field select,.qf-field textarea{width:100%;padding:9px 12px;border:1px solid #d5d9e0;border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;color:#1a2a40;background:#fafbfc;transition:border-color 0.2s;}
+.qf-field input:focus,.qf-field select:focus,.qf-field textarea:focus{outline:none;border-color:var(--gold);background:var(--white);}
+.qf-field textarea{resize:vertical;min-height:60px;}
+.qf-field select{cursor:pointer;}
+.qf-check-row{display:flex;gap:18px;flex-wrap:wrap;margin:8px 0;}
+.qf-check-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#1a2a40;cursor:pointer;}
+.qf-check-item input{accent-color:var(--gold);cursor:pointer;}
+.qf-cov-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;margin-top:8px;}
+.qf-cov-item{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee;font-size:12px;}
+.qf-cov-item label{font-size:12px;color:#1a2a40;font-weight:400;text-transform:none;letter-spacing:0;}
+.qf-cov-item select{width:140px;padding:5px 8px;font-size:11px;border:1px solid #d5d9e0;border-radius:3px;background:#fafbfc;}
+.qf-footer{padding:20px 32px;border-top:1px solid #e8e8e8;display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;}
+.qf-btn{padding:12px 24px;border-radius:4px;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;border:none;display:inline-flex;align-items:center;gap:8px;}
+.qf-btn-gold{background:var(--gold);color:var(--navy);font-weight:600;}
+.qf-btn-gold:hover{background:#b8911f;transform:translateY(-1px);}
+.qf-btn-outline{background:transparent;border:1px solid #d5d9e0;color:#5a6a7e;}
+.qf-btn-outline:hover{border-color:var(--gold);color:var(--navy);}
+.qf-btn-navy{background:var(--navy);color:var(--white);font-weight:600;}
+.qf-btn-navy:hover{background:#131C34;transform:translateY(-1px);}
+.qf-note{background:#fdf8ee;border:1px solid rgba(201,162,39,0.25);border-radius:4px;padding:12px 16px;font-size:11px;color:#6b5a10;line-height:1.7;margin-top:16px;}
+@media(max-width:640px){
+  .qf-body{padding:20px 16px;}
+  .qf-header{padding:18px 16px;}
+  .qf-footer{padding:16px;}
+  .qf-grid,.qf-grid-3,.qf-cov-grid{grid-template-columns:1fr;}
+  .qf-footer{flex-direction:column;}
+  .qf-btn{width:100%;justify-content:center;}
+}
+@media print{
+  .qf-overlay{position:static;background:white;padding:0;}
+  .qf-modal{box-shadow:none;margin:0;max-width:100%;}
+  .qf-header{background:#0B1F3A !important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .qf-footer .qf-btn{display:none;}
+  .qf-close{display:none;}
+  nav,.hero-bg,.hero-grid,.orb,footer,.sec,.sec-full,.cta-wrap,.proc-wrap,.sobre-wrap,.why-wrap,#hero,.mobile-menu{display:none !important;}
+}
+
 </style>
 </head>
 <body class="lang-system">
-
-<a href="https://wa.me/19393925008" class="sticky-wa"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> <span data-es>Cotizar por WhatsApp</span><span data-en>Get a Quote</span></a>
 
 <nav>
   <div class="nav-left">
@@ -197,8 +254,8 @@ footer{background:rgba(7,11,21,0.99);border-top:1px solid rgba(253,200,115,0.1);
   <a href="#sobre" onclick="this.closest('.mobile-menu').classList.remove('open')"><span data-es>Nosotros</span><span data-en>About</span></a>
   <a href="#proceso" onclick="this.closest('.mobile-menu').classList.remove('open')"><span data-es>Proceso</span><span data-en>Process</span></a>
   <div class="mobile-ctas">
-    <a href="https://wa.me/19393925008" class="mc-btn wa"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> WhatsApp</a>
-    <a href="mailto:info@pinnacleshieldpr.com" data-email class="mc-btn em"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> info@pinnacleshieldpr.com</a>
+    <a href="#cotizar" class="mc-btn ct" onclick="openQuoteForm('personal');this.closest('.mobile-menu').classList.remove('open')"><span data-es>Cotizaci&oacute;n Personal</span><span data-en>Personal Quote</span></a>
+    <a href="#cotizar" class="mc-btn ct" onclick="openQuoteForm('comercial');this.closest('.mobile-menu').classList.remove('open')"><span data-es>Cotizaci&oacute;n Comercial</span><span data-en>Commercial Quote</span></a>
     <a href="#contacto" class="mc-btn ct" onclick="this.closest('.mobile-menu').classList.remove('open')"><span data-es>Contacto</span><span data-en>Contact</span></a>
   </div>
 </div>
@@ -220,8 +277,8 @@ footer{background:rgba(7,11,21,0.99);border-top:1px solid rgba(253,200,115,0.1);
   <p class="hero-sub"><span data-es>Comparamos entre m&uacute;ltiples aseguradoras para ayudarte a encontrar la cobertura adecuada para tu vida, tu familia y lo que construyes &mdash; sin presi&oacute;n, con total claridad.</span><span data-en>We compare multiple insurers to help you find the right coverage for your life, your family, and your future &mdash; no pressure, complete clarity.</span></p>
   <p class="hero-micro" style="margin-bottom:26px;color:var(--gold);font-style:normal;font-weight:400;letter-spacing:0.08em;font-size:12px;"><span data-es>Protecci&oacute;n bien explicada. Decisiones bien tomadas.</span><span data-en>Protection well explained. Decisions well made.</span></p>
   <div class="hero-acts">
-    <a href="https://wa.me/19393925008" class="btn-gold"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> <span data-es>Cotizar ahora por WhatsApp</span><span data-en>Get a Quote on WhatsApp</span></a>
-    <a href="mailto:info@pinnacleshieldpr.com" data-email class="btn-outline"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span data-es>Escr&iacute;benos</span><span data-en>Email Us</span></a>
+    <a href="#cotizar" class="btn-gold" onclick="openQuoteForm('personal')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg> <span data-es>Cotizaci&oacute;n Personal</span><span data-en>Personal Quote</span></a>
+    <a href="#cotizar" class="btn-gold" onclick="openQuoteForm('comercial')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> <span data-es>Cotizaci&oacute;n Comercial</span><span data-en>Commercial Quote</span></a>
   </div>
 </section>
 
@@ -378,10 +435,13 @@ footer{background:rgba(7,11,21,0.99);border-top:1px solid rgba(253,200,115,0.1);
     <div class="label" style="justify-content:center;margin-bottom:10px;"><span data-es>Comienza hoy</span><span data-en>Start today</span></div>
     <h2 class="heading"><span data-es>Tu evaluaci&oacute;n gratuita<br><em>te espera ahora.</em></span><span data-en>Your free evaluation<br><em>is waiting for you.</em></span></h2>
     <p class="subtext" style="margin-top:12px;max-width:440px;margin-left:auto;margin-right:auto;"><span data-es>Hablemos hoy. Sin compromiso, sin presi&oacute;n &mdash; solo orientaci&oacute;n clara sobre tu protecci&oacute;n personal, familiar y de negocio.</span><span data-en>Let&rsquo;s talk today. No commitment, no pressure &mdash; just clear guidance on your personal, family, and business protection.</span></p>
-    <div class="c-row">
-      <a href="https://wa.me/19393925008" class="c-btn wa"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg> <span data-es>Cotizar por WhatsApp</span><span data-en>Get a Quote on WhatsApp</span></a>
+    <div class="c-row" style="grid-template-columns:repeat(2,1fr);">
+      <a href="#cotizar" onclick="openQuoteForm('personal')" class="c-btn em" style="color:var(--gold);border-color:rgba(253,200,115,0.35);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a6.5 6.5 0 0113 0"/></svg> <span data-es>Cotizaci&oacute;n Personal</span><span data-en>Personal Quote</span></a>
+      <a href="#cotizar" onclick="openQuoteForm('comercial')" class="c-btn em" style="color:var(--gold);border-color:rgba(253,200,115,0.35);"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> <span data-es>Cotizaci&oacute;n Comercial</span><span data-en>Commercial Quote</span></a>
+    </div>
+    <div class="c-row" style="grid-template-columns:repeat(2,1fr);margin-top:12px;">
       <a href="mailto:info@pinnacleshieldpr.com" data-email class="c-btn em"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> <span data-es>Enviar email</span><span data-en>Send Email</span></a>
-      <a href="tel:+19393925008" class="c-btn ct"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .9h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg> <span data-es>Contactar</span><span data-en>Call Us</span></a>
+      <a href="tel:+19393925008" class="c-btn ct"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .9h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg> <span data-es>Llamar</span><span data-en>Call Us</span></a>
     </div>
   </div>
 </div>
@@ -421,6 +481,249 @@ setTimeout(() => {
   var ft = document.getElementById('ft-email');
   if(ft) { var a = document.createElement('a'); a.href = 'mailto:' + e; a.textContent = e; a.style.color = 'inherit'; ft.appendChild(a); }
 })();
+
+// ══ SMART QUOTE FORM ══
+var currentFormType = 'personal';
+
+function openQuoteForm(type) {
+  currentFormType = type || 'personal';
+  var modal = document.getElementById('qf-modal');
+  var sub = document.getElementById('qf-modal-sub');
+  // Update subtitle
+  if(type === 'comercial') {
+    sub.innerHTML = '<span data-es>Solicitud de Cotizaci\u00f3n \u2014 Comercial</span><span data-en>Quote Request \u2014 Commercial</span>';
+  } else {
+    sub.innerHTML = '<span data-es>Solicitud de Cotizaci\u00f3n \u2014 Personal</span><span data-en>Quote Request \u2014 Personal</span>';
+  }
+  // Show correct detailed fields if phase2 is open
+  updateDetailFields();
+  // Re-apply language
+  var isEn = document.body.classList.contains('en');
+  if(isEn) { modal.querySelectorAll('[data-en]').forEach(function(e){e.style.display='revert';}); modal.querySelectorAll('[data-es]').forEach(function(e){e.style.display='none';}); }
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeQuoteForm() {
+  document.getElementById('qf-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function togglePhase2() {
+  var p2 = document.getElementById('qf-phase2');
+  var btn = document.getElementById('qf-expand-btn');
+  if(p2.style.display === 'none') {
+    p2.style.display = 'block';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg> <span data-es>Ocultar informaci\u00f3n adicional</span><span data-en>Hide additional information</span>';
+    updateDetailFields();
+    // Re-apply lang
+    if(document.body.classList.contains('en')){p2.querySelectorAll('[data-en]').forEach(function(e){e.style.display='revert';});p2.querySelectorAll('[data-es]').forEach(function(e){e.style.display='none';});}
+  } else {
+    p2.style.display = 'none';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg> <span data-es>Completar informaci\u00f3n adicional para cotizaci\u00f3n m\u00e1s precisa</span><span data-en>Complete additional info for a more precise quote</span>';
+    if(document.body.classList.contains('en')){btn.querySelectorAll('[data-en]').forEach(function(e){e.style.display='revert';});btn.querySelectorAll('[data-es]').forEach(function(e){e.style.display='none';});}
+  }
+}
+
+function updateDetailFields() {
+  document.getElementById('qf-personal-fields').style.display = currentFormType === 'personal' ? 'block' : 'none';
+  document.getElementById('qf-comercial-fields').style.display = currentFormType === 'comercial' ? 'block' : 'none';
+}
+
+function clearQuoteForm() {
+  if (!confirm('\u00bfSeguro que deseas limpiar todos los campos?')) return;
+  var modal = document.getElementById('qf-modal');
+  modal.querySelectorAll('input[type="text"],input[type="email"],input[type="tel"],input[type="number"],input[type="date"],textarea').forEach(function(el){el.value='';});
+  modal.querySelectorAll('select').forEach(function(el){el.selectedIndex=0;});
+}
+
+function printQuoteForm() {
+  var modal = document.getElementById('qf-modal');
+  var title = currentFormType === 'personal' ? 'Cotizaci\u00f3n Personal' : 'Cotizaci\u00f3n Comercial';
+  var fields = [];
+  modal.querySelectorAll('.qf-field').forEach(function(f){
+    var lbl = f.querySelector('label');
+    var inp = f.querySelector('input,select,textarea');
+    if(lbl && inp && inp.value) fields.push({label:lbl.textContent.trim().replace(' *',''), value:inp.value});
+  });
+  modal.querySelectorAll('.qf-cov-item').forEach(function(f){
+    var lbl = f.querySelector('label');
+    var sel = f.querySelector('select');
+    if(lbl && sel && sel.value) fields.push({label:lbl.textContent.trim(), value:sel.value});
+  });
+  var rows = fields.map(function(f){return '<tr><td style="padding:6px 12px;font-weight:600;color:#5a6a7e;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;border-bottom:1px solid #eee;width:40%">'+f.label+'</td><td style="padding:6px 12px;font-size:13px;border-bottom:1px solid #eee">'+f.value+'</td></tr>';}).join('');
+  var pw = window.open('','','width=800,height=900');
+  pw.document.write('<html><head><title>'+title+' - Pinnacle Shield</title><style>body{font-family:sans-serif;color:#1a2a40;margin:40px;}h1{font-size:20px;color:#0B1F3A;border-bottom:3px solid #C9A227;padding-bottom:8px;}h2{font-size:12px;color:#C9A227;letter-spacing:2px;text-transform:uppercase;margin-top:4px;}</style></head><body>');
+  pw.document.write('<h1>Pinnacle Shield Insurance Advisory</h1><h2>'+title+'</h2>');
+  pw.document.write('<table style="width:100%;border-collapse:collapse;margin-top:20px">'+rows+'</table>');
+  pw.document.write('<p style="margin-top:30px;font-size:11px;color:#888;">Pinnacle Shield Insurance Advisory \u00b7 (939) 392-5008 \u00b7 info@pinnacleshieldpr.com<br>Every Life. Fully Protected.</p>');
+  pw.document.write('</body></html>');
+  pw.document.close();
+  setTimeout(function(){pw.print();},400);
+}
+
+function emailQuoteForm() {
+  var nombre = document.getElementById('q-nombre').value;
+  var tel = document.getElementById('q-tel').value;
+  var email = document.getElementById('q-email').value;
+  if(!nombre || !tel || !email){ alert('Por favor, completa nombre, tel\u00e9fono y email para poder orientarte.'); return; }
+  var title = currentFormType === 'personal' ? 'Cotizaci\u00f3n Personal' : 'Cotizaci\u00f3n Comercial';
+  var modal = document.getElementById('qf-modal');
+  var fields = [];
+  modal.querySelectorAll('.qf-field').forEach(function(f){
+    var lbl = f.querySelector('label');
+    var inp = f.querySelector('input,select,textarea');
+    if(lbl && inp && inp.value) fields.push(lbl.textContent.trim().replace(' *','') + ': ' + inp.value);
+  });
+  modal.querySelectorAll('.qf-cov-item').forEach(function(f){
+    var lbl = f.querySelector('label');
+    var sel = f.querySelector('select');
+    if(lbl && sel && sel.value) fields.push(lbl.textContent.trim() + ': ' + sel.value);
+  });
+  var subject = encodeURIComponent('Solicitud de ' + title + ' - ' + nombre);
+  var body = encodeURIComponent('SOLICITUD DE ' + title.toUpperCase() + '\n\nPinnacle Shield Insurance Advisory\nFecha: ' + new Date().toLocaleDateString() + '\n\n' + fields.join('\n') + '\n\n---\nEnviado desde pinnacleshieldpr.com');
+  window.location.href = 'mailto:' + 'info' + '@' + 'pinnacleshieldpr.com' + '?subject=' + subject + '&body=' + body;
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.qf-overlay').forEach(function(o){
+  o.addEventListener('click', function(e){ if(e.target===o){ o.classList.remove('open'); document.body.style.overflow=''; }});
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape'){ document.querySelectorAll('.qf-overlay.open').forEach(function(o){o.classList.remove('open');}); document.body.style.overflow=''; }
+});
+
 </script>
+
+
+
+
+
+
+<!-- ═══ SMART QUOTE FORM MODAL ═══ -->
+<div class="qf-overlay" id="qf-modal">
+<div class="qf-modal">
+  <div class="qf-header">
+    <div>
+      <div class="qf-header-title">Pinnacle Shield Insurance Advisory</div>
+      <div class="qf-header-sub" id="qf-modal-sub"><span data-es>Solicitud de Cotizaci&oacute;n</span><span data-en>Quote Request</span></div>
+    </div>
+    <button class="qf-close" onclick="closeQuoteForm()">&times;</button>
+  </div>
+  <div class="qf-body">
+
+    <!-- PHASE 1: SHORT CONTACT FORM -->
+    <div id="qf-phase1">
+      <div class="qf-section"><div class="dot"></div> <span data-es>Informaci&oacute;n de Contacto</span><span data-en>Contact Information</span></div>
+      <div class="qf-grid">
+        <div class="qf-field"><label><span data-es>Nombre Completo</span><span data-en>Full Name</span> *</label><input type="text" id="q-nombre" required></div>
+        <div class="qf-field"><label><span data-es>Tel&eacute;fono</span><span data-en>Phone</span> *</label><input type="tel" id="q-tel" required></div>
+        <div class="qf-field"><label>Email *</label><input type="email" id="q-email" required></div>
+        <div class="qf-field"><label><span data-es>Tipo de Seguro</span><span data-en>Insurance Type</span></label>
+          <select id="q-tipo-seguro">
+            <option value=""><span data-es>Seleccionar...</span></option>
+            <option value="Auto">Auto</option>
+            <option value="Propiedad / Hogar">Propiedad / Hogar</option>
+            <option value="Vida">Vida / Life</option>
+            <option value="Negocio / Comercial">Negocio / Comercial</option>
+            <option value="Personal Package">Personal Package</option>
+            <option value="Múltiples / Evaluación">M&uacute;ltiples / Evaluaci&oacute;n General</option>
+          </select>
+        </div>
+      </div>
+      <div class="qf-field qf-full" style="margin-top:12px;"><label><span data-es>Comentario o Pregunta</span><span data-en>Comment or Question</span></label><textarea id="q-comentario" rows="3" placeholder="ej. Necesito cotización para auto 2024 y hogar..."></textarea></div>
+
+      <div class="qf-expand-trigger" style="margin-top:20px;">
+        <button class="qf-btn-expand" onclick="togglePhase2()" id="qf-expand-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          <span data-es>Completar informaci&oacute;n adicional para cotizaci&oacute;n m&aacute;s precisa</span><span data-en>Complete additional info for a more precise quote</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- PHASE 2: DETAILED FIELDS (HIDDEN BY DEFAULT) -->
+    <div id="qf-phase2" style="display:none;">
+
+      <div class="qf-divider"><span data-es>Informaci&oacute;n Adicional</span><span data-en>Additional Information</span></div>
+
+      <!-- PERSONAL FIELDS -->
+      <div id="qf-personal-fields">
+        <div class="qf-section"><div class="dot"></div> <span data-es>Datos del Asegurado</span><span data-en>Insured Details</span></div>
+        <div class="qf-grid">
+          <div class="qf-field"><label><span data-es>Direcci&oacute;n F&iacute;sica</span><span data-en>Physical Address</span></label><input type="text" id="q-dir"></div>
+          <div class="qf-field"><label><span data-es>Direcci&oacute;n Postal</span><span data-en>Mailing Address</span></label><input type="text" id="q-postal"></div>
+          <div class="qf-field"><label><span data-es>Estado Civil</span><span data-en>Marital Status</span></label><select id="q-civil"><option value=""></option><option>Soltero/a</option><option>Casado/a</option><option>Divorciado/a</option><option>Viudo/a</option></select></div>
+          <div class="qf-field"><label><span data-es>Fecha Nacimiento</span><span data-en>Date of Birth</span></label><input type="date" id="q-dob"></div>
+          <div class="qf-field"><label><span data-es># Licencia</span><span data-en>License #</span></label><input type="text" id="q-lic"></div>
+        </div>
+
+        <div class="qf-section"><div class="dot"></div> <span data-es>Vivienda</span><span data-en>Property</span></div>
+        <div class="qf-grid">
+          <div class="qf-field"><label><span data-es>Tipo Construcci&oacute;n</span><span data-en>Construction</span></label><select id="q-h-tipo"><option value=""></option><option>Concreto</option><option>Madera</option><option>Mixta</option></select></div>
+          <div class="qf-field"><label><span data-es>A&ntilde;o Construcci&oacute;n</span><span data-en>Year Built</span></label><input type="number" id="q-h-ano"></div>
+          <div class="qf-field"><label><span data-es>Valor Estructura ($)</span><span data-en>Structure Value ($)</span></label><input type="number" id="q-h-vestr"></div>
+          <div class="qf-field"><label><span data-es>Valor Contenido ($)</span><span data-en>Contents Value ($)</span></label><input type="number" id="q-h-vcont"></div>
+        </div>
+
+        <div class="qf-section"><div class="dot"></div> <span data-es>Veh&iacute;culo</span><span data-en>Vehicle</span></div>
+        <div class="qf-grid">
+          <div class="qf-field"><label><span data-es>A&ntilde;o</span><span data-en>Year</span></label><input type="number" id="q-v-ano"></div>
+          <div class="qf-field"><label><span data-es>Marca</span><span data-en>Make</span></label><input type="text" id="q-v-marca"></div>
+          <div class="qf-field"><label><span data-es>Modelo</span><span data-en>Model</span></label><input type="text" id="q-v-modelo"></div>
+          <div class="qf-field"><label>VIN</label><input type="text" id="q-v-vin"></div>
+          <div class="qf-field"><label><span data-es>Costo Actual ($)</span><span data-en>Current Value ($)</span></label><input type="number" id="q-v-actual"></div>
+          <div class="qf-field"><label><span data-es>Banco / Pr&eacute;stamo</span><span data-en>Bank / Loan</span></label><input type="text" id="q-v-banco"></div>
+        </div>
+
+        <div class="qf-section"><div class="dot"></div> <span data-es>Coberturas Deseadas</span><span data-en>Desired Coverage</span></div>
+        <div class="qf-cov-grid">
+          <div class="qf-cov-item"><label>Bodily Injury</label><select id="q-c-bi"><option value=""></option><option>$50k/$100k</option><option>$100k/$300k</option><option>$250k/$500k</option></select></div>
+          <div class="qf-cov-item"><label>Property Damage</label><select id="q-c-pd"><option value=""></option><option>$25,000</option><option>$50,000</option><option>$100,000</option></select></div>
+          <div class="qf-cov-item"><label>Comprehensive</label><select id="q-c-comp"><option value=""></option><option>$250 Ded.</option><option>$500 Ded.</option><option>$1,000 Ded.</option></select></div>
+          <div class="qf-cov-item"><label>Medical Payments</label><select id="q-c-med"><option value=""></option><option>$2,000</option><option>$5,000</option><option>$10,000</option></select></div>
+        </div>
+      </div>
+
+      <!-- COMMERCIAL FIELDS -->
+      <div id="qf-comercial-fields" style="display:none;">
+        <div class="qf-section"><div class="dot"></div> <span data-es>Datos del Negocio</span><span data-en>Business Details</span></div>
+        <div class="qf-grid">
+          <div class="qf-field"><label><span data-es>Nombre del Negocio</span><span data-en>Business Name</span></label><input type="text" id="q-negocio"></div>
+          <div class="qf-field"><label><span data-es>Tipo / Industria</span><span data-en>Type / Industry</span></label><input type="text" id="q-industria"></div>
+          <div class="qf-field"><label><span data-es>Direcci&oacute;n del Negocio</span><span data-en>Business Address</span></label><input type="text" id="q-biz-dir"></div>
+          <div class="qf-field"><label>EIN / <span data-es>Registro</span><span data-en>Registry</span></label><input type="text" id="q-ein"></div>
+          <div class="qf-field"><label><span data-es># Empleados</span><span data-en># Employees</span></label><input type="number" id="q-empleados"></div>
+          <div class="qf-field"><label><span data-es>Ingresos Anuales ($)</span><span data-en>Annual Revenue ($)</span></label><input type="number" id="q-revenue"></div>
+        </div>
+
+        <div class="qf-section"><div class="dot"></div> <span data-es>Propiedad Comercial</span><span data-en>Commercial Property</span></div>
+        <div class="qf-grid">
+          <div class="qf-field"><label><span data-es>Valor Edificio ($)</span><span data-en>Building Value ($)</span></label><input type="number" id="q-biz-vedif"></div>
+          <div class="qf-field"><label><span data-es>Valor Contenido ($)</span><span data-en>Contents Value ($)</span></label><input type="number" id="q-biz-vcont"></div>
+          <div class="qf-field"><label><span data-es>Valor Equipo ($)</span><span data-en>Equipment Value ($)</span></label><input type="number" id="q-biz-vequip"></div>
+          <div class="qf-field"><label>General Liability</label><select id="q-gl"><option value=""></option><option>$300k/$600k</option><option>$500k/$1M</option><option>$1M/$2M</option></select></div>
+        </div>
+
+        <div class="qf-section"><div class="dot"></div> <span data-es>Flota Vehicular</span><span data-en>Vehicle Fleet</span></div>
+        <div class="qf-grid">
+          <div class="qf-field"><label><span data-es># Veh&iacute;culos</span><span data-en># Vehicles</span></label><input type="number" id="q-biz-vcant"></div>
+          <div class="qf-field"><label><span data-es>Detalles</span><span data-en>Details</span></label><input type="text" id="q-biz-vdet" placeholder="ej. 3 pickups, 1 van"></div>
+        </div>
+      </div>
+
+      <div class="qf-field qf-full" style="margin-top:16px;"><label><span data-es>Notas Adicionales</span><span data-en>Additional Notes</span></label><textarea id="q-notas" rows="2"></textarea></div>
+    </div>
+
+    <div class="qf-note"><span data-es>&#9432; Nos comunicaremos contigo para completar tu evaluaci&oacute;n personalizada. Tu informaci&oacute;n es confidencial.</span><span data-en>&#9432; We will contact you to complete your personalized evaluation. Your information is confidential.</span></div>
+
+  </div>
+  <div class="qf-footer">
+    <button class="qf-btn qf-btn-outline" onclick="clearQuoteForm()"><span data-es>Limpiar</span><span data-en>Clear</span></button>
+    <button class="qf-btn qf-btn-outline" onclick="printQuoteForm()">&#128438; <span data-es>Imprimir / PDF</span><span data-en>Print / PDF</span></button>
+    <button class="qf-btn qf-btn-gold" onclick="emailQuoteForm()">&#9993; <span data-es>Enviar Solicitud</span><span data-en>Send Request</span></button>
+  </div>
+</div>
+</div>
+
 </body>
 </html>
