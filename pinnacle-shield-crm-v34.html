@@ -2501,7 +2501,7 @@ function abrirFormaCotiza(tipo,pid){
     color:p.color||'',tab:'',vin:'',banco:p.aseguradora||'',
     conductor:p.nombre||'',dob_cond:p.nacimiento||''
   });
-  const base=window.location.origin+window.location.pathname.replace('pinnacle-shield-crm-v29.html','');
+  const base=window.location.origin+window.location.pathname.replace(/[^/]*\.html$/,'');
   const fname=tipo==='personal'?'cotizacion_personal_pinnacle_shield.html':'cotizacion_comercial_pinnacle_shield.html';
   window.open(base+fname+'?'+params.toString(),'_blank');
   toast('Forma de cotización abierta ✓','success');
