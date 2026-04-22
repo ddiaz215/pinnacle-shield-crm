@@ -696,7 +696,9 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <div class="stat-card" style="border-left-color:var(--success);"><div class="stat-label">Cerrados</div><div class="stat-value" id="pip-cerrado" style="color:var(--success);">0</div></div>
     <div class="stat-card" style="border-left-color:var(--danger);"><div class="stat-label">Perdidos</div><div class="stat-value" id="pip-perdido" style="color:var(--danger);">0</div></div>
   </div>
-  <div class="pipeline-board" id="pipeline-board"></div>
+  <div style="width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;">
+    <div class="pipeline-board" id="pipeline-board" style="display:flex;gap:10px;padding-bottom:8px;width:max-content;min-width:100%;"></div>
+  </div>
 </div>
 
 <!-- MODALS -->
