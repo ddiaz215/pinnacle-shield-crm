@@ -362,11 +362,14 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
   <div id="com-pane-resumen">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px;">
       <div class="stat-card"><div class="stat-label">Prima anual cartera</div><div class="stat-value" id="com-prima-total">$0</div></div>
-      <div class="stat-card"><div class="stat-label">Comisión bruta estimada</div><div class="stat-value" id="com-est" style="color:var(--gold);">$0</div><div class="stat-sub" id="com-pct-label">15% base</div></div>
-      <div class="stat-card"><div class="stat-label">Override Reborn (6%)</div><div class="stat-value" id="com-override" style="color:var(--danger);font-size:18px;">-$0</div></div>
-      <div class="stat-card" style="border-left-color:#1a7a4a;"><div class="stat-label">Neto Pinnacle Shield</div><div class="stat-value" id="com-neto" style="color:var(--success);">$0</div></div>
+      <div class="stat-card" style="border-left-color:#1a7a4a;"><div class="stat-label">Comisión neta estimada</div><div class="stat-value" id="com-neto" style="color:var(--success);">$0</div><div class="stat-sub">Anual · Tasas por cliente</div></div>
       <div class="stat-card"><div class="stat-label">Pagos recibidos</div><div class="stat-value" id="com-recibido" style="color:var(--info);">$0</div></div>
     </div>
+
+    <!-- Elementos ocultos para compatibilidad con código existente -->
+    <div id="com-est" style="display:none;">$0</div>
+    <div id="com-pct-label" style="display:none;"></div>
+    <div id="com-override" style="display:none;">-$0</div>
 
     <!-- Desglose por aseguradora -->
     <div class="card" style="margin-bottom:16px;">
@@ -725,6 +728,16 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
       </div>
       <div class="form-section-title">📅 Póliza actual</div>
       <div class="form-grid form-grid-3" style="margin-bottom:14px;">
+        <div class="form-group"><label>🏢 Agencia General</label>
+          <select id="c-agencia-general" onchange="autoFillComisionCliente()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;">
+            <option value="reborn">Reborn Agency</option>
+            <option value="benitez">Benítez Insurance</option>
+            <option value="jaramillo">Jaramillo</option>
+            <option value="peoplecare">People Care Financial</option>
+            <option value="usic">USIC</option>
+            <option value="uif">UIF</option>
+          </select>
+        </div>
         <div class="form-group"><label>N° Póliza</label><input type="text" id="c-numpoliza" placeholder="MPP-0446798"></div>
         <div class="form-group"><label>Aseguradora</label>
           <select id="c-aseguradora" onchange="autoFillComisionCliente()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;">
@@ -1181,7 +1194,14 @@ function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
 function refreshDashboard(){
   setEl('dashboard-date',new Date().toLocaleDateString('es-PR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
   const prima=DB.clientes.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
-  const neto=prima*(parseFloat(DB.config.comisionBase||15)/100)*(1-parseFloat(DB.config.override||6)/100);
+  // Calcular comisión neta por cliente: si tiene tasa específica usa esa, si no usa el default
+  const neto=DB.clientes.reduce((s,c)=>{
+    const p=parseFloat(c.prima_anual||c.prima_m)||0;
+    if(!p)return s;
+    // Buscar tasa específica del cliente según aseguradora + lob
+    const r=getClientRate(c);
+    return s+(p*r/100);
+  },0);
   const hoy=new Date();hoy.setHours(0,0,0,0);
   const en30=new Date(hoy);en30.setDate(hoy.getDate()+30);
   const renosUrgentes=DB.clientes.filter(c=>{if(!c.vencimiento)return false;const d=new Date(c.vencimiento);d.setHours(0,0,0,0);return d>=hoy&&d<=en30;});
@@ -1210,7 +1230,7 @@ function renderRenosDashboard(renos){const el=document.getElementById('renos-das
 
 function saveCliente(){
   const id=document.getElementById('cliente-id').value||uid();
-  const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,licencia:(document.getElementById('c-licencia')?.value||'').trim(),tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),lob:document.getElementById('c-lob')?.value||'',pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};
+  const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,licencia:(document.getElementById('c-licencia')?.value||'').trim(),tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),agencia_general:document.getElementById('c-agencia-general')?.value||'reborn',lob:document.getElementById('c-lob')?.value||'',pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,coberturas:document.getElementById('c-coberturas').value,historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};
   if(!obj.nombre){toast('Ingresa el nombre','warning');return;}
   const idx=DB.clientes.findIndex(c=>c.id===id);
   if(idx>=0)DB.clientes[idx]=obj;else DB.clientes.unshift(obj);
@@ -1218,7 +1238,7 @@ function saveCliente(){
   if(obj.vencimiento){const dias=daysDiff(obj.vencimiento);if(dias!==null&&dias>0&&dias<=60){const t={id:uid(),titulo:`Renovación — ${obj.nombre}`,cliente:obj.nombre,tipo:'Cliente',vence:obj.vencimiento,prioridad:dias<=30?'Alta':'Media',estado:'Pendiente',notas:`Póliza ${obj.numpoliza||''} vence en ${dias}d`,created_at:new Date().toISOString()};const exists=DB.tareas.some(x=>x.titulo===t.titulo&&x.cliente===t.cliente);if(!exists){DB.tareas.unshift(t);if(sbConnected)upsertTable('tareas',[t]);toast(`⚡ Tarea de renovación creada (${dias}d)`,'warning');}}}
   closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');
 }
-function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-lob','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';const cp=document.getElementById('c-comision-preview');if(cp)cp.style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
+function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-lob','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';const ag=document.getElementById('c-agencia-general');if(ag)ag.value='reborn';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';const cp=document.getElementById('c-comision-preview');if(cp)cp.style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
 let cliSortDir='asc', prosSortDir='asc';
 function sortClientes(dir,btn){cliSortDir=dir;document.querySelectorAll('#sec-clientes .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderClientes();}
 function sortProspectos(dir,btn){prosSortDir=dir;document.querySelectorAll('#sec-prospectos .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderProspectos();}
@@ -1237,7 +1257,7 @@ function renderClientes(){
     return`<tr><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚗</div><div><strong style="font-size:12px;">${c.nombre}</strong>${c.email?`<div style="font-size:10px;color:var(--text-muted);">${c.email}</div>`:''}</div></div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${c.tel||'—'}</span>${c.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${c.tel}','${c.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[c.anio,c.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${c.aseguradora||'—'}</td><td>${venceCell}</td><td><strong>${(c.prima_anual||c.prima_m)?'$'+parseFloat(c.prima_anual||c.prima_m).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td>${pagoCell}</td><td><span class="badge ${c.estado==='Activo'?'badge-success':'badge-neutral'}">${c.estado||'Activo'}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewCliente('${c.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="openHistorial('${c.id}')">💬${histCount>0?`<span style="font-size:9px;font-weight:700;margin-left:1px;">${histCount}</span>`:''}</button><button class="btn btn-outline btn-sm" onclick="editCliente('${c.id}')">✏</button><button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">✕</button></div></td></tr>`;
   }).join('');
 }
-function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',licencia:'c-licencia',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',lob:'c-lob',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
+function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',licencia:'c-licencia',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',lob:'c-lob',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}const agEl=document.getElementById('c-agencia-general');if(agEl)agEl.value=c.agencia_general||'reborn';document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();openModal('modal-cliente');}
 function viewCliente(id){
   const c=DB.clientes.find(x=>x.id===id);if(!c)return;
   function row(lbl,val){
@@ -1362,7 +1382,11 @@ function viewProspecto(id){
 // _OLD_FLDS_PLACEHOLDER_
 
 function deleteProspecto(id){if(!confirm('¿Eliminar este prospecto?'))return;DB.prospectos=DB.prospectos.filter(p=>p.id!==id);saveLocal();renderProspectos();refreshDashboard();toast('Prospecto eliminado','warning');if(sbConnected){_pendingDeletes[id]=true;sbClient.from('prospectos').delete().eq('id',id).then(({error})=>{if(error){console.warn('Error eliminando prospecto:',error.message);}});}}
-function convertirProspectoAClienteById(id){const p=DB.prospectos.find(x=>x.id===id);if(!p)return;if(!confirm(`¿Convertir a ${p.nombre} en cliente activo?`))return;const c={id:uid(),nombre:p.nombre,nacimiento:p.nacimiento||'',tel:p.tel||'',email:p.email||'',anio:p.anio||'',vehiculo:p.vehiculo||'',color:p.color||'',aseguradora:p.aseguradora||'',prima_anual:p.costo||0,prima_m:p.costo||0,liab:p.liab||'',vencimiento:p.reno_fecha||'',pago:'Al día',estado:'Activo',coberturas:[p.mpp_prop?`MPP Propiedad: ${p.mpp_prop}`:'',p.mpp_auto?`MPP Auto: ${p.mpp_auto}`:'',p.neg_nombre?`Negocio: ${p.neg_nombre} (${p.neg_tipo||''})`:'',p.notas||''].filter(Boolean).join('\n'),historial:[],created_at:new Date().toISOString()};DB.clientes.unshift(c);if(sbConnected)upsertTable('clientes',[c]);DB.prospectos=DB.prospectos.filter(x=>x.id!==id);if(sbConnected)sbClient.from('prospectos').delete().eq('id',p.id);saveLocal();renderProspectos();renderClientes();refreshDashboard();toast(`✅ ${p.nombre} convertido a cliente ✓`,'success');}
+function convertirProspectoAClienteById(id){const p=DB.prospectos.find(x=>x.id===id);if(!p)return;if(!confirm(`¿Convertir a ${p.nombre} en cliente activo?`))return;
+const agencias={reborn:'Reborn Agency',benitez:'Benítez Insurance',jaramillo:'Jaramillo',peoplecare:'People Care Financial',usic:'USIC',uif:'UIF'};
+const ag=prompt(`¿Por cuál agencia general se vendió?\n\nEscribe: reborn, benitez, jaramillo, peoplecare, usic, uif`,p.agencia_general||'reborn');
+const agenciaFinal=(ag&&agencias[ag.toLowerCase().trim()])?ag.toLowerCase().trim():'reborn';
+const c={id:uid(),nombre:p.nombre,nacimiento:p.nacimiento||'',tel:p.tel||'',email:p.email||'',anio:p.anio||'',vehiculo:p.vehiculo||'',color:p.color||'',aseguradora:p.aseguradora||'',agencia_general:agenciaFinal,prima_anual:p.costo||0,prima_m:p.costo||0,liab:p.liab||'',vencimiento:p.reno_fecha||'',pago:'Al día',estado:'Activo',coberturas:[p.mpp_prop?`MPP Propiedad: ${p.mpp_prop}`:'',p.mpp_auto?`MPP Auto: ${p.mpp_auto}`:'',p.neg_nombre?`Negocio: ${p.neg_nombre} (${p.neg_tipo||''})`:'',p.notas||''].filter(Boolean).join('\n'),historial:[],created_at:new Date().toISOString()};DB.clientes.unshift(c);if(sbConnected)upsertTable('clientes',[c]);DB.prospectos=DB.prospectos.filter(x=>x.id!==id);if(sbConnected)sbClient.from('prospectos').delete().eq('id',p.id);saveLocal();renderProspectos();renderClientes();refreshDashboard();toast(`✅ ${p.nombre} convertido a cliente · ${agencias[agenciaFinal]} ✓`,'success');}
 function convertirProspectoACliente(){const id=document.getElementById('pros-id').value;if(id){closeModal('modal-prospecto');convertirProspectoAClienteById(id);}}
 
 function openNewReferido(){
@@ -2035,8 +2059,8 @@ function calcUpdate2(){
     if(r2El) r2El.style.display='none';
     if(emptyEl) emptyEl.style.display='none';
     if(cmpEl) cmpEl.style.display='block';
-    const OVERRIDE=parseFloat(DB.config.override||6)/100;
-    const rebornNeto = rebornRate?(rebornRate*(1-OVERRIDE)):null;
+    // Ambas tasas ya son netas — sin override.
+    const rebornNeto = rebornRate;
     const benGross = benRate?prima*benRate/100:0;
     const rebornNetAmt = rebornRate?prima*rebornNeto/100:0;
     document.getElementById('cmp-reborn-rate2').textContent = rebornRate?rebornRate+'%':'N/A';
@@ -2060,25 +2084,44 @@ function calcUpdate2(){
   if(cmpEl) cmpEl.style.display='none';
   if(r2El) r2El.style.display='block';
 
-  const OVERRIDE = parseFloat(DB.config.override||6)/100;
   const isReborn = (calcAgency==='reborn');
   const rate = entry.rate;
   const gross = prima*rate/100;
-  const ovAmt = isReborn?gross*OVERRIDE:0;
-  const neto = gross-ovAmt;
+  // Las tasas en las tablas YA son netas (lo que Danny recibe directo).
+  // No se aplica override — ya viene descontado en la tabla de Reborn.
+  const ovAmt = 0;
+  const neto = gross;
   const rateLabel = document.getElementById('calc-rate-label2');
   const ovBox = document.getElementById('calc-override-box2');
   const netoLabel = document.getElementById('calc-neto-label2');
-  if(rateLabel) rateLabel.textContent = isReborn?'Tasa Reborn':'Tasa Benitez';
-  if(ovBox) ovBox.style.display = isReborn?'block':'none';
-  if(netoLabel) netoLabel.textContent = isReborn?'Neto Pinnacle Shield':'Comisión (100% tuya)';
+  if(rateLabel) rateLabel.textContent = isReborn?'Tasa Reborn (neta)':'Tasa Benitez (neta)';
+  if(ovBox) ovBox.style.display = 'none';
+  if(netoLabel) netoLabel.textContent = 'Comisión Neta';
   document.getElementById('calc-rate2').textContent = rate+'%';
   document.getElementById('calc-bruta2').textContent = '$'+gross.toLocaleString('en-US',{minimumFractionDigits:2});
-  if(isReborn) document.getElementById('calc-ov2').textContent = '-$'+ovAmt.toLocaleString('en-US',{minimumFractionDigits:2});
   document.getElementById('calc-neto2').textContent = '$'+neto.toLocaleString('en-US',{minimumFractionDigits:2});
 }
 
 function getRate(company,lob){const r=COMMISSION_RATES.find(x=>x.company===company&&x.lob===lob);return r?r.rate:null;}
+
+// ─── Obtener tasa neta por cliente según agencia general ───
+// Regla: la tasa en las tablas ES la neta (lo que Danny realmente recibe), no hay override que restar.
+function getClientRate(c){
+  if(!c)return parseFloat(DB.config.comisionBase||15);
+  const lob=c.lob||'';
+  const aseg=c.aseguradora||'';
+  const agencia=(c.agencia_general||'reborn').toLowerCase();
+  let r=null;
+  if(agencia==='benitez'){
+    const entry=BENITEZ_RATES.find(x=>x.lob===lob);
+    r=entry?entry.rate:null;
+  }else{
+    // reborn, jaramillo, people care, usic, uif → usa tabla Reborn por ahora
+    const entry=COMMISSION_RATES.find(x=>x.lob===lob&&x.company===aseg);
+    r=entry?entry.rate:null;
+  }
+  return r!==null?r:parseFloat(DB.config.comisionBase||15);
+}
 
 // ─── AUTO-FILL COMISION IN CLIENTE FORM ───
 function autoFillComisionCliente(){
@@ -2097,10 +2140,9 @@ function autoFillComisionCliente(){
   if(!aseg||!lob){preview.style.display='none';return;}
   const rate=getRate(aseg,lob);
   if(rate===null){preview.style.display='none';return;}
-  const override=parseFloat(DB.config.override||6)/100;
-  const bruta=rate/100;const neta=bruta*(1-override);
+  const neta=rate/100;
   preview.style.display='block';
-  preview.innerHTML=`✅ Tasa Reborn: <strong>${rate}%</strong> · Override 6% → <strong>Neto Pinnacle: ${(neta*100).toFixed(2)}%</strong> · Ejemplo $1,000 prima = <strong>$${(1000*neta).toFixed(2)} neto</strong>`;
+  preview.innerHTML=`✅ Tasa neta: <strong>${rate}%</strong> · Ejemplo $1,000 prima = <strong>$${(1000*neta).toFixed(2)} comisión</strong>`;
 }
 
 // ─── TAB CONTROL ───
@@ -2178,8 +2220,8 @@ function calcUpdate(){
   if(!company||!lob||!prima){if(res)res.style.display='none';if(emp)emp.style.display='block';return;}
   const rate=getRate(company,lob);
   if(rate===null){if(res)res.style.display='none';if(emp){emp.style.display='block';emp.textContent='No hay tarifa para esta combinación.';}return;}
-  const override=parseFloat(DB.config.override||6)/100;
-  const bruta=prima*(rate/100),ov=bruta*override,neto=bruta-ov;
+  // Tasas ya son netas — sin override.
+  const bruta=prima*(rate/100),ov=0,neto=bruta;
   if(res)res.style.display='block';if(emp)emp.style.display='none';
   setEl('calc-rate',rate.toFixed(1)+'%');
   setEl('calc-bruta','$'+bruta.toFixed(2));
@@ -2189,15 +2231,13 @@ function calcUpdate(){
 
 function renderCalcBestRates(){
   const el=document.getElementById('calc-best-rates');if(!el)return;
-  const override=parseFloat(DB.config.override||6)/100;
-  // Best rate per LOB
+  // Best rate per LOB — tasas ya son netas.
   const bestByLob={};
   COMMISSION_RATES.forEach(r=>{if(!bestByLob[r.lob]||r.rate>bestByLob[r.lob].rate)bestByLob[r.lob]=r;});
   const sorted=Object.values(bestByLob).sort((a,b)=>b.rate-a.rate).slice(0,20);
   const rateColor=r=>r>=17?'var(--success)':r>=12?'var(--warning)':'var(--text-muted)';
   el.innerHTML=sorted.map(r=>{
-    const neto=(r.rate*(1-override)).toFixed(2);
-    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--navy);">${r.lob}</div><div style="font-size:10px;color:var(--text-muted);">${r.company}</div></div><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:${rateColor(r.rate)};">${r.rate}%</div><div style="font-size:10px;color:var(--success);">Neto ${neto}%</div></div></div>`;
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);"><div style="flex:1;"><div style="font-size:12px;font-weight:600;color:var(--navy);">${r.lob}</div><div style="font-size:10px;color:var(--text-muted);">${r.company}</div></div><div style="text-align:right;"><div style="font-size:14px;font-weight:700;color:${rateColor(r.rate)};">${r.rate}%</div><div style="font-size:10px;color:var(--success);">Neto directo</div></div></div>`;
   }).join('');
 }
 
@@ -2237,42 +2277,40 @@ function fuzzyMatchCompany(name){
 
 function renderComisionesDesglose(){
   const el=document.getElementById('com-desglose-aseg');if(!el)return;
-  const override=parseFloat(DB.config.override||6)/100;
   const map={};
   DB.clientes.forEach(c=>{
     if(!c.aseguradora)return;
     const prima=parseFloat(c.prima_anual||c.prima_m)||0;if(!prima)return;
     const key=c.aseguradora;
-    if(!map[key])map[key]={prima:0,comBruta:0,comNeto:0,count:0,matched:null};
+    if(!map[key])map[key]={prima:0,comNeto:0,count:0,matched:null,agencias:new Set()};
     map[key].prima+=prima;
     map[key].count++;
-    // Fuzzy match to find real rate
+    if(c.agencia_general)map[key].agencias.add(c.agencia_general);
+    // Usar getClientRate que ya considera agencia general
+    const rate=getClientRate(c)/100;
+    map[key].comNeto+=prima*rate;
     const matchedCompany=fuzzyMatchCompany(c.aseguradora);
     const lob=c.lob||'';
     const rateEntry=matchedCompany?COMMISSION_RATES.find(r=>r.company===matchedCompany&&(lob?r.lob===lob:true)):null;
-    const rate=rateEntry?rateEntry.rate/100:(parseFloat(DB.config.comisionBase||15)/100);
-    const bruta=prima*rate;
-    map[key].comBruta+=bruta;
-    map[key].comNeto+=bruta*(1-override);
     if(rateEntry)map[key].matched={company:matchedCompany,rate:rateEntry.rate};
   });
   const entries=Object.entries(map).sort((a,b)=>b[1].prima-a[1].prima);
   if(!entries.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><p>Agrega clientes para ver el desglose.</p></div>';return;}
-  const ovPct=parseFloat(DB.config.override||6);
-  el.innerHTML='<table class="crm-table"><thead><tr><th>Aseguradora</th><th>Clientes</th><th>Prima/año</th><th>Tasa Reborn</th><th>Com. bruta</th><th>Neto Pinnacle</th></tr></thead><tbody>'+
+  const agLabel={reborn:'Reborn',benitez:'Benítez',jaramillo:'Jaramillo',peoplecare:'People Care',usic:'USIC',uif:'UIF'};
+  el.innerHTML='<table class="crm-table"><thead><tr><th>Aseguradora</th><th>Clientes</th><th>Agencia</th><th>Prima/año</th><th>Tasa neta</th><th>Comisión neta</th></tr></thead><tbody>'+
     entries.map(([aseg,v])=>{
       const pct=v.matched?v.matched.rate:null;
-      const netoPct=pct?(pct*(1-ovPct/100)).toFixed(1):null;
       const rateColor=pct>=17?'var(--success)':pct>=12?'#a06000':'var(--text-muted)';
       const tasa=pct
-        ?`<span style="font-weight:700;color:${rateColor};font-size:14px;">${pct}%</span><div style="font-size:9px;color:var(--text-muted);">neto ${netoPct}%</div>`
+        ?`<span style="font-weight:700;color:${rateColor};font-size:14px;">${pct}%</span><div style="font-size:9px;color:var(--success);">neto directo</div>`
         :`<span style="color:var(--text-muted);font-size:11px;">ver tarifa</span>`;
+      const ags=[...v.agencias].map(a=>agLabel[a]||a).join(', ')||'—';
       return`<tr>
         <td style="font-size:12px;font-weight:600;">${aseg}</td>
         <td>${v.count}</td>
+        <td style="font-size:11px;">${ags}</td>
         <td>$${v.prima.toLocaleString('en-US',{maximumFractionDigits:0})}</td>
         <td>${tasa}</td>
-        <td style="color:var(--gold);font-weight:600;">$${v.comBruta.toFixed(2)}</td>
         <td style="color:var(--success);font-weight:700;">$${v.comNeto.toFixed(2)}</td>
       </tr>`;
     }).join('')+'</tbody></table>';
@@ -2280,13 +2318,17 @@ function renderComisionesDesglose(){
 
 function renderComisiones(){
   const prima=DB.clientes.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
-  const override=parseFloat(DB.config.override||6)/100,base=parseFloat(DB.config.comisionBase||15)/100;
-  const est=prima*base,ov=est*override,neto=est-ov;
+  // Comisión neta real por cliente (usa su tasa específica y agencia general)
+  const neto=DB.clientes.reduce((s,c)=>{
+    const p=parseFloat(c.prima_anual||c.prima_m)||0;
+    if(!p)return s;
+    return s+(p*getClientRate(c)/100);
+  },0);
   const recibido=DB.comisiones.reduce((s,c)=>s+(parseFloat(c.monto)||0),0);
   setEl('com-prima-total','$'+prima.toLocaleString('en-US',{minimumFractionDigits:2}));
-  setEl('com-est','$'+est.toLocaleString('en-US',{minimumFractionDigits:2}));
-  setEl('com-pct-label',(DB.config.comisionBase||15)+'% base estimado');
-  setEl('com-override','$'+ov.toLocaleString('en-US',{minimumFractionDigits:2}));
+  setEl('com-est','$'+neto.toLocaleString('en-US',{minimumFractionDigits:2}));
+  setEl('com-pct-label','Por tasa');
+  setEl('com-override','$0');
   setEl('com-neto','$'+neto.toLocaleString('en-US',{minimumFractionDigits:2}));
   setEl('com-recibido','$'+recibido.toLocaleString('en-US',{minimumFractionDigits:2}));
   renderComisionesDesglose();
