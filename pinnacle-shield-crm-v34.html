@@ -755,7 +755,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
           </select>
         </div>
         <div class="form-group" id="c-lob-group"><label>Línea de negocio</label>
-          <select id="c-lob" onchange="autoFillComisionCliente()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;"><option value="">— Seleccionar línea —</option><option>Private Passenger Auto</option><option>Business Auto</option><option>Homeowners</option><option>Package (Personal)</option><option>Package (Commercial)</option><option>General Liability</option><option>Commercial Property</option><option>Dwelling Fire</option><option>Personal Liability</option><option>Umbrella (Personal)</option><option>Umbrella (Commercial)</option><option>Flood (Personal)</option><option>Flood (Commercial)</option><option>Condominium</option><option>Installation/Builder Risk</option><option>Boiler &amp; Machinery</option><option>Commercial Fire</option><option>Crime</option><option>Commercial Cyber &amp; Privacy Liability</option><option>Directors &amp; Officers</option><option>Errors &amp; Omissions</option><option>Employment Practices Liability</option><option>Fidelity &amp; Forgery</option><option>Farm &amp; Ranch Owners</option><option>Garage &amp; Dealers</option><option>Inland Marine (Commercial)</option><option>Inland Marine (Personal)</option><option>Medical Malpractice</option><option>Ocean Marine (Commercial)</option><option>Pollution Liability</option><option>Special Multi-Peril</option><option>Surety</option><option>Travel</option><option>Workers Compensation</option><option>Yacht (Commercial)</option><option>Yacht (Personal)</option><option>Doble Interés</option><option>Computers</option><option>Glass &amp; Sign</option></select>
+          <select id="c-lob" onchange="autoFillComisionCliente()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;"><option value="">— Seleccionar línea —</option><option>Private Passenger Auto</option><option>Business Auto</option><option>Homeowners</option><option>Package (Personal)</option><option>Package (Commercial)</option><option>General Liability</option><option>Commercial Property</option><option>Dwelling Fire</option><option>Personal Liability</option><option>Umbrella (Personal)</option><option>Umbrella (Commercial)</option><option>Flood (Personal)</option><option>Flood (Commercial)</option><option>Condominium</option><option>Installation/Builder Risk</option><option>Boiler &amp; Machinery</option><option>Commercial Fire</option><option>Crime</option><option>Commercial Cyber &amp; Privacy Liability</option><option>Directors &amp; Officers</option><option>Errors &amp; Omissions</option><option>Employment Practices Liability</option><option>Fidelity &amp; Forgery</option><option>Farm &amp; Ranch Owners</option><option>Garage &amp; Dealers</option><option>Inland Marine (Commercial)</option><option>Inland Marine (Personal)</option><option>Medical Malpractice</option><option>Ocean Marine (Commercial)</option><option>Pollution Liability</option><option>Special Multi-Peril</option><option>Surety</option><option>Travel</option><option>Workers Compensation</option><option>Yacht (Commercial)</option><option>Yacht (Personal)</option><option>Doble Interes</option><option>Computers</option><option>Glass &amp; Sign (Commercial)</option></select>
         </div>
         <div id="c-comision-preview" style="display:none;padding:8px 14px;border-radius:8px;background:#e8f5ee;border:1px solid rgba(26,122,74,0.3);font-size:12px;color:var(--success);font-weight:600;grid-column:1/-1;"></div>
         <div class="form-group"><label>Estado de pago</label><select id="c-pago"><option value="Al día">✅ Al día</option><option value="Atrasado">⚠️ Atrasado</option><option value="Pendiente">🔵 Pendiente</option></select></div>
@@ -1587,8 +1587,8 @@ const COMMISSION_RATES=[
   {lob:'Directors & Officers',type:'CL',company:'AIG INSURANCE CO',rate:10.5},
   {lob:'Directors & Officers',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
   {lob:'Directors & Officers',type:'CL',company:'CHUBB INSURANCE CO',rate:14.0},
-  {lob:'Doble Interés',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:13.5},
-  {lob:'Doble Interés',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Doble Interes',type:'PL',company:'MULTINATIONAL INSURANCE CO',rate:13.5},
+  {lob:'Doble Interes',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
   {lob:'Computers',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:5.0},
   {lob:'Errors & Omissions',type:'CL',company:'CHUBB INSURANCE CO',rate:14.0},
   {lob:'Errors & Omissions',type:'CL',company:'AIG INSURANCE CO',rate:12.0},
@@ -1607,7 +1607,7 @@ const COMMISSION_RATES=[
   {lob:'Garage & Dealers',type:'CL',company:'ONE ALLIANCE INSURANCE CO.',rate:13.0},
   {lob:'Garage & Dealers',type:'CL',company:'MULTINATIONAL INSURANCE CO',rate:15.5},
   {lob:'Garage & Dealers',type:'CL',company:'GUARDIAN INSURANCE',rate:13.0},
-  {lob:'Glass & Sign',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
+  {lob:'Glass & Sign (Commercial)',type:'CL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
   {lob:'Homeowners',type:'PL',company:'USIC',rate:12.5},
   {lob:'Homeowners',type:'PL',company:'AIG INSURANCE CO',rate:8.0},
   {lob:'Homeowners',type:'PL',company:'COOPERATIVA DE SEGUROS MULTIPLES',rate:13.0},
@@ -2281,34 +2281,29 @@ function renderComisionesDesglose(){
   DB.clientes.forEach(c=>{
     if(!c.aseguradora)return;
     const prima=parseFloat(c.prima_anual||c.prima_m)||0;if(!prima)return;
-    const key=c.aseguradora;
-    if(!map[key])map[key]={prima:0,comNeto:0,count:0,matched:null,agencias:new Set()};
+    const lob=c.lob||'(Sin LOB)';
+    const ag=c.agencia_general||'reborn';
+    const key=`${c.aseguradora}||${lob}||${ag}`;
+    if(!map[key])map[key]={aseguradora:c.aseguradora,lob:lob,agencia:ag,prima:0,comNeto:0,count:0,rate:null};
     map[key].prima+=prima;
     map[key].count++;
-    if(c.agencia_general)map[key].agencias.add(c.agencia_general);
-    // Usar getClientRate que ya considera agencia general
-    const rate=getClientRate(c)/100;
-    map[key].comNeto+=prima*rate;
-    const matchedCompany=fuzzyMatchCompany(c.aseguradora);
-    const lob=c.lob||'';
-    const rateEntry=matchedCompany?COMMISSION_RATES.find(r=>r.company===matchedCompany&&(lob?r.lob===lob:true)):null;
-    if(rateEntry)map[key].matched={company:matchedCompany,rate:rateEntry.rate};
+    const r=getClientRate(c);
+    map[key].comNeto+=prima*r/100;
+    map[key].rate=r;
   });
-  const entries=Object.entries(map).sort((a,b)=>b[1].prima-a[1].prima);
+  const entries=Object.values(map).sort((a,b)=>b.prima-a.prima);
   if(!entries.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div><p>Agrega clientes para ver el desglose.</p></div>';return;}
   const agLabel={reborn:'Reborn',benitez:'Benítez',jaramillo:'Jaramillo',peoplecare:'People Care',usic:'USIC',uif:'UIF'};
-  el.innerHTML='<table class="crm-table"><thead><tr><th>Aseguradora</th><th>Clientes</th><th>Agencia</th><th>Prima/año</th><th>Tasa neta</th><th>Comisión neta</th></tr></thead><tbody>'+
-    entries.map(([aseg,v])=>{
-      const pct=v.matched?v.matched.rate:null;
+  el.innerHTML='<table class="crm-table"><thead><tr><th>Aseguradora</th><th>Línea (LOB)</th><th>Agencia</th><th>Clientes</th><th>Prima/año</th><th>Tasa neta</th><th>Comisión neta</th></tr></thead><tbody>'+
+    entries.map(v=>{
+      const pct=v.rate;
       const rateColor=pct>=17?'var(--success)':pct>=12?'#a06000':'var(--text-muted)';
-      const tasa=pct
-        ?`<span style="font-weight:700;color:${rateColor};font-size:14px;">${pct}%</span><div style="font-size:9px;color:var(--success);">neto directo</div>`
-        :`<span style="color:var(--text-muted);font-size:11px;">ver tarifa</span>`;
-      const ags=[...v.agencias].map(a=>agLabel[a]||a).join(', ')||'—';
+      const tasa=`<span style="font-weight:700;color:${rateColor};font-size:14px;">${pct}%</span><div style="font-size:9px;color:var(--success);">neto directo</div>`;
       return`<tr>
-        <td style="font-size:12px;font-weight:600;">${aseg}</td>
+        <td style="font-size:12px;font-weight:600;">${v.aseguradora}</td>
+        <td style="font-size:11px;color:var(--text-muted);">${v.lob}</td>
+        <td style="font-size:11px;">${agLabel[v.agencia]||v.agencia}</td>
         <td>${v.count}</td>
-        <td style="font-size:11px;">${ags}</td>
         <td>$${v.prima.toLocaleString('en-US',{maximumFractionDigits:0})}</td>
         <td>${tasa}</td>
         <td style="color:var(--success);font-weight:700;">$${v.comNeto.toFixed(2)}</td>
