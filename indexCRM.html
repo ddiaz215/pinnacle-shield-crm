@@ -839,7 +839,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
         </div>
         <div id="c-comision-preview" style="display:none;padding:8px 14px;border-radius:8px;background:#e8f5ee;border:1px solid rgba(26,122,74,0.3);font-size:12px;color:var(--success);font-weight:600;grid-column:1/-1;"></div>
         <div class="form-group"><label>Estado de pago</label><select id="c-pago"><option value="Al día">✅ Al día</option><option value="Atrasado">⚠️ Atrasado</option><option value="Pendiente">🔵 Pendiente</option></select></div>
-        <div class="form-group"><label>✅ Inicio</label><input type="date" id="c-inicio" class="date-highlight" onchange="calcVencimientoCliente()"></div>
+        <div class="form-group"><label>📋 Fecha Emisión</label><input type="date" id="c-inicio" class="date-highlight" onchange="calcVencimientoCliente()" placeholder="Fecha de emisión de póliza"></div>
         <div class="form-group"><label>⚠️ Vencimiento</label><input type="date" id="c-vencimiento" class="date-highlight" onchange="updateClienteRenoPreview()"></div>
         <div class="form-group"><label>Prima anual ($)</label><input type="number" id="c-prima" step="0.01"></div>
         <div class="form-group"><label>Deducible</label><input type="number" id="c-deducible"></div>
@@ -1669,7 +1669,7 @@ function viewCliente(id){
     ${secHdr('Información de la Póliza')}
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px;">
       ${row('Aseguradora',c.aseguradora)}${row('# Póliza',c.numpoliza)}
-      ${row('Inicio',c.inicio)}${row('Vencimiento',c.vencimiento)}
+      ${row('Fecha Emisión',c.inicio)}${row('Vencimiento',c.vencimiento)}
       ${row('Prima Anual',prima)}${row('Forma de Pago',c.pago)}
     </div>
     ${secHdr('Información del Vehículo')}
@@ -2824,7 +2824,8 @@ const FUENTES_VENTA={
 
 // Helper: obtener fecha de venta de un cliente
 function getFechaVenta(c){
-  return c.fecha_conversion||c.created_at||c.inicio||null;
+  // Prioridad: fecha_emision (alias de inicio) → inicio → fecha_conversion → created_at
+  return c.fecha_emision||c.inicio||c.fecha_conversion||c.created_at||null;
 }
 
 // Helper: calcular comisión estimada de un cliente
@@ -3031,25 +3032,30 @@ function renderVentasMes(){
         <thead><tr style="border-bottom:2px solid var(--border);text-align:left;">
           <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Fecha Emisión</th>
           <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Cliente</th>
+          <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">N° Póliza</th>
+          <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Aseguradora</th>
           <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Agencia</th>
-          <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Fuente</th>
           <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;text-align:right;">Prima</th>
           <th style="padding:8px 6px;font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;text-align:right;">Comisión</th>
         </tr></thead>
         <tbody>
         ${ordenadas.map(c=>{
           const f=getFechaVenta(c);
-          const fechaFmt=f?new Date(f+'T12:00:00').toLocaleDateString('es-PR',{year:'numeric',month:'short',day:'numeric'}):'Sin fecha';
+          const fechaFmt=f?new Date(f+'T12:00:00').toLocaleDateString('es-PR',{year:'numeric',month:'short',day:'numeric'}):'Sin fecha emisión';
           const p=parseFloat(c.prima_anual||c.prima_m)||0;
           const com=getComisionEstimada(c);
           let fuente=c.fuente_venta;
           if(!fuente){fuente=c.convertido_desde_prospecto?'prospecto_convertido':'otro';}
           const esHoy=f&&new Date(f+'T12:00:00').toDateString()===new Date().toDateString();
-          return `<tr style="border-bottom:1px solid var(--border);${esHoy?'background:#fffdf0;':''}">
-            <td style="padding:8px 6px;font-weight:${esHoy?'700':'400'};color:${esHoy?'var(--gold)':'inherit'};">${fechaFmt}${esHoy?' ⭐':''}</td>
-            <td style="padding:8px 6px;"><strong>${c.nombre}</strong></td>
+          const sinFecha=!c.inicio&&!c.fecha_emision;
+          return `<tr style="border-bottom:1px solid var(--border);${esHoy?'background:#fffdf0;':''}${sinFecha?'opacity:0.7;':''}">
+            <td style="padding:8px 6px;font-weight:${esHoy?'700':'400'};color:${sinFecha?'var(--text-muted)':esHoy?'var(--gold)':'inherit'};">${fechaFmt}${esHoy?' ⭐':''}${sinFecha?' ⚠':''}
+              ${sinFecha?`<div style="font-size:9px;color:var(--text-muted);">Agregar fecha emisión en cliente</div>`:''}
+            </td>
+            <td style="padding:8px 6px;"><strong>${c.nombre}</strong>${c.lob?`<div style="font-size:10px;color:var(--text-muted);">${c.lob}</div>`:''}</td>
+            <td style="padding:8px 6px;font-size:11px;font-family:monospace;">${c.numpoliza||'—'}</td>
+            <td style="padding:8px 6px;font-size:11px;">${c.aseguradora||'—'}</td>
             <td style="padding:8px 6px;font-size:11px;">${c.agencia_general||'reborn'}</td>
-            <td style="padding:8px 6px;font-size:11px;">${FUENTES_VENTA[fuente]||fuente}</td>
             <td style="padding:8px 6px;text-align:right;">$${p.toLocaleString('en-US',{maximumFractionDigits:0})}</td>
             <td style="padding:8px 6px;text-align:right;"><strong style="color:var(--success);">$${com.toLocaleString('en-US',{maximumFractionDigits:2})}</strong></td>
           </tr>`;
