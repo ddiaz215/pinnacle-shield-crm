@@ -2824,8 +2824,16 @@ const FUENTES_VENTA={
 
 // Helper: obtener fecha de venta de un cliente
 function getFechaVenta(c){
-  // Prioridad: fecha_emision (alias de inicio) → inicio → fecha_conversion → created_at
-  return c.fecha_emision||c.inicio||c.fecha_conversion||c.created_at||null;
+  // SOLO fecha real de emisión — NUNCA created_at (esa es fecha de ingreso al CRM, no de emisión)
+  return c.fecha_emision||c.inicio||c.fecha_conversion||null;
+}
+
+// Parsear fecha sin bug de timezone: 'YYYY-MM-DD' se trata como local, no UTC
+function parseFechaLocal(f){
+  if(!f)return null;
+  if(f.includes('T'))return new Date(f); // ISO con hora: usar normal
+  const[y,m,d]=f.split('-').map(Number);
+  return new Date(y,m-1,d,0,0,0); // constructor local, no UTC
 }
 
 // Helper: calcular comisión estimada de un cliente
@@ -2840,12 +2848,13 @@ function getComisionEstimada(c){
   return p*getClientRate(c)/100;
 }
 
-// Obtener ventas por rango de fechas
+// Obtener ventas por rango de fechas (usa parseFechaLocal para evitar desfase UTC)
 function getVentasEnRango(desde,hasta){
   return DB.clientes.filter(c=>{
     const f=getFechaVenta(c);
     if(!f)return false;
-    const d=new Date(f);
+    const d=parseFechaLocal(f);
+    if(!d||isNaN(d))return false;
     return d>=desde&&d<=hasta;
   });
 }
@@ -3041,12 +3050,12 @@ function renderVentasMes(){
         <tbody>
         ${ordenadas.map(c=>{
           const f=getFechaVenta(c);
-          const fechaFmt=f?new Date(f+'T12:00:00').toLocaleDateString('es-PR',{year:'numeric',month:'short',day:'numeric'}):'Sin fecha emisión';
+          const fechaFmt=f?parseFechaLocal(f).toLocaleDateString('es-PR',{year:'numeric',month:'short',day:'numeric'}):'Sin fecha emisión';
           const p=parseFloat(c.prima_anual||c.prima_m)||0;
           const com=getComisionEstimada(c);
           let fuente=c.fuente_venta;
           if(!fuente){fuente=c.convertido_desde_prospecto?'prospecto_convertido':'otro';}
-          const esHoy=f&&new Date(f+'T12:00:00').toDateString()===new Date().toDateString();
+          const esHoy=f&&parseFechaLocal(f).toDateString()===new Date().toDateString();
           const sinFecha=!c.inicio&&!c.fecha_emision;
           return `<tr style="border-bottom:1px solid var(--border);${esHoy?'background:#fffdf0;':''}${sinFecha?'opacity:0.7;':''}">
             <td style="padding:8px 6px;font-weight:${esHoy?'700':'400'};color:${sinFecha?'var(--text-muted)':esHoy?'var(--gold)':'inherit'};">${fechaFmt}${esHoy?' ⭐':''}${sinFecha?' ⚠':''}
