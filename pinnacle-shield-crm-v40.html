@@ -970,7 +970,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
         <button class="btn btn-outline btn-sm" onclick="addContactLog()" style="height:36px;">+ Añadir</button>
       </div>
     </div>
-    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn btn-success" id="btn-progressive-from-edit" onclick="abrirProgressiveDesdeEditar()" style="background:linear-gradient(135deg,#1a7a4a,#0B4D2E);color:#4ade80;border-color:#1a7a4a;" title="Registrar financiamiento Progressive Finance">🏦 Progressive</button><button class="btn btn-primary" onclick="saveCliente()">Guardar cliente</button></div>
+    <div class="modal-footer"><button class="btn btn-outline" onclick="closeModal('modal-cliente')">Cancelar</button><button class="btn" onclick="abrirProgressiveDesdeEditar()" style="background:linear-gradient(135deg,#1a7a4a,#0B4D2E);color:#4ade80;border:1px solid #1a7a4a;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;">&#127974; Progressive</button><button class="btn btn-primary" onclick="saveCliente()">Guardar cliente</button></div>
   </div>
 </div>
 
@@ -3548,15 +3548,10 @@ function renderProgressiveFinance(){
 
 // Quick modal to add Progressive Finance from client row button
 function abrirProgressiveDesdeEditar(){
-  // Obtener el ID del cliente que está siendo editado
-  const clienteId = document.getElementById('modal-cliente')?._clienteId || window._editingClienteId;
+  var clienteId = window._editingClienteId;
   closeModal('modal-cliente');
-  setTimeout(()=>{
-    if(clienteId) openProgressiveModal(clienteId);
-    else { showSection('comisiones'); showComTab('progressive',document.getElementById('com-tab-progressive')); }
-  }, 200);
+  setTimeout(function(){ if(clienteId) openProgressiveModal(clienteId); else { showSection('comisiones'); showComTab('progressive',document.getElementById('com-tab-progressive')); } }, 200);
 }
-
 function openProgressiveModal(clienteId){
   showSection('comisiones');
   showComTab('progressive',document.getElementById('com-tab-progressive'));
