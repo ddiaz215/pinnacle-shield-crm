@@ -329,10 +329,14 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     </div>
 
     <!-- Mini stats -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;">
       <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
         <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Polizas mes</div>
         <div style="font-size:13px;font-weight:700;color:white;" id="meta-polizas">0</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Prima total emitida</div>
+        <div style="font-size:13px;font-weight:700;color:#C9A227;" id="meta-prima-hist">$0</div>
       </div>
       <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
         <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Progressive mes</div>
@@ -1891,13 +1895,17 @@ function refreshDashboard(){
     setEl('meta-mes-pct',pctMes.toFixed(0)+'%');
     setEl('meta-anio-pct',pctAnio.toFixed(0)+'%');
 
+    // Total prima histórica (suma de todas las primas de clientes)
+    const primaHist=todasVentas.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
+
     // Histórico labels
-    setEl('meta-hist-polizas',todasVentas.length+' polizas');
+    setEl('meta-hist-polizas',todasVentas.length+' polizas · '+fmt2(primaHist)+' prima total');
     setEl('meta-hist-mid',fmt2(totalHist/2));
     setEl('meta-hist-max',fmt2(totalHist));
 
     // Mini stats
     setEl('meta-polizas',vMes2.length);
+    setEl('meta-prima-hist',fmt2(primaHist));
     setEl('meta-com-progressive','$'+pfIncMes.toFixed(2));
     setEl('meta-proyeccion',fmt2(proyeccion));
     const statusEl=document.getElementById('meta-status');
