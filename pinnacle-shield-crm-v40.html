@@ -636,23 +636,51 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
   <div id="com-pane-progressive" style="display:none;">
 
     <!-- Banner Progressive -->
-    <div style="background:linear-gradient(135deg,#0B4D2E,#1a7a4a);border-radius:14px;padding:18px 22px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-      <div>
-        <div style="font-family:'Cinzel',serif;font-size:17px;color:#4ade80;letter-spacing:0.06em;margin-bottom:3px;">🏦 Progressive Finance</div>
-        <div style="font-size:11px;color:rgba(255,255,255,0.7);">Financiamiento de pólizas · Incentivo 1–10% sobre prima financiada</div>
+    <div style="background:linear-gradient(135deg,#0B4D2E,#1a7a4a);border-radius:14px;padding:18px 22px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+          <div style="font-family:'Cinzel',serif;font-size:17px;color:#4ade80;letter-spacing:0.06em;margin-bottom:3px;">&#127974; Progressive Finance</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.7);">Financiamiento de polizas · Incentivo 1-10% sobre prima financiada</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);border-radius:8px;padding:8px 14px;text-align:center;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Total incentivos</div>
+            <div style="font-size:18px;font-weight:700;color:#4ade80;" id="pf-total-incentivos">$0.00</div>
+          </div>
+          <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);border-radius:8px;padding:8px 14px;text-align:center;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Polizas financiadas</div>
+            <div style="font-size:18px;font-weight:700;color:#4ade80;" id="pf-total-count">0</div>
+          </div>
+          <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);border-radius:8px;padding:8px 14px;text-align:center;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Prima total financiada</div>
+            <div style="font-size:18px;font-weight:700;color:#4ade80;" id="pf-total-prima">$0.00</div>
+          </div>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);border-radius:8px;padding:8px 14px;text-align:center;">
-          <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Total incentivos</div>
-          <div style="font-size:18px;font-weight:700;color:#4ade80;" id="pf-total-incentivos">$0.00</div>
-        </div>
-        <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);border-radius:8px;padding:8px 14px;text-align:center;">
-          <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Pólizas financiadas</div>
-          <div style="font-size:18px;font-weight:700;color:#4ade80;" id="pf-total-count">0</div>
-        </div>
-        <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.4);border-radius:8px;padding:8px 14px;text-align:center;">
-          <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;">Prima total financiada</div>
-          <div style="font-size:18px;font-weight:700;color:#4ade80;" id="pf-total-prima">$0.00</div>
+      <!-- Desglose por periodo -->
+      <div style="border-top:1px solid rgba(74,222,128,0.25);padding-top:14px;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Incentivos por periodo</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Hoy</div>
+            <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-dia">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-dia">0 financ.</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Esta semana</div>
+            <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-semana">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-semana">0 financ.</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Este mes</div>
+            <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-mes">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-mes">0 financ.</div>
+          </div>
+          <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Este ano</div>
+            <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-ano">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-ano">0 financ.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -3511,8 +3539,30 @@ function renderProgressiveFinance(){
   if(!DB.progressive_finance)DB.progressive_finance=[];
   const pfs=DB.progressive_finance;
 
-  // Update stats
-  const totalInc=pfs.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+  // Calcular períodos
+  const now=new Date();
+  const hoy=now.toISOString().slice(0,10);
+  const startOfWeek=new Date(now); startOfWeek.setDate(now.getDate()-now.getDay());
+  const startOfMonth=new Date(now.getFullYear(),now.getMonth(),1);
+  const startOfYear=new Date(now.getFullYear(),0,1);
+
+  function filterPeriod(arr,desde){
+    return arr.filter(f=>{
+      if(!f.fecha)return false;
+      const d=new Date(f.fecha+'T00:00:00');
+      return d>=desde;
+    });
+  }
+
+  const pfDia=pfs.filter(f=>f.fecha===hoy);
+  const pfSemana=filterPeriod(pfs,startOfWeek);
+  const pfMes=filterPeriod(pfs,startOfMonth);
+  const pfAno=filterPeriod(pfs,startOfYear);
+
+  function sumInc(arr){return arr.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);}
+
+  // Update stats totales
+  const totalInc=sumInc(pfs);
   const totalPrima=pfs.reduce((s,f)=>s+(parseFloat(f.prima)||0),0);
   const el1=document.getElementById('pf-total-incentivos');
   const el2=document.getElementById('pf-total-count');
@@ -3520,6 +3570,14 @@ function renderProgressiveFinance(){
   if(el1)el1.textContent='$'+totalInc.toFixed(2);
   if(el2)el2.textContent=pfs.length;
   if(el3)el3.textContent='$'+totalPrima.toLocaleString('en-US',{minimumFractionDigits:2});
+
+  // Update desglose por período
+  const fmt=v=>'$'+v.toFixed(2);
+  const setP=(id,val,cnt)=>{const e=document.getElementById(id);if(e)e.textContent=val;const ec=document.getElementById(id.replace('inc','cnt'));if(ec)ec.textContent=cnt+' financ.';};
+  setP('pf-inc-dia',fmt(sumInc(pfDia)),pfDia.length);
+  setP('pf-inc-semana',fmt(sumInc(pfSemana)),pfSemana.length);
+  setP('pf-inc-mes',fmt(sumInc(pfMes)),pfMes.length);
+  setP('pf-inc-ano',fmt(sumInc(pfAno)),pfAno.length);
 
   // Render historial
   const wrap=document.getElementById('pf-historial-wrap');
