@@ -3095,11 +3095,24 @@ function renderVentasMes(){
   const prima=ventas.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
   const com=ventas.reduce((s,c)=>s+getComisionEstimada(c),0);
 
+  // Incentivos Progressive Finance en el mismo período
+  const pfs=DB.progressive_finance||[];
+  const pfPeriodo=pfs.filter(f=>{
+    if(!f.fecha)return false;
+    const d=new Date(f.fecha+'T00:00:00');
+    return d>=desde && d<=hasta;
+  });
+  const pfInc=pfPeriodo.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+  const comTotal=com+pfInc;
+
   setEl('ventas-hoy-count',ventas.length);
-  setEl('ventas-hoy-detalle',`$${prima.toLocaleString('en-US',{maximumFractionDigits:0})} prima · $${com.toLocaleString('en-US',{maximumFractionDigits:0})} comisión`);
+  const detalle=pfInc>0
+    ? `$${prima.toLocaleString('en-US',{maximumFractionDigits:0})} prima · $${com.toLocaleString('en-US',{maximumFractionDigits:0})} comisión + $${pfInc.toFixed(2)} Progressive`
+    : `$${prima.toLocaleString('en-US',{maximumFractionDigits:0})} prima · $${com.toLocaleString('en-US',{maximumFractionDigits:0})} comisión`;
+  setEl('ventas-hoy-detalle',detalle);
   setEl('ventas-mes-count',ventas.length);
-  setEl('ventas-mes-detalle',`Prima total: $${prima.toLocaleString('en-US',{maximumFractionDigits:0})}`);
-  setEl('ventas-mes-comision','$'+com.toLocaleString('en-US',{maximumFractionDigits:2}));
+  setEl('ventas-mes-detalle',`Prima total: $${prima.toLocaleString('en-US',{maximumFractionDigits:0})}${pfInc>0?' · +$'+pfInc.toFixed(2)+' Progressive':''}`);
+  setEl('ventas-mes-comision','$'+comTotal.toLocaleString('en-US',{maximumFractionDigits:2}));
   const ticket=ventas.length?prima/ventas.length:0;
   setEl('ventas-ticket-prom','$'+ticket.toLocaleString('en-US',{maximumFractionDigits:0}));
 
