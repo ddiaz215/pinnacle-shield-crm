@@ -262,8 +262,66 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <div style="flex:1;"><div style="font-size:12px;font-weight:700;color:var(--danger);">Pólizas que vencen pronto</div><div style="font-size:11px;color:var(--text-muted);" id="rab-sub-text"></div></div>
     <div style="background:var(--danger);color:white;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;" id="rab-count">0</div>
   </div>
+  <!-- MEDIDOR DE META -->
+  <div id="meta-banner" style="background:linear-gradient(135deg,#0B1F3A,#1a3a5c);border-radius:14px;padding:16px 20px;margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:#C9A227;letter-spacing:0.05em;">&#127942; Meta mensual — Retiro de Lexus</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px;">$15,000/mes · <span id="meta-dias-restantes">0</span> dias restantes en el mes</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Logrado</div>
+          <div style="font-size:20px;font-weight:700;color:#4ade80;" id="meta-logrado">$0</div>
+        </div>
+        <div style="width:1px;height:36px;background:rgba(255,255,255,0.15);"></div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Falta</div>
+          <div style="font-size:20px;font-weight:700;color:#C9A227;" id="meta-falta">$15,000</div>
+        </div>
+        <div style="width:1px;height:36px;background:rgba(255,255,255,0.15);"></div>
+        <div style="text-align:right;">
+          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Polizas</div>
+          <div style="font-size:20px;font-weight:700;color:white;" id="meta-polizas">0/<span id="meta-polizas-needed">51</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Barra de progreso -->
+    <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:12px;overflow:hidden;margin-bottom:8px;">
+      <div id="meta-barra" style="height:100%;background:linear-gradient(90deg,#1a7a4a,#4ade80);border-radius:20px;width:0%;transition:width 0.8s ease;position:relative;">
+        <div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:8px;font-weight:700;color:white;white-space:nowrap;" id="meta-pct-label">0%</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.35);">
+      <span>$0</span>
+      <span>$3,750 (25%)</span>
+      <span>$7,500 (50%)</span>
+      <span>$11,250 (75%)</span>
+      <span>$15,000</span>
+    </div>
+    <!-- Mini stats -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;">
+      <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Comision polizas</div>
+        <div style="font-size:13px;font-weight:700;color:white;" id="meta-com-polizas">$0</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Progressive</div>
+        <div style="font-size:13px;font-weight:700;color:#4ade80;" id="meta-com-progressive">$0</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Proyeccion</div>
+        <div style="font-size:13px;font-weight:700;color:#C9A227;" id="meta-proyeccion">$0</div>
+      </div>
+      <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Al ritmo actual</div>
+        <div style="font-size:11px;font-weight:700;" id="meta-status" style="color:white;">-</div>
+      </div>
+    </div>
+  </div>
+
   <div class="stats-grid">
-    <div class="stat-card" style="cursor:pointer;background:linear-gradient(135deg,#fff8e1,#fffaf0);" onclick="showSection('comisiones')"><div class="stat-label">💰 Ventas HOY</div><div class="stat-value" id="ds-ventas-hoy" style="color:var(--navy);">0</div><div class="stat-sub" id="ds-ventas-hoy-sub">$0 comisión</div></div>
+    <div class="stat-card" style="cursor:pointer;background:linear-gradient(135deg,#fff8e1,#fffaf0);" onclick="showSection('comisiones')"><div class="stat-label">&#128176; Ventas HOY</div><div class="stat-value" id="ds-ventas-hoy" style="color:var(--navy);">0</div><div class="stat-sub" id="ds-ventas-hoy-sub">$0 comision</div></div>
     <div class="stat-card" style="cursor:pointer;" onclick="showSection('comisiones')"><div class="stat-label">📅 Ventas MES</div><div class="stat-value" id="ds-ventas-mes">0</div><div class="stat-sub" id="ds-ventas-mes-sub">$0 comisión</div></div>
     <div class="stat-card"><div class="stat-label">Clientes activos</div><div class="stat-value" id="ds-clientes">0</div><div class="stat-sub">Total en cartera</div></div>
     <div class="stat-card"><div class="stat-label">Prospectos activos</div><div class="stat-value" id="ds-prospectos">0</div><div class="stat-sub">En gestión</div></div>
@@ -1737,6 +1795,63 @@ function refreshDashboard(){
     setEl('ds-progressive-total','$'+pfTotal.toLocaleString('en-US',{minimumFractionDigits:2}));
     setEl('ds-progressive-sub',pfs.length+' póliza'+(pfs.length!==1?'s':'')+ ' financiada'+(pfs.length!==1?'s':''));
   }catch(e){console.warn('Progressive dashboard:',e.message);}
+
+  // MEDIDOR DE META - Retiro de Lexus
+  try{
+    const META=15000;
+    const now2=new Date();
+    const mesIni2=new Date(now2.getFullYear(),now2.getMonth(),1);
+    const mesFin2=new Date(now2.getFullYear(),now2.getMonth()+1,0,23,59,59);
+    const diasEnMes=mesFin2.getDate();
+    const diaActual=now2.getDate();
+    const diasRestantes=diasEnMes-diaActual;
+
+    // Comisión de pólizas del mes
+    const vMeta=getVentasEnRango(mesIni2,mesFin2);
+    const comPolizas=vMeta.reduce((s,c)=>s+getComisionEstimada(c),0);
+
+    // Incentivos Progressive del mes
+    const pfsMes=(DB.progressive_finance||[]).filter(f=>{
+      if(!f.fecha)return false;
+      const d=new Date(f.fecha+'T00:00:00');
+      return d>=mesIni2&&d<=mesFin2;
+    });
+    const comProgressive=pfsMes.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+
+    const totalLogrado=comPolizas+comProgressive;
+    const falta=Math.max(0,META-totalLogrado);
+    const pct=Math.min(100,(totalLogrado/META)*100);
+
+    // Proyección al ritmo actual
+    const comPorDia=diaActual>0?totalLogrado/diaActual:0;
+    const proyeccion=comPorDia*diasEnMes;
+
+    // Pólizas necesarias (meta / ticket promedio ~295)
+    const ticketCom=vMeta.length>0?(comPolizas/vMeta.length):295;
+    const polizasNecesarias=Math.ceil(META/Math.max(ticketCom,100));
+
+    // Status
+    let status='';let statusColor='white';
+    if(pct>=100){status='&#127881; META LOGRADA!';statusColor='#4ade80';}
+    else if(proyeccion>=META*0.9){status='&#128293; En camino!';statusColor='#4ade80';}
+    else if(proyeccion>=META*0.6){status='&#9889; Buen ritmo';statusColor='#C9A227';}
+    else{status='&#128170; Acelera!';statusColor='#f87171';}
+
+    const fmt2=v=>'$'+v.toLocaleString('en-US',{maximumFractionDigits:0});
+    setEl('meta-logrado',fmt2(totalLogrado));
+    setEl('meta-falta',fmt2(falta));
+    setEl('meta-polizas',vMeta.length);
+    setEl('meta-polizas-needed',polizasNecesarias);
+    setEl('meta-com-polizas',fmt2(comPolizas));
+    setEl('meta-com-progressive','$'+comProgressive.toFixed(2));
+    setEl('meta-proyeccion',fmt2(proyeccion));
+    setEl('meta-dias-restantes',diasRestantes);
+    const barra=document.getElementById('meta-barra');
+    if(barra){barra.style.width=pct.toFixed(1)+'%';barra.style.background=pct>=100?'linear-gradient(90deg,#C9A227,#f0d060)':'linear-gradient(90deg,#1a7a4a,#4ade80)';}
+    setEl('meta-pct-label',pct.toFixed(0)+'%');
+    const statusEl=document.getElementById('meta-status');
+    if(statusEl){statusEl.innerHTML=status;statusEl.style.color=statusColor;}
+  }catch(e){console.warn('Meta banner:',e.message);}
   setEl('badge-clientes',DB.clientes.length);
   setEl('badge-prospectos',DB.prospectos.length);
   setEl('badge-referidos',DB.referidos.filter(r=>r.estado!=='Convertido'&&r.estado!=='No interesado').length);
