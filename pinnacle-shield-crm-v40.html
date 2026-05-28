@@ -264,58 +264,87 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
   </div>
   <!-- MEDIDOR DE META -->
   <div id="meta-banner" style="background:linear-gradient(135deg,#0B1F3A,#1a3a5c);border-radius:14px;padding:16px 20px;margin-bottom:16px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div>
-        <div style="font-family:'Cinzel',serif;font-size:14px;color:#C9A227;letter-spacing:0.05em;">&#127942; Meta mensual — Retiro de Lexus</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.5);margin-top:2px;">$15,000/mes · <span id="meta-dias-restantes">0</span> dias restantes en el mes</div>
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:#C9A227;letter-spacing:0.05em;">&#127942; Meta — Retiro de Lexus · $15,000/mes</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;"><span id="meta-dias-restantes">0</span> dias restantes en mayo · <span id="meta-total-polizas">0</span> polizas totales emitidas</div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center;">
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Logrado</div>
-          <div style="font-size:20px;font-weight:700;color:#4ade80;" id="meta-logrado">$0</div>
+      <div style="display:flex;gap:8px;">
+        <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);border-radius:8px;padding:6px 12px;text-align:center;">
+          <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;">Este mes</div>
+          <div style="font-size:16px;font-weight:700;color:#4ade80;" id="meta-logrado">$0</div>
         </div>
-        <div style="width:1px;height:36px;background:rgba(255,255,255,0.15);"></div>
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Falta</div>
-          <div style="font-size:20px;font-weight:700;color:#C9A227;" id="meta-falta">$15,000</div>
+        <div style="background:rgba(201,162,39,0.15);border:1px solid rgba(201,162,39,0.3);border-radius:8px;padding:6px 12px;text-align:center;">
+          <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;">Ano 2026</div>
+          <div style="font-size:16px;font-weight:700;color:#C9A227;" id="meta-anio">$0</div>
         </div>
-        <div style="width:1px;height:36px;background:rgba(255,255,255,0.15);"></div>
-        <div style="text-align:right;">
-          <div style="font-size:10px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Polizas</div>
-          <div style="font-size:20px;font-weight:700;color:white;" id="meta-polizas">0/<span id="meta-polizas-needed">51</span></div>
+        <div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:6px 12px;text-align:center;">
+          <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;">Total historico</div>
+          <div style="font-size:16px;font-weight:700;color:white;" id="meta-historico">$0</div>
         </div>
       </div>
     </div>
-    <!-- Barra de progreso -->
-    <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:12px;overflow:hidden;margin-bottom:8px;">
-      <div id="meta-barra" style="height:100%;background:linear-gradient(90deg,#1a7a4a,#4ade80);border-radius:20px;width:0%;transition:width 0.8s ease;position:relative;">
-        <div style="position:absolute;right:6px;top:50%;transform:translateY(-50%);font-size:8px;font-weight:700;color:white;white-space:nowrap;" id="meta-pct-label">0%</div>
+
+    <!-- BARRA 1: Este mes -->
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Este mes</span>
+        <span style="font-size:9px;color:#4ade80;font-weight:700;" id="meta-mes-pct">0%</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:10px;overflow:hidden;">
+        <div id="meta-barra-mes" style="height:100%;background:linear-gradient(90deg,#1a7a4a,#4ade80);border-radius:20px;width:0%;transition:width 0.8s ease;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,0.25);margin-top:2px;">
+        <span>$0</span><span>$7,500</span><span>$15,000</span>
       </div>
     </div>
-    <div style="display:flex;justify-content:space-between;font-size:9px;color:rgba(255,255,255,0.35);">
-      <span>$0</span>
-      <span>$3,750 (25%)</span>
-      <span>$7,500 (50%)</span>
-      <span>$11,250 (75%)</span>
-      <span>$15,000</span>
+
+    <!-- BARRA 2: Año 2026 (meta = 12 meses × $15k = $180k) -->
+    <div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Ano 2026 (meta $180,000)</span>
+        <span style="font-size:9px;color:#C9A227;font-weight:700;" id="meta-anio-pct">0%</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:10px;overflow:hidden;">
+        <div id="meta-barra-anio" style="height:100%;background:linear-gradient(90deg,#7a5a00,#C9A227);border-radius:20px;width:0%;transition:width 0.8s ease;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,0.25);margin-top:2px;">
+        <span>$0</span><span>$90,000</span><span>$180,000</span>
+      </div>
     </div>
+
+    <!-- BARRA 3: Total histórico (desde que empezaste - meta libre) -->
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;">Total historico acumulado</span>
+        <span style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:700;" id="meta-hist-polizas">0 polizas</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.1);border-radius:20px;height:10px;overflow:hidden;">
+        <div id="meta-barra-hist" style="height:100%;background:linear-gradient(90deg,#1a3a6a,#4a8adf);border-radius:20px;width:0%;transition:width 0.8s ease;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:rgba(255,255,255,0.25);margin-top:2px;">
+        <span>Inicio</span><span id="meta-hist-mid">-</span><span id="meta-hist-max">-</span>
+      </div>
+    </div>
+
     <!-- Mini stats -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;">
       <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Comision polizas</div>
-        <div style="font-size:13px;font-weight:700;color:white;" id="meta-com-polizas">$0</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Polizas mes</div>
+        <div style="font-size:13px;font-weight:700;color:white;" id="meta-polizas">0</div>
       </div>
       <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Progressive</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Progressive mes</div>
         <div style="font-size:13px;font-weight:700;color:#4ade80;" id="meta-com-progressive">$0</div>
       </div>
       <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Proyeccion</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Proyeccion mes</div>
         <div style="font-size:13px;font-weight:700;color:#C9A227;" id="meta-proyeccion">$0</div>
       </div>
       <div style="background:rgba(255,255,255,0.06);border-radius:8px;padding:7px 10px;text-align:center;">
-        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Al ritmo actual</div>
-        <div style="font-size:11px;font-weight:700;" id="meta-status" style="color:white;">-</div>
+        <div style="font-size:9px;color:rgba(255,255,255,0.4);text-transform:uppercase;">Status</div>
+        <div style="font-size:11px;font-weight:700;" id="meta-status">-</div>
       </div>
     </div>
   </div>
@@ -1799,56 +1828,78 @@ function refreshDashboard(){
   // MEDIDOR DE META - Retiro de Lexus
   try{
     const META=15000;
+    const META_ANIO=180000;
     const now2=new Date();
     const mesIni2=new Date(now2.getFullYear(),now2.getMonth(),1);
     const mesFin2=new Date(now2.getFullYear(),now2.getMonth()+1,0,23,59,59);
+    const anioIni2=new Date(now2.getFullYear(),0,1);
+    const anioFin2=new Date(now2.getFullYear(),11,31,23,59,59);
     const diasEnMes=mesFin2.getDate();
     const diaActual=now2.getDate();
     const diasRestantes=diasEnMes-diaActual;
 
-    // Comisión de pólizas del mes
-    const vMeta=getVentasEnRango(mesIni2,mesFin2);
-    const comPolizas=vMeta.reduce((s,c)=>s+getComisionEstimada(c),0);
+    // Comisiones este mes
+    const vMes2=getVentasEnRango(mesIni2,mesFin2);
+    const comMes2=vMes2.reduce((s,c)=>s+getComisionEstimada(c),0);
+    const pfMes2=(DB.progressive_finance||[]).filter(f=>{if(!f.fecha)return false;const d=new Date(f.fecha+'T00:00:00');return d>=mesIni2&&d<=mesFin2;});
+    const pfIncMes=pfMes2.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+    const totalMes=comMes2+pfIncMes;
 
-    // Incentivos Progressive del mes
-    const pfsMes=(DB.progressive_finance||[]).filter(f=>{
-      if(!f.fecha)return false;
-      const d=new Date(f.fecha+'T00:00:00');
-      return d>=mesIni2&&d<=mesFin2;
-    });
-    const comProgressive=pfsMes.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+    // Comisiones año 2026
+    const vAnio2=getVentasEnRango(anioIni2,anioFin2);
+    const comAnio2=vAnio2.reduce((s,c)=>s+getComisionEstimada(c),0);
+    const pfAnio2=(DB.progressive_finance||[]).filter(f=>{if(!f.fecha)return false;const d=new Date(f.fecha+'T00:00:00');return d>=anioIni2&&d<=anioFin2;});
+    const pfIncAnio=pfAnio2.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+    const totalAnio=comAnio2+pfIncAnio;
 
-    const totalLogrado=comPolizas+comProgressive;
-    const falta=Math.max(0,META-totalLogrado);
-    const pct=Math.min(100,(totalLogrado/META)*100);
+    // Total histórico (todas las pólizas y Progressive)
+    const todasVentas=DB.clientes||[];
+    const comHist=todasVentas.reduce((s,c)=>s+getComisionEstimada(c),0);
+    const pfIncHist=(DB.progressive_finance||[]).reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+    const totalHist=comHist+pfIncHist;
 
-    // Proyección al ritmo actual
-    const comPorDia=diaActual>0?totalLogrado/diaActual:0;
+    // Porcentajes
+    const pctMes=Math.min(100,(totalMes/META)*100);
+    const pctAnio=Math.min(100,(totalAnio/META_ANIO)*100);
+    const pctHist=Math.min(100,(totalHist/META_ANIO)*100);
+
+    // Proyección mes
+    const comPorDia=diaActual>0?totalMes/diaActual:0;
     const proyeccion=comPorDia*diasEnMes;
-
-    // Pólizas necesarias (meta / ticket promedio ~295)
-    const ticketCom=vMeta.length>0?(comPolizas/vMeta.length):295;
-    const polizasNecesarias=Math.ceil(META/Math.max(ticketCom,100));
 
     // Status
     let status='';let statusColor='white';
-    if(pct>=100){status='&#127881; META LOGRADA!';statusColor='#4ade80';}
+    if(pctMes>=100){status='&#127881; META LOGRADA!';statusColor='#4ade80';}
     else if(proyeccion>=META*0.9){status='&#128293; En camino!';statusColor='#4ade80';}
     else if(proyeccion>=META*0.6){status='&#9889; Buen ritmo';statusColor='#C9A227';}
     else{status='&#128170; Acelera!';statusColor='#f87171';}
 
     const fmt2=v=>'$'+v.toLocaleString('en-US',{maximumFractionDigits:0});
-    setEl('meta-logrado',fmt2(totalLogrado));
-    setEl('meta-falta',fmt2(falta));
-    setEl('meta-polizas',vMeta.length);
-    setEl('meta-polizas-needed',polizasNecesarias);
-    setEl('meta-com-polizas',fmt2(comPolizas));
-    setEl('meta-com-progressive','$'+comProgressive.toFixed(2));
-    setEl('meta-proyeccion',fmt2(proyeccion));
+
+    // Actualizar header
+    setEl('meta-logrado',fmt2(totalMes));
+    setEl('meta-anio',fmt2(totalAnio));
+    setEl('meta-historico',fmt2(totalHist));
     setEl('meta-dias-restantes',diasRestantes);
-    const barra=document.getElementById('meta-barra');
-    if(barra){barra.style.width=pct.toFixed(1)+'%';barra.style.background=pct>=100?'linear-gradient(90deg,#C9A227,#f0d060)':'linear-gradient(90deg,#1a7a4a,#4ade80)';}
-    setEl('meta-pct-label',pct.toFixed(0)+'%');
+    setEl('meta-total-polizas',vAnio2.length);
+
+    // Barras
+    const setBar=(id,pct,gold)=>{const b=document.getElementById(id);if(b){b.style.width=pct.toFixed(1)+'%';if(pct>=100)b.style.background=gold?'linear-gradient(90deg,#C9A227,#f0d060)':'linear-gradient(90deg,#4ade80,#86efac)';}};
+    setBar('meta-barra-mes',pctMes,false);
+    setBar('meta-barra-anio',pctAnio,true);
+    setBar('meta-barra-hist',pctHist,false);
+    setEl('meta-mes-pct',pctMes.toFixed(0)+'%');
+    setEl('meta-anio-pct',pctAnio.toFixed(0)+'%');
+
+    // Histórico labels
+    setEl('meta-hist-polizas',todasVentas.length+' polizas');
+    setEl('meta-hist-mid',fmt2(totalHist/2));
+    setEl('meta-hist-max',fmt2(totalHist));
+
+    // Mini stats
+    setEl('meta-polizas',vMes2.length);
+    setEl('meta-com-progressive','$'+pfIncMes.toFixed(2));
+    setEl('meta-proyeccion',fmt2(proyeccion));
     const statusEl=document.getElementById('meta-status');
     if(statusEl){statusEl.innerHTML=status;statusEl.style.color=statusColor;}
   }catch(e){console.warn('Meta banner:',e.message);}
