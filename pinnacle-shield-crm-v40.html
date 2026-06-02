@@ -2166,6 +2166,7 @@ function viewCliente(id){
     </div>
     ${renderCoberturas(c)}
     ${renderProgressiveSection(c)}
+    ${renderEndososSection(c)}
   </div>`;
   const overlay=document.createElement('div');overlay.className='modal-overlay open';
   overlay.innerHTML=`<div class="modal" style="max-width:600px;"><div class="modal-header"><span class="modal-title">🚗 Expediente · ${c.nombre}</span><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div><div class="modal-body">${html}</div><div class="modal-footer"><button class="btn btn-outline" onclick="this.closest('.modal-overlay').remove()">Cerrar</button><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove();editCliente('${c.id}')">✏ Editar</button></div></div>`;
@@ -3533,7 +3534,22 @@ function renderVentasMes(){
   // Lista de pólizas emitidas en el período
   const listaEl=document.getElementById('ventas-lista-mes');
   if(listaEl){
-    if(!ventas.length){
+    // Endosos del período
+    const endososPeriodo=(DB.endosos||[]).filter(e=>{
+      if(!e.fecha)return false;
+      const d=new Date(e.fecha+'T00:00:00');
+      return d>=desde&&d<=hasta;
+    });
+    const comEndosos=endososPeriodo.reduce((s,e)=>s+(parseFloat(e.comision_estimada)||0),0);
+
+    // Actualizar total de comisión con endosos
+    if(endososPeriodo.length>0){
+      const nuevoTotal=comTotal+comEndosos;
+      setEl('ventas-mes-comision','$'+nuevoTotal.toLocaleString('en-US',{maximumFractionDigits:2}));
+      setEl('ventas-mes-detalle',`Prima total: $${prima.toLocaleString('en-US',{maximumFractionDigits:0})}${pfInc>0?' · +$'+pfInc.toFixed(2)+' Progressive':''}${comEndosos>0?' · +$'+comEndosos.toFixed(2)+' endosos':''}`);
+    }
+
+    if(!ventas.length && !endososPeriodo.length){
       listaEl.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>Sin pólizas emitidas en este período</p></div>';
     } else {
       const ordenadas=[...ventas].sort((a,b)=>new Date(getFechaVenta(b))-new Date(getFechaVenta(a)));
@@ -3569,6 +3585,25 @@ function renderVentasMes(){
             <td style="padding:8px 6px;text-align:right;"><strong style="color:var(--success);">$${com.toLocaleString('en-US',{maximumFractionDigits:2})}</strong></td>
           </tr>`;
         }).join('')}
+        ${endososPeriodo.length>0?`
+        <tr style="background:#f0f4ff;border-top:2px solid #1a4a8a;">
+          <td colspan="7" style="padding:6px 8px;font-size:10px;font-weight:700;color:#1a4a8a;text-transform:uppercase;letter-spacing:1px;">📋 Endosos del período</td>
+        </tr>
+        ${endososPeriodo.sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0)).map(e=>`
+        <tr style="border-bottom:1px solid #dce8ff;background:#f8faff;">
+          <td style="padding:8px 6px;font-size:11px;">${e.fecha||'—'}</td>
+          <td style="padding:8px 6px;"><strong style="font-size:11px;">${e.cliente_nombre||'—'}</strong><div style="font-size:10px;color:#1a4a8a;">${e.tipo} · ${e.descripcion||''}</div></td>
+          <td style="padding:8px 6px;font-size:11px;font-family:monospace;">${e.numpoliza||'—'}</td>
+          <td style="padding:8px 6px;font-size:11px;">Endoso</td>
+          <td style="padding:8px 6px;font-size:11px;">reborn</td>
+          <td style="padding:8px 6px;text-align:right;font-size:11px;">$${parseFloat(e.prima||0).toFixed(2)}</td>
+          <td style="padding:8px 6px;text-align:right;"><strong style="color:#1a4a8a;">$${parseFloat(e.comision_estimada||0).toFixed(2)}</strong></td>
+        </tr>`).join('')}
+        <tr style="background:#e8eeff;border-top:1px solid #1a4a8a;">
+          <td colspan="5" style="padding:8px;font-size:11px;font-weight:700;color:#1a4a8a;">Total endosos del período</td>
+          <td style="padding:8px;text-align:right;font-size:11px;font-weight:700;color:#1a4a8a;">$${endososPeriodo.reduce((s,e)=>s+(parseFloat(e.prima)||0),0).toFixed(2)}</td>
+          <td style="padding:8px;text-align:right;font-size:12px;font-weight:700;color:#1a4a8a;">$${comEndosos.toFixed(2)}</td>
+        </tr>`:''}
         </tbody></table></div>`;
     }
   }
@@ -3963,6 +3998,32 @@ function renderProgressiveFinance(){
 }
 
 // Quick modal to add Progressive Finance from client row button
+
+function renderEndososSection(c){
+  const endosos=(DB.endosos||[]).filter(e=>e.cliente_id===c.id);
+  if(!endosos.length) return '';
+  const totalPrima=endosos.reduce((s,e)=>s+(parseFloat(e.prima)||0),0);
+  const totalCom=endosos.reduce((s,e)=>s+(parseFloat(e.comision_estimada)||0),0);
+  return `<div style="margin-bottom:8px;">
+    <div style="font-size:10px;font-weight:700;color:#1a4a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #dce8ff;">
+      📋 Endosos (${endosos.length}) · Prima adicional total: $${totalPrima.toFixed(2)} · Comisión: $${totalCom.toFixed(2)}
+    </div>
+    <div style="display:grid;gap:6px;">
+      ${endosos.sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0)).map(e=>`
+      <div style="background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1px solid rgba(26,74,138,0.2);border-radius:8px;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:11px;font-weight:600;color:#1a4a8a;">${e.tipo} · ${e.fecha||'—'}</div>
+          <div style="font-size:10px;color:var(--text-muted);">${e.descripcion||''} ${e.numpoliza?'· '+e.numpoliza:''}</div>
+          ${e.notas?`<div style="font-size:10px;color:var(--text-muted);font-style:italic;">${e.notas}</div>`:''}
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:13px;font-weight:700;color:#1a4a8a;">$${parseFloat(e.prima||0).toFixed(2)}</div>
+          <div style="font-size:9px;color:var(--success);">Com: $${parseFloat(e.comision_estimada||0).toFixed(2)}</div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
 
 function renderCoberturas(c){
   if(!c.coberturas) return '';
