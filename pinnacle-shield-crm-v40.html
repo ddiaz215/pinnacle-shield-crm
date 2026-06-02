@@ -977,6 +977,67 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
   </div>
 </div>
 
+
+<!-- MODAL ENDOSOS -->
+<div class="modal-overlay" id="modal-endosos">
+  <div class="modal" style="max-width:680px;">
+    <div class="modal-header">
+      <span class="modal-title">📋 Endosos · <span id="endosos-cliente-nombre">Cliente</span></span>
+      <button class="modal-close" onclick="closeModal('modal-endosos')">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Formulario nuevo endoso -->
+      <div style="background:linear-gradient(135deg,#f0f4ff,#e8eeff);border:1px solid rgba(26,74,138,0.2);border-radius:12px;padding:16px;margin-bottom:16px;">
+        <div style="font-size:11px;font-weight:700;color:#1a4a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">+ Nuevo Endoso</div>
+        <input type="hidden" id="endoso-cliente-id">
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label>Tipo de endoso</label>
+            <select id="endoso-tipo" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;">
+              <option value="Adicion de vehiculo">Adición de vehículo</option>
+              <option value="Eliminacion de vehiculo">Eliminación de vehículo</option>
+              <option value="Cambio de vehiculo">Cambio de vehículo</option>
+              <option value="Adicion de conductor">Adición de conductor</option>
+              <option value="Articulo de valor">Artículo de valor</option>
+              <option value="Cambio de cobertura">Cambio de cobertura</option>
+              <option value="Cambio de direccion">Cambio de dirección</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fecha endoso</label>
+            <input type="date" id="endoso-fecha">
+          </div>
+          <div class="form-group">
+            <label>Prima adicional ($)</label>
+            <input type="number" id="endoso-prima" placeholder="0.00" step="0.01">
+          </div>
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label>Descripción (vehículo, artículo, etc.)</label>
+            <input type="text" id="endoso-descripcion" placeholder="Ej: 2024 Nissan Rogue KKL259">
+          </div>
+          <div class="form-group">
+            <label>Núm. Endoso / Póliza</label>
+            <input type="text" id="endoso-numpoliza" placeholder="MPP-0000000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notas</label>
+          <textarea id="endoso-notas" rows="2" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;resize:vertical;" placeholder="Notas adicionales..."></textarea>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+          <button class="btn btn-primary" onclick="saveEndoso()">Guardar endoso</button>
+        </div>
+      </div>
+      <!-- Lista de endosos -->
+      <div id="endosos-lista">
+        <div style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px;">No hay endosos registrados</div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- PIPELINE -->
 <div id="sec-pipeline" class="section">
   <div class="page-header">
@@ -1334,7 +1395,7 @@ let segFiltroActivo='Todos';
 let tareaFiltroActivo='Todos';
 
 const DEFAULT_CFG={sbUrl:'https://oljsjvsakzymxrsfkbda.supabase.co',sbKey:'sb_publishable_x8DOB_xZ-umyV0eIbP9B7Q_dfXfaIaO',agencia:'Pinnacle Shield Advisors LLC',productor:'Daniel Díaz Rodríguez',tel:'939-392-5008',email:'ddiaz@pinnacleshieldpr.com',apoyo:'Reborn Agency Inc.',override:6,comisionBase:15,autosave:true};
-let DB={clientes:[],polizas:[],prospectos:[],comisiones:[],referidos:[],tareas:[],seguimiento:[],progressive_finance:[],config:{...DEFAULT_CFG}};
+let DB={clientes:[],polizas:[],prospectos:[],comisiones:[],referidos:[],tareas:[],seguimiento:[],progressive_finance:[],endosos:[],config:{...DEFAULT_CFG}};
 
 function daysDiff(dateStr){if(!dateStr)return null;const d=new Date(dateStr);d.setHours(0,0,0,0);const h=new Date();h.setHours(0,0,0,0);return Math.round((d-h)/86400000);}
 function renoClass(dias){if(dias===null)return'future';if(dias<0)return'expired';if(dias<=30)return'urgent';if(dias<=60)return'soon';if(dias<=90)return'ok';return'future';}
@@ -1658,7 +1719,7 @@ async function pushToSupabase(){
 
 async function loadFromSupabase(){
   if(!sbClient||!sbConnected)return;
-  const tables=['clientes','polizas','prospectos','comisiones','referidos','tareas','progressive_finance'];
+  const tables=['clientes','polizas','prospectos','comisiones','referidos','tareas','progressive_finance','endosos'];
   let sbHasData=false;
   const sbData={};
   for(const t of tables){
@@ -1775,6 +1836,113 @@ function startAutoSave(){
 }
 function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
 
+
+// ============ ENDOSOS ============
+function openEndososModal(clienteId){
+  const c = DB.clientes.find(x=>x.id===clienteId);
+  if(!c) return;
+  document.getElementById('endoso-cliente-id').value = clienteId;
+  document.getElementById('endosas-cliente-nombre') && (document.getElementById('endosas-cliente-nombre').textContent = c.nombre);
+  const nombreEl = document.getElementById('endosos-cliente-nombre');
+  if(nombreEl) nombreEl.textContent = c.nombre;
+  document.getElementById('endoso-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('endoso-prima').value = '';
+  document.getElementById('endoso-descripcion').value = '';
+  document.getElementById('endoso-numpoliza').value = c.numpoliza || '';
+  document.getElementById('endoso-notas').value = '';
+  renderEndososLista(clienteId);
+  openModal('modal-endosos');
+}
+
+function renderEndososLista(clienteId){
+  const endosos = (DB.endosos||[]).filter(e=>e.cliente_id===clienteId);
+  const el = document.getElementById('endosos-lista');
+  if(!endosos.length){
+    el.innerHTML='<div style="text-align:center;padding:24px;color:var(--text-muted);font-size:12px;">No hay endosos registrados para este cliente</div>';
+    return;
+  }
+  const totalPrima = endosos.reduce((s,e)=>s+(parseFloat(e.prima)||0),0);
+  el.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">
+      Historial de endosos · ${endosos.length} registros · Prima adicional total: <span style="color:var(--success);">$${totalPrima.toLocaleString('en-US',{minimumFractionDigits:2})}</span>
+    </div>
+    <div style="display:grid;gap:8px;">
+      ${endosos.sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0)).map(e=>{
+        const com = parseFloat(e.comision_estimada||0);
+        return `<div style="background:white;border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+          <div style="flex:1;">
+            <div style="font-size:12px;font-weight:700;color:var(--navy);">${e.tipo||'Endoso'} ${e.fecha?'· '+e.fecha:''}</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${e.descripcion||''} ${e.numpoliza?'· '+e.numpoliza:''}</div>
+            ${e.notas?`<div style="font-size:10px;color:var(--text-muted);margin-top:4px;font-style:italic;">${e.notas}</div>`:''}
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:14px;font-weight:700;color:var(--navy);">$${parseFloat(e.prima||0).toFixed(2)}</div>
+            ${com>0?`<div style="font-size:10px;color:var(--success);">Com: $${com.toFixed(2)}</div>`:''}
+          </div>
+          <button onclick="deleteEndoso('${e.id}','${e.cliente_id}')" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:4px;">✕</button>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+async function saveEndoso(){
+  const clienteId = document.getElementById('endoso-cliente-id').value;
+  const tipo = document.getElementById('endoso-tipo').value;
+  const fecha = document.getElementById('endoso-fecha').value;
+  const prima = parseFloat(document.getElementById('endoso-prima').value)||0;
+  const descripcion = document.getElementById('endoso-descripcion').value.trim();
+  const numpoliza = document.getElementById('endoso-numpoliza').value.trim();
+  const notas = document.getElementById('endoso-notas').value.trim();
+
+  if(!clienteId || !tipo){ toast('Completa los campos requeridos','warning'); return; }
+
+  const c = DB.clientes.find(x=>x.id===clienteId);
+  const tasaCom = c ? getComisionRate(c) : 0.18;
+  const comision = prima * tasaCom;
+
+  const endoso = {
+    id: 'end'+Date.now().toString(36),
+    cliente_id: clienteId,
+    cliente_nombre: c ? c.nombre : '',
+    tipo, fecha, prima, descripcion, numpoliza, notas,
+    comision_estimada: comision,
+    created_at: new Date().toISOString()
+  };
+
+  if(!DB.endosos) DB.endosos = [];
+  DB.endosos.push(endoso);
+
+  // Guardar en Supabase
+  if(sbClient && sbConnected){
+    try{
+      await sbClient.from('endosos').insert([endoso]);
+      toast('Endoso guardado ✓','success');
+    }catch(e){
+      toast('Guardado localmente','info');
+    }
+  }
+
+  // Limpiar form
+  document.getElementById('endoso-prima').value = '';
+  document.getElementById('endoso-descripcion').value = '';
+  document.getElementById('endoso-notas').value = '';
+
+  renderEndososLista(clienteId);
+  refreshDashboard();
+}
+
+async function deleteEndoso(endosoId, clienteId){
+  if(!confirm('¿Eliminar este endoso?')) return;
+  DB.endosos = (DB.endosos||[]).filter(e=>e.id!==endosoId);
+  if(sbClient && sbConnected){
+    try{ await sbClient.from('endosos').delete().eq('id',endosoId); }catch(e){}
+  }
+  renderEndososLista(clienteId);
+  refreshDashboard();
+  toast('Endoso eliminado','info');
+}
+// ============ FIN ENDOSOS ============
+
 function refreshDashboard(){
   setEl('dashboard-date',new Date().toLocaleDateString('es-PR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
   const prima=DB.clientes.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
@@ -1845,9 +2013,12 @@ function refreshDashboard(){
     // Comisiones este mes
     const vMes2=getVentasEnRango(mesIni2,mesFin2);
     const comMes2=vMes2.reduce((s,c)=>s+getComisionEstimada(c),0);
+    // Comisiones de endosos del mes
+    const endososMes=(DB.endosos||[]).filter(e=>{if(!e.fecha)return false;const d=new Date(e.fecha+'T00:00:00');return d>=mesIni2&&d<=mesFin2;});
+    const comEndososMes=endososMes.reduce((s,e)=>s+(parseFloat(e.comision_estimada)||0),0);
     const pfMes2=(DB.progressive_finance||[]).filter(f=>{if(!f.fecha)return false;const d=new Date(f.fecha+'T00:00:00');return d>=mesIni2&&d<=mesFin2;});
     const pfIncMes=pfMes2.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
-    const totalMes=comMes2+pfIncMes;
+    const totalMes=comMes2+pfIncMes+comEndososMes;
 
     // Comisiones año 2026
     const vAnio2=getVentasEnRango(anioIni2,anioFin2);
@@ -1953,7 +2124,7 @@ function renderClientes(){
     const venceCell=c.vencimiento?`<div><span class="badge ${cls==='urgent'?'badge-danger':cls==='soon'?'badge-warning':cls==='ok'?'badge-success':'badge-neutral'}">${c.vencimiento}</span><div style="font-size:10px;color:var(--text-muted);margin-top:1px;">${dias!==null?renoLabel(dias):''}</div></div>`:'—';
     const pagoCell=c.pago?`<span class="payment-badge ${c.pago==='Al día'?'al-dia':c.pago==='Atrasado'?'atrasado':'pendiente'}">${c.pago==='Al día'?'✅':c.pago==='Atrasado'?'⚠️':'🔵'} ${c.pago}</span>`:'—';
     const histCount=(c.historial||[]).length;
-    return`<tr><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚗</div><div><strong style="font-size:12px;">${c.nombre}</strong>${c.email?`<div style="font-size:10px;color:var(--text-muted);">${c.email}</div>`:''}</div></div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${c.tel||'—'}</span>${c.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${c.tel}','${c.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[c.anio,c.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${c.aseguradora||'—'}</td><td>${venceCell}</td><td><strong>${(c.prima_anual||c.prima_m)?'$'+parseFloat(c.prima_anual||c.prima_m).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td>${pagoCell}</td><td><span class="badge ${c.estado==='Activo'?'badge-success':'badge-neutral'}">${c.estado||'Activo'}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewCliente('${c.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="openHistorial('${c.id}')">💬${histCount>0?`<span style="font-size:9px;font-weight:700;margin-left:1px;">${histCount}</span>`:''}</button><button class="btn btn-outline btn-sm" onclick="editCliente('${c.id}')">✏</button><button class="btn btn-sm" onclick="openProgressiveModal('${c.id}')" title="Progressive Finance" style="background:linear-gradient(135deg,#1a7a4a,#0B4D2E);color:#4ade80;border:1px solid #1a7a4a;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10px;font-weight:600;">🏦</button><button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">✕</button></div></td></tr>`;
+    return`<tr><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚗</div><div><strong style="font-size:12px;">${c.nombre}</strong>${c.email?`<div style="font-size:10px;color:var(--text-muted);">${c.email}</div>`:''}</div></div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${c.tel||'—'}</span>${c.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${c.tel}','${c.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[c.anio,c.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${c.aseguradora||'—'}</td><td>${venceCell}</td><td><strong>${(c.prima_anual||c.prima_m)?'$'+parseFloat(c.prima_anual||c.prima_m).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td>${pagoCell}</td><td><span class="badge ${c.estado==='Activo'?'badge-success':'badge-neutral'}">${c.estado||'Activo'}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewCliente('${c.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="openHistorial('${c.id}')">💬${histCount>0?`<span style="font-size:9px;font-weight:700;margin-left:1px;">${histCount}</span>`:''}</button><button class="btn btn-outline btn-sm" onclick="editCliente('${c.id}')">✏</button><button class="btn btn-sm" onclick="openProgressiveModal('${c.id}')" title="Progressive Finance" style="background:linear-gradient(135deg,#1a7a4a,#0B4D2E);color:#4ade80;border:1px solid #1a7a4a;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10px;font-weight:600;">🏦</button><button class="btn btn-sm" onclick="openEndososModal('${c.id}')" title="Endosos" style="background:linear-gradient(135deg,#1a4a8a,#2d6abf);color:#90cdf4;border:1px solid #1a4a8a;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10px;font-weight:600;">+End</button><button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">✕</button></div></td></tr>`;
   }).join('');
 }
 function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',licencia:'c-licencia',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',lob:'c-lob',inicio:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}const agEl=document.getElementById('c-agencia-general');if(agEl)agEl.value=c.agencia_general||'reborn';document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';const fEl=document.getElementById('c-fuente-venta');if(fEl)fEl.value=c.fuente_venta||(c.convertido_desde_prospecto?'prospecto_convertido':'');tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();window._editingClienteId=id;openModal('modal-cliente');}
