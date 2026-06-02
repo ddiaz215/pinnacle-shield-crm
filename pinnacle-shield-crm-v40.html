@@ -1897,15 +1897,15 @@ async function saveEndoso(){
   if(!clienteId || !tipo){ toast('Completa los campos requeridos','warning'); return; }
 
   const c = DB.clientes.find(x=>x.id===clienteId);
-  const tasaCom = c ? getComisionRate(c) : 0.18;
-  const comision = prima * tasaCom;
+  // Calcular comisión basada en la tasa del cliente
+  const comision_estimada = c ? getComisionEstimada({...c, prima_anual: prima, prima_m: 0}) : prima * 0.18;
 
   const endoso = {
     id: 'end'+Date.now().toString(36),
     cliente_id: clienteId,
     cliente_nombre: c ? c.nombre : '',
     tipo, fecha, prima, descripcion, numpoliza, notas,
-    comision_estimada: comision,
+    comision_estimada: comision_estimada,
     created_at: new Date().toISOString()
   };
 
