@@ -945,10 +945,66 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
 <!-- RESPALDO -->
 <div id="sec-respaldo" class="section">
   <div class="page-header"><div><div class="page-title">Respaldo</div><div class="page-sub">Backup · Restauración</div></div></div>
+
+  <!-- Banner recordatorio -->
+  <div id="backup-reminder-banner" style="display:none;background:linear-gradient(135deg,#0B1F3A,#1a3a5c);border-radius:14px;padding:16px 20px;margin-bottom:16px;">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div style="font-size:28px;">🔔</div>
+      <div style="flex:1;">
+        <div style="font-family:'Cinzel',serif;font-size:14px;color:#C9A227;letter-spacing:0.05em;">Recordatorio de Respaldo</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:3px;" id="backup-reminder-msg">Es hora de hacer tu respaldo mensual.</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="exportJSON();markBackupDone()" style="font-size:12px;">📥 Exportar ahora</button>
+        <button class="btn btn-outline" onclick="markBackupDone()" style="font-size:12px;color:rgba(255,255,255,0.6);border-color:rgba(255,255,255,0.2);">Lo haré después</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado del último respaldo -->
+  <div style="background:#f8f9fa;border-radius:12px;padding:14px 18px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+    <div>
+      <div style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;">Último respaldo local</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:3px;" id="ultimo-backup-fecha">Nunca realizado</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;">Próximo recordatorio</div>
+      <div style="font-size:13px;color:var(--text-muted);margin-top:3px;" id="proximo-backup-fecha">—</div>
+    </div>
+  </div>
+
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <div class="config-section"><h3>📥 Exportar</h3><button class="btn btn-primary" onclick="exportJSON()">Exportar JSON</button><button class="btn btn-outline" style="margin-left:8px;" onclick="exportCSV()">Exportar CSV</button></div>
-    <div class="config-section"><h3>📤 Importar</h3><input type="file" id="import-file" accept=".json" onchange="importJSON(this)" style="display:none;"><button class="btn btn-primary" onclick="document.getElementById('import-file').click()">Seleccionar JSON</button></div>
-    <div class="config-section" style="grid-column:1/-1;"><h3>☁ Supabase</h3><div style="display:flex;gap:10px;"><button class="btn btn-gold" onclick="syncAll()">Sincronizar ahora</button><button class="btn btn-outline" onclick="checkSupabaseConnection()">Verificar conexión</button></div></div>
+    <div class="config-section">
+      <h3>📥 Exportar</h3>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Descarga todos tus datos en un archivo. Guárdalo en Google Drive o iCloud.</p>
+      <button class="btn btn-primary" onclick="exportJSON();markBackupDone()">Exportar JSON</button>
+      <button class="btn btn-outline" style="margin-left:8px;" onclick="exportCSV()">Exportar CSV</button>
+    </div>
+    <div class="config-section">
+      <h3>📤 Importar</h3>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Restaura tus datos desde un archivo JSON exportado anteriormente.</p>
+      <input type="file" id="import-file" accept=".json" onchange="importJSON(this)" style="display:none;">
+      <button class="btn btn-primary" onclick="document.getElementById('import-file').click()">Seleccionar JSON</button>
+    </div>
+    <div class="config-section" style="grid-column:1/-1;">
+      <h3>☁ Supabase</h3>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">Tus datos están guardados automáticamente en Supabase. Sincroniza manualmente si es necesario.</p>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-gold" onclick="syncAll()">Sincronizar ahora</button>
+        <button class="btn btn-outline" onclick="checkSupabaseConnection()">Verificar conexión</button>
+      </div>
+    </div>
+    <div class="config-section" style="grid-column:1/-1;">
+      <h3>🔔 Recordatorio automático</h3>
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:10px;">El CRM te avisará automáticamente el primer día de cada mes para hacer tu respaldo.</p>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" id="backup-reminder-toggle" onchange="toggleBackupReminder(this.checked)" style="width:16px;height:16px;">
+          <span style="font-size:12px;font-weight:600;">Activar recordatorio mensual</span>
+        </label>
+        <button class="btn btn-outline btn-sm" onclick="exportJSON();markBackupDone()" style="font-size:11px;">Hacer respaldo ahora</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1417,7 +1473,7 @@ function showSection(id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const sec=document.getElementById('sec-'+id);if(sec)sec.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
-  const fns={dashboard:refreshDashboard,clientes:renderClientes,prospectos:renderProspectos,pipeline:renderPipeline,referidos:renderReferidos,comisiones:()=>{renderComisiones();initCalc2();initPeriodoVentas();setPeriodoVentas(_vpPeriodo);renderProgressiveFinance();},renovaciones:renderRenovaciones,seguimiento:renderSeguimiento,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas};
+  const fns={dashboard:refreshDashboard,clientes:renderClientes,prospectos:renderProspectos,pipeline:renderPipeline,referidos:renderReferidos,comisiones:()=>{renderComisiones();initCalc2();initPeriodoVentas();setPeriodoVentas(_vpPeriodo);renderProgressiveFinance();},renovaciones:renderRenovaciones,seguimiento:renderSeguimiento,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas,respaldo:()=>{initBackupReminder();checkBackupAlert();}};
   if(fns[id])fns[id]();
   if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');}
 }
@@ -1942,6 +1998,85 @@ async function deleteEndoso(endosoId, clienteId){
   toast('Endoso eliminado','info');
 }
 // ============ FIN ENDOSOS ============
+
+// ============ RECORDATORIO DE RESPALDO ============
+function initBackupReminder(){
+  const toggle = document.getElementById('backup-reminder-toggle');
+  const enabled = localStorage.getItem('backup-reminder-enabled') !== 'false';
+  if(toggle) toggle.checked = enabled;
+
+  const lastBackup = localStorage.getItem('last-backup-date');
+  const ultimoEl = document.getElementById('ultimo-backup-fecha');
+  const proximoEl = document.getElementById('proximo-backup-fecha');
+
+  if(lastBackup){
+    const d = new Date(lastBackup);
+    if(ultimoEl) ultimoEl.textContent = d.toLocaleDateString('es-PR',{year:'numeric',month:'long',day:'numeric'});
+    // Próximo recordatorio = primer día del mes siguiente
+    const proximo = new Date(d.getFullYear(), d.getMonth()+1, 1);
+    if(proximoEl) proximoEl.textContent = proximo.toLocaleDateString('es-PR',{year:'numeric',month:'long',day:'numeric'});
+  } else {
+    if(ultimoEl) ultimoEl.textContent = 'Nunca realizado ⚠️';
+    if(proximoEl) proximoEl.textContent = 'Hoy mismo recomendado';
+  }
+
+  // Verificar si hay que mostrar el banner
+  if(enabled) checkBackupAlert();
+}
+
+function checkBackupAlert(){
+  const lastBackup = localStorage.getItem('last-backup-date');
+  const banner = document.getElementById('backup-reminder-banner');
+  if(!banner) return;
+
+  const now = new Date();
+  const hoy = now.toISOString().slice(0,10);
+  const dismissed = localStorage.getItem('backup-dismissed-date');
+
+  if(!lastBackup){
+    // Nunca hizo respaldo
+    const msgEl = document.getElementById('backup-reminder-msg');
+    if(msgEl) msgEl.textContent = '⚠️ Nunca has hecho un respaldo. ¡Hazlo ahora para proteger tus datos!';
+    banner.style.display = 'block';
+    return;
+  }
+
+  const last = new Date(lastBackup);
+  const diasDesde = Math.floor((now - last) / (1000*60*60*24));
+
+  // Si ya se descartó hoy, no mostrar
+  if(dismissed === hoy) { banner.style.display='none'; return; }
+
+  // Si pasaron más de 30 días
+  if(diasDesde >= 30){
+    const msgEl = document.getElementById('backup-reminder-msg');
+    if(msgEl) msgEl.textContent = `Han pasado ${diasDesde} días desde tu último respaldo. ¡Es hora de hacer uno nuevo!`;
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+}
+
+function markBackupDone(){
+  const hoy = new Date().toISOString().slice(0,10);
+  localStorage.setItem('last-backup-date', hoy);
+  localStorage.setItem('backup-dismissed-date', hoy);
+  const banner = document.getElementById('backup-reminder-banner');
+  if(banner) banner.style.display = 'none';
+  initBackupReminder();
+  toast('✅ Respaldo registrado — próximo en 30 días','success');
+}
+
+function toggleBackupReminder(enabled){
+  localStorage.setItem('backup-reminder-enabled', enabled);
+  if(enabled) checkBackupAlert();
+  else {
+    const banner = document.getElementById('backup-reminder-banner');
+    if(banner) banner.style.display='none';
+  }
+  toast(enabled ? '🔔 Recordatorio activado' : 'Recordatorio desactivado','info');
+}
+// ============ FIN RECORDATORIO ============
 
 function refreshDashboard(){
   setEl('dashboard-date',new Date().toLocaleDateString('es-PR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
@@ -4114,6 +4249,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     }
   }catch(e){console.warn('v35.5 migración:',e.message);}
   initSupabase();refreshAll();
+  // Verificar recordatorio de respaldo al iniciar
+  setTimeout(()=>{ 
+    const enabled = localStorage.getItem('backup-reminder-enabled') !== 'false';
+    if(enabled) checkBackupAlert();
+  }, 3000);
   document.getElementById('ref-fecha').value=new Date().toISOString().slice(0,10);
   document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
   startAutoSave();
