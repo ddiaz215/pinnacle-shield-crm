@@ -1897,7 +1897,8 @@ async function saveEndoso(){
   if(!clienteId || !tipo){ toast('Completa los campos requeridos','warning'); return; }
 
   const c = DB.clientes.find(x=>x.id===clienteId);
-  const tasaCom = c ? getComisionRate(c) : 0.18;
+  const tasaCom = 0.18;
+
   const comision = prima * tasaCom;
 
   const endoso = {
