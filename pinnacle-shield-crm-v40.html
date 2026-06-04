@@ -4079,6 +4079,62 @@ function saveProgressiveFinance(){
   toast(`✅ Financiamiento registrado · Incentivo: $${incentivo.toFixed(2)}`,'success');
 }
 
+
+function editProgressiveFinance(id){
+  const f=DB.progressive_finance.find(x=>x.id===id);
+  if(!f)return;
+  document.getElementById('edit-pf-id').value=f.id;
+  document.getElementById('edit-pf-cliente-nombre').value=f.cliente_nombre||'';
+  document.getElementById('edit-pf-fecha').value=f.fecha||'';
+  document.getElementById('edit-pf-prima').value=parseFloat(f.prima||0).toFixed(2);
+  const pctEl=document.getElementById('edit-pf-pct');
+  if(pctEl){pctEl.value=f.pct||5;document.getElementById('edit-pf-pct-val').textContent=(f.pct||5)+'%';}
+  document.getElementById('edit-pf-aseguradora').value=f.aseguradora||'';
+  document.getElementById('edit-pf-notas').value=f.notas||'';
+  editPfCalcular();
+  openModal('modal-edit-pf');
+}
+
+function editPfCalcular(){
+  const prima=parseFloat(document.getElementById('edit-pf-prima')?.value||0);
+  const pct=parseFloat(document.getElementById('edit-pf-pct')?.value||5);
+  const prev=document.getElementById('edit-pf-preview');
+  if(!prima||prima<=0){if(prev)prev.style.display='none';return;}
+  const incentivo=prima*(pct/100);
+  if(prev){
+    prev.style.display='block';
+    const pp=document.getElementById('edit-pf-prev-prima');
+    const pi=document.getElementById('edit-pf-prev-incentivo');
+    if(pp)pp.textContent='Prima: $'+prima.toLocaleString('en-US',{minimumFractionDigits:2})+' · '+pct+'%';
+    if(pi)pi.textContent='$'+incentivo.toFixed(2);
+  }
+}
+
+function saveEditProgressiveFinance(){
+  const id=document.getElementById('edit-pf-id').value;
+  const fecha=document.getElementById('edit-pf-fecha').value;
+  const prima=parseFloat(document.getElementById('edit-pf-prima').value||0);
+  const pct=parseFloat(document.getElementById('edit-pf-pct').value||5);
+  const aseguradora=document.getElementById('edit-pf-aseguradora').value||'';
+  const notas=document.getElementById('edit-pf-notas').value||'';
+
+  if(!fecha){toast('Selecciona la fecha','warning');return;}
+  if(!prima||prima<=0){toast('Ingresa la prima','warning');return;}
+  if(pct<1||pct>10){toast('El incentivo debe ser entre 1% y 10%','warning');return;}
+
+  const incentivo=prima*(pct/100);
+  const idx=DB.progressive_finance.findIndex(x=>x.id===id);
+  if(idx===-1){toast('Registro no encontrado','error');return;}
+
+  DB.progressive_finance[idx]={...DB.progressive_finance[idx],fecha,prima,pct,incentivo,aseguradora,notas};
+  saveLocal();
+  if(sbConnected)upsertTable('progressive_finance',[DB.progressive_finance[idx]]);
+  closeModal('modal-edit-pf');
+  renderProgressiveFinance();
+  setPeriodoVentas(_vpPeriodo);
+  toast('Financiamiento actualizado ✓','success');
+}
+
 function deleteProgressiveFinance(id){
   if(!confirm('¿Eliminar este registro?'))return;
   DB.progressive_finance=(DB.progressive_finance||[]).filter(f=>f.id!==id);
@@ -4148,7 +4204,7 @@ function renderProgressiveFinance(){
       <td><span style="background:#e8f5ee;color:#1a7a4a;padding:2px 7px;border-radius:8px;font-size:11px;font-weight:700;">${f.pct||5}%</span></td>
       <td><strong style="color:#1a7a4a;font-size:13px;">$${parseFloat(f.incentivo||0).toFixed(2)}</strong></td>
       <td style="font-size:11px;color:var(--text-muted);">${f.notas||'—'}</td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteProgressiveFinance('${f.id}')">✕</button></td>
+      <td style="display:flex;gap:4px;"><button class="btn btn-outline btn-sm" onclick="editProgressiveFinance('${f.id}')" style="color:#1a7a4a;border-color:#1a7a4a;">✏</button><button class="btn btn-danger btn-sm" onclick="deleteProgressiveFinance('${f.id}')">✕</button></td>
     </tr>`).join('')+
     `<tr style="background:linear-gradient(135deg,#e8f5ee,#f0faf4);"><td colspan="3"><strong style="font-size:12px;color:#0B4D2E;">📊 TOTALES</strong></td><td><strong>$${totalPrima.toLocaleString('en-US',{minimumFractionDigits:2})}</strong></td><td>—</td><td><strong style="color:#1a7a4a;font-size:14px;">$${totalInc.toFixed(2)}</strong></td><td colspan="2"></td></tr>
     </tbody></table>`;
@@ -4334,5 +4390,57 @@ function abrirFormaCotiza(tipo,pid){
 }
 
 </script>
+
+<!-- Modal Editar Progressive Finance -->
+<div class="modal-overlay" id="modal-edit-pf" onclick="if(event.target===this)closeModal('modal-edit-pf')">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Editar Financiamiento Progressive</span>
+      <button class="modal-close" onclick="closeModal('modal-edit-pf')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-pf-id">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Cliente</label>
+          <input type="text" id="edit-pf-cliente-nombre" readonly style="background:#f5f5f5;width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+        </div>
+        <div class="form-group">
+          <label>Fecha de emisión de la póliza</label>
+          <input type="date" id="edit-pf-fecha" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+        </div>
+        <div class="form-group">
+          <label>Prima de la póliza ($)</label>
+          <input type="number" id="edit-pf-prima" step="0.01" oninput="editPfCalcular()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+        </div>
+        <div class="form-group">
+          <label>% Incentivo Progressive (1–10%)</label>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <input type="range" id="edit-pf-pct" min="1" max="10" step="0.5" value="5" oninput="editPfCalcular();document.getElementById('edit-pf-pct-val').textContent=this.value+'%'" style="flex:1;">
+            <span id="edit-pf-pct-val" style="font-weight:700;color:#1a7a4a;min-width:36px;">5%</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Aseguradora</label>
+          <input type="text" id="edit-pf-aseguradora" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+        </div>
+        <div class="form-group">
+          <label>Notas (opcional)</label>
+          <input type="text" id="edit-pf-notas" placeholder="Referencia, número de plan, etc." style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
+        </div>
+      </div>
+      <div id="edit-pf-preview" style="display:none;background:linear-gradient(135deg,#1a7a4a,#0B4D2E);color:white;border-radius:12px;padding:16px;margin-top:12px;text-align:center;">
+        <div style="font-size:11px;opacity:0.8;margin-bottom:4px;">TU INCENTIVO ACTUALIZADO</div>
+        <div id="edit-pf-prev-prima" style="font-size:12px;opacity:0.8;"></div>
+        <div id="edit-pf-prev-incentivo" style="font-size:26px;font-weight:700;font-family:'Cinzel',serif;color:#4ade80;"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-edit-pf')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveEditProgressiveFinance()" style="background:linear-gradient(135deg,#1a7a4a,#0B4D2E);border-color:#1a7a4a;">💾 Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
