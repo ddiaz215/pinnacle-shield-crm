@@ -790,7 +790,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
             </select>
           </div>
           <div class="form-group">
-            <label>Fecha del financiamiento</label>
+            <label>Fecha de emisión de la póliza</label>
             <input type="date" id="pf-fecha" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;">
           </div>
           <div class="form-group">
@@ -3985,11 +3985,17 @@ function pfAutoFill(){
   const sel=document.getElementById('pf-cliente');
   const asegEl=document.getElementById('pf-aseguradora');
   const primaEl=document.getElementById('pf-prima');
+  const fechaEl=document.getElementById('pf-fecha');
   if(!sel||!sel.value)return;
   const c=DB.clientes.find(x=>x.id===sel.value);
   if(!c)return;
   if(asegEl)asegEl.value=c.aseguradora||'';
   if(primaEl&&(c.prima_anual||c.prima_m))primaEl.value=parseFloat(c.prima_anual||c.prima_m||0).toFixed(2);
+  // Usar fecha de emisión de la póliza, no la fecha de hoy
+  if(fechaEl){
+    const fechaEmision=c.fecha_emision||c.inicio||null;
+    if(fechaEmision)fechaEl.value=fechaEmision.substring(0,10);
+  }
   pfCalcular();
 }
 
