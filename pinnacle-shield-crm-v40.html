@@ -452,6 +452,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <button id="com-tab-benitez" class="com-tab" onclick="showComTab('benitez',this)" style="padding:8px 14px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;">🏢 Tarifas Benitez</button>
     <button id="com-tab-calc" class="com-tab" onclick="showComTab('calc',this)" style="padding:8px 14px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;">🧮 Calculadora</button>
     <button id="com-tab-hist" class="com-tab" onclick="showComTab('hist',this)" style="padding:8px 14px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;">💳 Pagos recibidos</button>
+    <button id="com-tab-pagos" class="com-tab" onclick="showComTab('pagos',this)" style="padding:8px 14px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:var(--text-muted);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;">💳 Estado Comisiones</button>
     <button id="com-tab-progressive" class="com-tab" onclick="showComTab('progressive',this)" style="padding:8px 14px;border:none;background:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;color:#1a7a4a;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;background:linear-gradient(135deg,rgba(26,122,74,0.08),rgba(26,122,74,0.04));border-radius:8px 8px 0 0;">🏦 Progressive Finance</button>
   </div>
 
@@ -723,6 +724,20 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     </div>
   </div>
 
+  <!-- TAB: ESTADO COMISIONES -->
+  <div id="com-pane-pagos" style="display:none;padding:4px 0;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <h3 style="font-size:14px;font-weight:700;color:var(--navy);margin:0;">💳 Estado de Comisiones — Reporte de Pagos</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-sm" onclick="renderPagosComisiones('todas')" id="pag-btn-todas" style="font-size:11px;">Todas</button>
+        <button class="btn btn-sm" onclick="renderPagosComisiones('pendiente')" id="pag-btn-pendiente" style="font-size:11px;">⏳ Pendientes</button>
+        <button class="btn btn-sm" onclick="renderPagosComisiones('pagada')" id="pag-btn-pagada" style="font-size:11px;">✅ Pagadas</button>
+      </div>
+    </div>
+    <div id="pagos-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;"></div>
+    <div id="pagos-lista"></div>
+  </div>
+
   <!-- TAB: PROGRESSIVE FINANCE -->
   <div id="com-pane-progressive" style="display:none;">
 
@@ -755,21 +770,25 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
           <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
             <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Hoy</div>
             <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-dia">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;">Prima: <span id="pf-prima-dia" style="color:#a7f3d0;">$0.00</span></div>
             <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-dia">0 financ.</div>
           </div>
           <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
             <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Esta semana</div>
             <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-semana">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;">Prima: <span id="pf-prima-semana" style="color:#a7f3d0;">$0.00</span></div>
             <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-semana">0 financ.</div>
           </div>
           <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
             <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Este mes</div>
             <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-mes">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;">Prima: <span id="pf-prima-mes" style="color:#a7f3d0;">$0.00</span></div>
             <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-mes">0 financ.</div>
           </div>
           <div style="background:rgba(0,0,0,0.2);border-radius:10px;padding:10px 12px;text-align:center;">
-            <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Este ano</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Este año</div>
             <div style="font-size:16px;font-weight:700;color:#4ade80;" id="pf-inc-ano">$0.00</div>
+            <div style="font-size:9px;color:rgba(255,255,255,0.5);margin-top:2px;">Prima: <span id="pf-prima-ano" style="color:#a7f3d0;">$0.00</span></div>
             <div style="font-size:9px;color:rgba(255,255,255,0.4);" id="pf-cnt-ano">0 financ.</div>
           </div>
         </div>
@@ -1184,6 +1203,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
       <div class="form-grid form-grid-2" style="margin-bottom:14px;">
         <div class="form-group"><label>Referido por</label><input type="text" id="c-referido"></div>
         <div class="form-group"><label>Estado</label><select id="c-estado"><option>Activo</option><option>Inactivo</option></select></div>
+        <div class="form-group"><label>💰 Comisión agencia</label><select id="c-comision-estado" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;"><option value="pendiente">⏳ Pendiente de pago</option><option value="pagada">✅ Pagada</option></select></div>
         <div class="form-group" style="grid-column:1/-1;"><label>🎯 Fuente de la venta</label>
           <select id="c-fuente-venta" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none;background:white;">
             <option value="">— Seleccionar —</option>
@@ -2235,7 +2255,7 @@ function renderRenosDashboard(renos){const el=document.getElementById('renos-das
 
 function saveCliente(){
   const id=document.getElementById('cliente-id').value||uid();
-  const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,licencia:(document.getElementById('c-licencia')?.value||'').trim(),tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),agencia_general:document.getElementById('c-agencia-general')?.value||'reborn',lob:document.getElementById('c-lob')?.value||'',pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,fecha_emision:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,fuente_venta:document.getElementById('c-fuente-venta')?.value||'',coberturas:document.getElementById('c-coberturas').value,historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};
+  const obj={id,nombre:document.getElementById('c-nombre').value.trim(),nacimiento:document.getElementById('c-nacimiento').value,licencia:(document.getElementById('c-licencia')?.value||'').trim(),tel:document.getElementById('c-tel').value.trim(),email:document.getElementById('c-email').value.trim(),direccion:document.getElementById('c-direccion').value.trim(),anio:document.getElementById('c-anio').value,vehiculo:document.getElementById('c-vehiculo').value.trim(),color:document.getElementById('c-color').value.trim(),numpoliza:document.getElementById('c-numpoliza').value.trim(),aseguradora:document.getElementById('c-aseguradora').value.trim(),agencia_general:document.getElementById('c-agencia-general')?.value||'reborn',lob:document.getElementById('c-lob')?.value||'',pago:document.getElementById('c-pago').value,inicio:document.getElementById('c-inicio').value,fecha_emision:document.getElementById('c-inicio').value,vencimiento:document.getElementById('c-vencimiento').value,prima_anual:parseFloat(document.getElementById('c-prima').value)||0,prima_m:parseFloat(document.getElementById('c-prima').value)||0,deducible:document.getElementById('c-deducible').value,ded_col:document.getElementById('c-ded-col').value,ded_comp:document.getElementById('c-ded-comp').value,liab:document.getElementById('c-liab').value,pip:document.getElementById('c-pip').value,um:document.getElementById('c-um').value,referido:document.getElementById('c-referido').value.trim(),estado:document.getElementById('c-estado').value,comision_estado:document.getElementById('c-comision-estado')?.value||'pendiente',fuente_venta:document.getElementById('c-fuente-venta')?.value||'',coberturas:document.getElementById('c-coberturas').value,historial:[...tempContactLog,...(DB.clientes.find(c=>c.id===id)?.historial||[])],created_at:new Date().toISOString()};
   if(!obj.nombre){toast('Ingresa el nombre','warning');return;}
   const idx=DB.clientes.findIndex(c=>c.id===id);
   if(idx>=0)DB.clientes[idx]=obj;else DB.clientes.unshift(obj);
@@ -2243,7 +2263,7 @@ function saveCliente(){
   if(obj.vencimiento){const dias=daysDiff(obj.vencimiento);if(dias!==null&&dias>0&&dias<=60){const t={id:uid(),titulo:`Renovación — ${obj.nombre}`,cliente:obj.nombre,tipo:'Cliente',vence:obj.vencimiento,prioridad:dias<=30?'Alta':'Media',estado:'Pendiente',notas:`Póliza ${obj.numpoliza||''} vence en ${dias}d`,created_at:new Date().toISOString()};const exists=DB.tareas.some(x=>x.titulo===t.titulo&&x.cliente===t.cliente);if(!exists){DB.tareas.unshift(t);if(sbConnected)upsertTable('tareas',[t]);toast(`⚡ Tarea de renovación creada (${dias}d)`,'warning');}}}
   closeModal('modal-cliente');clearClienteForm();renderClientes();refreshDashboard();toast('Cliente guardado ✓','success');
 }
-function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-lob','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';const ag=document.getElementById('c-agencia-general');if(ag)ag.value='reborn';const fv=document.getElementById('c-fuente-venta');if(fv)fv.value='';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';const cp=document.getElementById('c-comision-preview');if(cp)cp.style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
+function clearClienteForm(){['cliente-id','c-nombre','c-nacimiento','c-tel','c-email','c-direccion','c-anio','c-vehiculo','c-color','c-numpoliza','c-aseguradora','c-lob','c-inicio','c-vencimiento','c-prima','c-deducible','c-ded-col','c-ded-comp','c-liab','c-pip','c-um','c-referido','c-coberturas','c-contact-nota'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});document.getElementById('c-estado').value='Activo';document.getElementById('c-pago').value='Al día';const csReset=document.getElementById('c-comision-estado');if(csReset)csReset.value='pendiente';const ag=document.getElementById('c-agencia-general');if(ag)ag.value='reborn';const fv=document.getElementById('c-fuente-venta');if(fv)fv.value='';document.getElementById('modal-cliente-title').textContent='Nuevo Cliente';document.getElementById('cliente-reno-preview').style.display='none';const cp=document.getElementById('c-comision-preview');if(cp)cp.style.display='none';tempContactLog=[];renderContactHistoryInModal([]);}
 let cliSortDir='asc', prosSortDir='asc';
 function sortClientes(dir,btn){cliSortDir=dir;document.querySelectorAll('#sec-clientes .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderClientes();}
 function sortProspectos(dir,btn){prosSortDir=dir;document.querySelectorAll('#sec-prospectos .seg-filter-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderProspectos();}
@@ -2262,7 +2282,7 @@ function renderClientes(){
     return`<tr><td><div style="display:flex;align-items:center;gap:8px;"><div style="width:32px;height:32px;border-radius:6px;background:#f0f2f5;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🚗</div><div><strong style="font-size:12px;">${c.nombre}</strong>${c.email?`<div style="font-size:10px;color:var(--text-muted);">${c.email}</div>`:''}</div></div></td><td><div style="display:flex;flex-direction:column;gap:3px;"><span style="font-size:12px;">${c.tel||'—'}</span>${c.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${c.tel}','${c.nombre.split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 WA</button>`:''}</div></td><td style="font-size:11px;">${[c.anio,c.vehiculo].filter(Boolean).join(' ')||'—'}</td><td style="font-size:11px;">${c.aseguradora||'—'}</td><td>${venceCell}</td><td><strong>${(c.prima_anual||c.prima_m)?'$'+parseFloat(c.prima_anual||c.prima_m).toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</strong></td><td>${pagoCell}</td><td><span class="badge ${c.estado==='Activo'?'badge-success':'badge-neutral'}">${c.estado||'Activo'}</span></td><td><div class="td-actions"><button class="btn btn-outline btn-sm" onclick="viewCliente('${c.id}')">👁</button><button class="btn btn-outline btn-sm" onclick="openHistorial('${c.id}')">💬${histCount>0?`<span style="font-size:9px;font-weight:700;margin-left:1px;">${histCount}</span>`:''}</button><button class="btn btn-outline btn-sm" onclick="editCliente('${c.id}')">✏</button><button class="btn btn-sm" onclick="openProgressiveModal('${c.id}')" title="Progressive Finance" style="background:linear-gradient(135deg,#1a7a4a,#0B4D2E);color:#4ade80;border:1px solid #1a7a4a;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10px;font-weight:600;">🏦</button><button class="btn btn-sm" onclick="openEndososModal('${c.id}')" title="Endosos" style="background:linear-gradient(135deg,#1a4a8a,#2d6abf);color:#90cdf4;border:1px solid #1a4a8a;border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10px;font-weight:600;">+End</button><button class="btn btn-danger btn-sm" onclick="deleteCliente('${c.id}')">✕</button></div></td></tr>`;
   }).join('');
 }
-function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',licencia:'c-licencia',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',lob:'c-lob',inicio:'c-inicio',fecha_emision:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}const agEl=document.getElementById('c-agencia-general');if(agEl)agEl.value=c.agencia_general||'reborn';document.getElementById('c-estado').value=c.estado||'Activo';document.getElementById('c-pago').value=c.pago||'Al día';const fEl=document.getElementById('c-fuente-venta');if(fEl)fEl.value=c.fuente_venta||(c.convertido_desde_prospecto?'prospecto_convertido':'');tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();window._editingClienteId=id;openModal('modal-cliente');}
+function editCliente(id){const c=DB.clientes.find(x=>x.id===id);if(!c)return;document.getElementById('cliente-id').value=c.id;const fields={nombre:'c-nombre',nacimiento:'c-nacimiento',licencia:'c-licencia',tel:'c-tel',email:'c-email',direccion:'c-direccion',anio:'c-anio',vehiculo:'c-vehiculo',color:'c-color',numpoliza:'c-numpoliza',aseguradora:'c-aseguradora',lob:'c-lob',inicio:'c-inicio',fecha_emision:'c-inicio',vencimiento:'c-vencimiento',prima_anual:'c-prima',deducible:'c-deducible',ded_col:'c-ded-col',ded_comp:'c-ded-comp',liab:'c-liab',pip:'c-pip',um:'c-um',referido:'c-referido',coberturas:'c-coberturas'};for(const[key,elId]of Object.entries(fields)){const el=document.getElementById(elId);if(el)el.value=c[key]||'';}const agEl=document.getElementById('c-agencia-general');if(agEl)agEl.value=c.agencia_general||'reborn';document.getElementById('c-estado').value=c.estado||'Activo';const csEl=document.getElementById('c-comision-estado');if(csEl)csEl.value=c.comision_estado||'pendiente';document.getElementById('c-pago').value=c.pago||'Al día';const fEl=document.getElementById('c-fuente-venta');if(fEl)fEl.value=c.fuente_venta||(c.convertido_desde_prospecto?'prospecto_convertido':'');tempContactLog=[];renderContactHistoryInModal(c.historial||[]);document.getElementById('modal-cliente-title').textContent='Editar Cliente';if(c.vencimiento)updateClienteRenoPreview();window._editingClienteId=id;openModal('modal-cliente');}
 function viewCliente(id){
   const c=DB.clientes.find(x=>x.id===id);if(!c)return;
   function row(lbl,val){
@@ -3300,7 +3320,7 @@ function autoFillComisionCliente(){
 
 // ─── TAB CONTROL ───
 function showComTab(id,btn){
-  ['ventas','resumen','tabla','benitez','calc','hist','progressive'].forEach(t=>{
+  ['ventas','resumen','tabla','benitez','calc','hist','pagos','progressive'].forEach(t=>{
     const p=document.getElementById('com-pane-'+t);if(p)p.style.display=t===id?'':'none';
   });
   document.querySelectorAll('.com-tab').forEach(b=>{b.style.color='var(--text-muted)';b.style.borderBottomColor='transparent';});
@@ -3308,7 +3328,7 @@ function showComTab(id,btn){
   if(id==='ventas')renderVentasMes();
   if(id==='tabla')renderTarifas();
   if(id==='benitez'){renderBenitez();}if(id==='calc'){renderCalcBestRates();initCalc2();}
-  if(id==='progressive'){renderProgressiveFinance();initProgressiveTab();}
+  if(id==='pagos'){renderPagosComisiones('todas');}if(id==='progressive'){renderProgressiveFinance();initProgressiveTab();}
 }
 
 // ─── RENDER TARIFAS TABLE ───
@@ -4135,6 +4155,105 @@ function saveEditProgressiveFinance(){
   toast('Financiamiento actualizado ✓','success');
 }
 
+
+function renderPagosComisiones(filtro='todas'){
+  // Update button styles
+  ['todas','pendiente','pagada'].forEach(f=>{
+    const b=document.getElementById('pag-btn-'+f);
+    if(b){b.style.fontWeight=filtro===f?'700':'400';b.style.background=filtro===f?'var(--navy)':'';b.style.color=filtro===f?'white':'';}
+  });
+
+  const clientes=DB.clientes.filter(c=>c.estado==='Activo');
+  const pagadas=clientes.filter(c=>c.comision_estado==='pagada');
+  const pendientes=clientes.filter(c=>!c.comision_estado||c.comision_estado==='pendiente');
+
+  // Stats
+  const totalPrimaPagada=pagadas.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
+  const totalPrimaPend=pendientes.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
+  const statsEl=document.getElementById('pagos-stats');
+  if(statsEl){
+    statsEl.innerHTML=`
+      <div class="stat-card" style="background:linear-gradient(135deg,#e8f5ee,#f0faf4);">
+        <div class="stat-label">✅ Comisiones Pagadas</div>
+        <div class="stat-value" style="color:#1a7a4a;">${pagadas.length}</div>
+        <div class="stat-sub">Prima total: $${totalPrimaPagada.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+      </div>
+      <div class="stat-card" style="background:linear-gradient(135deg,#fff8e8,#fffbf0);">
+        <div class="stat-label">⏳ Pendientes de Pago</div>
+        <div class="stat-value" style="color:#d97706;">${pendientes.length}</div>
+        <div class="stat-sub">Prima total: $${totalPrimaPend.toLocaleString('en-US',{maximumFractionDigits:0})}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">📋 Total Clientes Activos</div>
+        <div class="stat-value">${clientes.length}</div>
+        <div class="stat-sub">Todas las agencias</div>
+      </div>`;
+  }
+
+  // Filter list
+  let lista=clientes;
+  if(filtro==='pagada')lista=pagadas;
+  if(filtro==='pendiente')lista=pendientes;
+
+  // Sort: pendientes first, then by prima desc
+  lista=[...lista].sort((a,b)=>{
+    if((a.comision_estado||'pendiente')===(b.comision_estado||'pendiente'))
+      return (parseFloat(b.prima_anual||b.prima_m)||0)-(parseFloat(a.prima_anual||a.prima_m)||0);
+    return (a.comision_estado==='pagada'?1:-1);
+  });
+
+  const listaEl=document.getElementById('pagos-lista');
+  if(!listaEl)return;
+  if(!lista.length){listaEl.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-muted);">Sin registros</div>';return;}
+
+  listaEl.innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <thead><tr style="background:#f5f7fa;">
+      <th style="padding:10px 8px;text-align:left;font-weight:700;color:var(--navy);">Cliente</th>
+      <th style="padding:10px 8px;text-align:left;font-weight:700;color:var(--navy);">Aseguradora</th>
+      <th style="padding:10px 8px;text-align:left;font-weight:700;color:var(--navy);">Agencia</th>
+      <th style="padding:10px 8px;text-align:left;font-weight:700;color:var(--navy);">Inicio</th>
+      <th style="padding:10px 8px;text-align:right;font-weight:700;color:var(--navy);">Prima</th>
+      <th style="padding:10px 8px;text-align:center;font-weight:700;color:var(--navy);">Estado</th>
+      <th style="padding:10px 8px;text-align:center;font-weight:700;color:var(--navy);">Acción</th>
+    </tr></thead>
+    <tbody>
+      ${lista.map(c=>{
+        const prima=parseFloat(c.prima_anual||c.prima_m)||0;
+        const pagada=c.comision_estado==='pagada';
+        return `<tr style="border-bottom:1px solid var(--border);${pagada?'opacity:0.7;':''}">
+          <td style="padding:10px 8px;"><strong>${c.nombre}</strong><div style="font-size:10px;color:var(--text-muted);">${c.lob||'—'}</div></td>
+          <td style="padding:10px 8px;font-size:11px;">${c.aseguradora||'—'}</td>
+          <td style="padding:10px 8px;font-size:11px;">${c.agencia_general||'—'}</td>
+          <td style="padding:10px 8px;font-size:11px;">${c.inicio||'—'}</td>
+          <td style="padding:10px 8px;text-align:right;font-weight:700;">${prima>0?'$'+prima.toLocaleString('en-US',{maximumFractionDigits:0}):'—'}</td>
+          <td style="padding:10px 8px;text-align:center;">
+            <span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${pagada?'#e8f5ee':'#fff8e8'};color:${pagada?'#1a7a4a':'#d97706'};">
+              ${pagada?'✅ Pagada':'⏳ Pendiente'}
+            </span>
+          </td>
+          <td style="padding:10px 8px;text-align:center;">
+            <button onclick="togglePagoComision('${c.id}','${pagada?'pendiente':'pagada'}')" 
+              class="btn btn-sm" 
+              style="font-size:10px;padding:4px 10px;background:${pagada?'#fff8e8':'#e8f5ee'};color:${pagada?'#d97706':'#1a7a4a'};border:1px solid ${pagada?'#d97706':'#1a7a4a'};">
+              ${pagada?'↩ Marcar pendiente':'✅ Marcar pagada'}
+            </button>
+          </td>
+        </tr>`;
+      }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function togglePagoComision(clienteId, nuevoEstado){
+  const idx=DB.clientes.findIndex(c=>c.id===clienteId);
+  if(idx===-1)return;
+  DB.clientes[idx].comision_estado=nuevoEstado;
+  saveLocal();
+  if(sbConnected)upsertTable('clientes',[DB.clientes[idx]]);
+  renderPagosComisiones(nuevoEstado==='pagada'?'todas':'todas');
+  toast(nuevoEstado==='pagada'?'Comisión marcada como pagada ✅':'Marcada como pendiente ⏳','success');
+}
+
 function deleteProgressiveFinance(id){
   if(!confirm('¿Eliminar este registro?'))return;
   DB.progressive_finance=(DB.progressive_finance||[]).filter(f=>f.id!==id);
@@ -4182,11 +4301,16 @@ function renderProgressiveFinance(){
 
   // Update desglose por período
   const fmt=v=>'$'+v.toFixed(2);
-  const setP=(id,val,cnt)=>{const e=document.getElementById(id);if(e)e.textContent=val;const ec=document.getElementById(id.replace('inc','cnt'));if(ec)ec.textContent=cnt+' financ.';};
-  setP('pf-inc-dia',fmt(sumInc(pfDia)),pfDia.length);
-  setP('pf-inc-semana',fmt(sumInc(pfSemana)),pfSemana.length);
-  setP('pf-inc-mes',fmt(sumInc(pfMes)),pfMes.length);
-  setP('pf-inc-ano',fmt(sumInc(pfAno)),pfAno.length);
+  const sumPrima=arr=>arr.reduce((s,f)=>s+(parseFloat(f.prima)||0),0);
+  const setP=(id,val,cnt,prima)=>{
+    const e=document.getElementById(id);if(e)e.textContent=val;
+    const ec=document.getElementById(id.replace('inc','cnt'));if(ec)ec.textContent=cnt+' financ.';
+    const ep=document.getElementById(id.replace('inc','prima'));if(ep)ep.textContent=fmt(prima);
+  };
+  setP('pf-inc-dia',fmt(sumInc(pfDia)),pfDia.length,sumPrima(pfDia));
+  setP('pf-inc-semana',fmt(sumInc(pfSemana)),pfSemana.length,sumPrima(pfSemana));
+  setP('pf-inc-mes',fmt(sumInc(pfMes)),pfMes.length,sumPrima(pfMes));
+  setP('pf-inc-ano',fmt(sumInc(pfAno)),pfAno.length,sumPrima(pfAno));
 
   // Render historial
   const wrap=document.getElementById('pf-historial-wrap');
