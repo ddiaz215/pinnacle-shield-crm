@@ -2372,7 +2372,8 @@ async function saveProspecto(){
 }
 function renderProspectos(){
   const tbody=document.getElementById('prospectos-body');
-  let items=[...DB.prospectos];
+  // v41: Filtrar prospectos convertidos — aparecen solo en Clientes
+  let items=DB.prospectos.filter(p=>p.estado_prospecto!=='convertido');
   const q=(document.getElementById('search-prospectos')?.value||'').toLowerCase();
   if(q)items=items.filter(p=>(p.nombre||'').toLowerCase().includes(q)||(p.aseguradora||'').toLowerCase().includes(q));
   items.sort((a,b)=>{const da=daysDiff(a.reno_fecha)??9999,db=daysDiff(b.reno_fecha)??9999;return prosSortDir==='asc'?da-db:db-da;});
