@@ -3790,6 +3790,11 @@ function renderVentasMes(){
             <td style="padding:8px 6px;text-align:right;"><strong style="color:var(--success);">$${com.toLocaleString('en-US',{maximumFractionDigits:2})}</strong></td>
           </tr>`;
         }).join('')}
+        <tr style="background:#fff4d6;border-top:2px solid var(--gold);">
+          <td colspan="5" style="padding:9px 8px;font-size:12px;font-weight:700;color:var(--navy);">Total pólizas emitidas (${ventas.length})</td>
+          <td style="padding:9px 8px;text-align:right;font-size:12px;font-weight:700;color:var(--navy);">$${prima.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td style="padding:9px 8px;text-align:right;font-size:13px;font-weight:700;color:var(--success);">$${com.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        </tr>
         ${endososPeriodo.length>0?`
         <tr style="background:#f0f4ff;border-top:2px solid #1a4a8a;">
           <td colspan="7" style="padding:6px 8px;font-size:10px;font-weight:700;color:#1a4a8a;text-transform:uppercase;letter-spacing:1px;">📋 Endosos del período</td>
