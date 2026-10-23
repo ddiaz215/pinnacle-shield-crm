@@ -209,7 +209,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
   <button id="hamburger" onclick="toggleSidebar()">☰</button>
   <div class="header-logo">
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 57 61" class="shield-icon" style="width:36px;height:36px;flex-shrink:0;"><path d="M28.3,0L0,6.5l.8,10.8c.4,4.3,1.1,10,2.8,16.9C7,48.5,18.3,57.6,28.2,61v-4.3C20.2,53.6,10.5,45.7,7.4,33.3c-1.4-5.8-2.3-11.3-2.7-16.3L4.2,9.6,28.2,4.2V0Z" fill="#1e2e53"/><path d="M56.6,6.5l-.8,10.8c-.3,4.3-1.1,10-2.8,16.9C49.5,48.5,38.2,57.6,28.3,61v-4.3C36.3,53.6,46,45.7,49,33.3c1.4-5.8,2.3-11.3,2.7-16.3l.6-7.4h-.1l-24-5.4V0l28.3,6.5Z" fill="#1e2e53"/><polygon points="28.6 19.3 19.2 35 12.1 35 25 13.4 28.6 19.3" fill="#E8C84A"/><polygon points="33.3 35 35.6 31.1 33.8 28.1 26.5 40.4 19.4 40.4 30.3 22.2 33.8 16.3 37.3 22.2 39.1 25.2 45 35 33.3 35" fill="#E8C84A"/></svg>
-    <div class="logo-text">Pinnacle Shield<span>CRM · V40</span></div>
+    <div class="logo-text">Pinnacle Shield<span>CRM · V41</span></div>
   </div>
   <div class="header-center">
     <div class="search-wrap">
@@ -268,7 +268,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
       <div>
         <div style="font-family:'Cinzel',serif;font-size:14px;color:#C9A227;letter-spacing:0.05em;">&#127942; Meta — Retiro de Lexus · $15,000/mes</div>
-        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;"><span id="meta-dias-restantes">0</span> dias restantes en mayo · <span id="meta-total-polizas">0</span> polizas totales emitidas</div>
+        <div style="font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;"><span id="meta-dias-restantes">0</span> días restantes este mes · <span id="meta-total-polizas">0</span> polizas totales emitidas</div>
       </div>
       <div style="display:flex;gap:8px;">
         <div style="background:rgba(74,222,128,0.15);border:1px solid rgba(74,222,128,0.3);border-radius:8px;padding:6px 12px;text-align:center;">
@@ -846,6 +846,12 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
 
         <button class="btn btn-primary" onclick="saveProgressiveFinance()" style="background:linear-gradient(135deg,#1a7a4a,#0B4D2E);border-color:#1a7a4a;">💾 Registrar financiamiento</button>
       </div>
+    </div>
+
+    <!-- Resumen general (cuadra con Dashboard y Pólizas emitidas) -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header"><span class="card-title">📊 Total prima y comisiones (pólizas + endosos + Progressive)</span></div>
+      <div class="card-body" id="pf-resumen-general" style="overflow-x:auto;"></div>
     </div>
 
     <!-- Historial de financiamientos -->
@@ -1499,7 +1505,30 @@ function showSection(id){
 }
 
 // ─── STORAGE ───
-function saveLocal(){try{localStorage.setItem('ps_crm_v22',JSON.stringify(DB));}catch(e){}}
+function saveLocal(sinMarcar){
+  try{localStorage.setItem('ps_crm_v22',JSON.stringify(DB));}
+  catch(e){
+    console.error('saveLocal falló:',e);
+    if(!window._saveLocalWarned){window._saveLocalWarned=true;try{toast('⚠️ No se pudo guardar en este navegador. Descarga un respaldo (Respaldo → Exportar).','warning');}catch(_){}}
+  }
+  // Todo cambio local queda marcado para subir a Supabase
+  if(!sinMarcar)_dirtyFlag=true;
+}
+// v41: Cálculo ÚNICO de comisiones por período (Dashboard y Comisiones usan lo mismo)
+function calcComisionesPeriodo(desde,hasta){
+  const ventas=getVentasEnRango(desde,hasta);
+  const inRange=f=>{if(!f)return false;const d=new Date(f+'T00:00:00');return d>=desde&&d<=hasta;};
+  const prima=ventas.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
+  const com=ventas.reduce((s,c)=>s+getComisionEstimada(c),0);
+  const endosos=(DB.endosos||[]).filter(e=>inRange(e.fecha));
+  const pfs=(DB.progressive_finance||[]).filter(f=>inRange(f.fecha));
+  const primaEndosos=endosos.reduce((s,e)=>s+(parseFloat(e.prima)||0),0);
+  const comEndosos=endosos.reduce((s,e)=>s+(parseFloat(e.comision_estimada)||0),0);
+  const primaPF=pfs.reduce((s,f)=>s+(parseFloat(f.prima)||0),0);
+  const pfInc=pfs.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
+  return {ventas,prima,com,endosos,primaEndosos,comEndosos,pfs,primaPF,pfInc,
+          primaTotal:prima+primaEndosos, total:com+comEndosos+pfInc};
+}
 function loadLocal(){
   try{
     // v22 first, then fallback to older versions
@@ -1651,11 +1680,11 @@ function handleRealtimeChange(event,table,record){
 // ─── FORCE SYNC (nuke local cache, pull fresh from Supabase) ───
 async function forceSyncFromSupabase(){
   if(!sbClient||!sbConnected){toast('Sin conexión Supabase','warning');return;}
-  if(!confirm('¿Recargar todos los datos desde Supabase?\n\nEsto borrará el caché local y cargará la versión más reciente de la nube.\n\nCualquier dato no sincronizado se perderá.'))return;
-  // Clear old localStorage keys
-  ['ps_crm_v22','ps_crm_v21','ps_crm_v20','ps_crm_v17'].forEach(k=>localStorage.removeItem(k));
-  setSyncStatus('syncing','Recargando desde Supabase...');
-  toast('🔄 Cargando datos frescos...','info');
+  if(!confirm('¿Sincronizar con Supabase?\n\nPrimero se guarda una copia de seguridad y se suben tus cambios pendientes; luego se descarga lo más reciente. No se pierde nada.'))return;
+  try{snapshotBackup('antes-de-forzar-sync');}catch(e){}
+  setSyncStatus('syncing','Sincronizando...');
+  toast('🔄 Guardando y sincronizando...','info');
+  await pushToSupabase();
   await loadFromSupabase();
   toast('✅ Sync forzado completado','success');
 }
@@ -1800,7 +1829,7 @@ async function pushToSupabase(){
   saveLocal();
 }
 
-async function loadFromSupabase(){
+async function loadFromSupabase(quiet){
   if(!sbClient||!sbConnected)return;
   const tables=['clientes','polizas','prospectos','comisiones','referidos','tareas','progressive_finance','endosos'];
   let sbHasData=false;
@@ -1847,10 +1876,10 @@ async function loadFromSupabase(){
       .filter(p=>p.estado_prospecto!=='convertido')
       .filter(p=>!isDeleted('prospectos',p.id)) // v35.5: extra safety
       .map(p=>({...p,costo:p.costo||p.prima_m||0,seguimiento_fecha:p.seguimiento_fecha||p.reno_fecha||'',tipo:'prospecto'}));
-    saveLocal();refreshAll();
+    saveLocal(true);refreshAll();
     setSyncStatus('connected','Supabase conectado');
     setEl('last-sync-text',new Date().toLocaleTimeString('es-PR'));
-    toast('Datos cargados desde Supabase ✓','success');
+    if(!quiet)toast('Datos cargados desde Supabase ✓','success');
   }else if(localHasData){
     await pushToSupabase();
     toast('Datos locales subidos a Supabase ✓','success');
@@ -1897,17 +1926,54 @@ function cleanTombstonedRecords(){
       console.log(`🧹 Limpieza: removidos ${removed} records tombstoned de ${table}`);
     }
   });
-  if(cleaned>0)saveLocal();
+  if(cleaned>0)saveLocal(true);
   return cleaned;
 }
 
+// v41: Copias de seguridad automáticas (últimas 5, en este navegador)
+function snapshotBackup(tag){
+  try{
+    const key='ps_crm_backups';
+    let arr=[];try{arr=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+    arr.unshift({t:new Date().toISOString(),tag:tag||'auto',data:JSON.stringify(DB)});
+    arr=arr.slice(0,5);
+    try{localStorage.setItem(key,JSON.stringify(arr));}
+    catch(e){arr=arr.slice(0,2);try{localStorage.setItem(key,JSON.stringify(arr));}catch(_){}}
+  }catch(e){}
+}
+function restoreLatestBackup(){
+  try{
+    const arr=JSON.parse(localStorage.getItem('ps_crm_backups')||'[]');
+    if(!arr.length){toast('No hay copias automáticas','warning');return;}
+    if(!confirm('¿Restaurar la copia automática del '+new Date(arr[0].t).toLocaleString('es-PR')+'?'))return;
+    DB={...DB,...JSON.parse(arr[0].data)};saveLocal();refreshAll();toast('Copia restaurada ✓','success');
+  }catch(e){toast('No se pudo restaurar','error');}
+}
+// v41: Auto-actualización liviana (sin Realtime): al volver a la pestaña y cada 5 min, solo si no hay cambios pendientes
+let _lastAutoPull=0;
+async function autoPull(){
+  if(!sbConnected||_dirtyFlag||document.hidden)return;
+  if(document.querySelector('.modal-overlay.open'))return;
+  if(Date.now()-_lastAutoPull<60000)return;
+  _lastAutoPull=Date.now();
+  try{await loadFromSupabase(true);}catch(e){console.warn('autoPull:',e.message);}
+}
+setInterval(autoPull,300000);
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){
+    try{saveLocal(true);}catch(e){}
+    if(sbConnected&&_dirtyFlag){_dirtyFlag=false;pushToSupabase();}
+  }else{autoPull();}
+});
+window.addEventListener('pagehide',()=>{try{saveLocal();}catch(e){}});
 function startAutoSave(){
   if(autoSaveInterval)clearInterval(autoSaveInterval);
   autoSaveInterval=setInterval(()=>{
     if(DB.config.autosave!==false){
       // v41: Limpiar tombstoned antes de cada auto-save
       cleanTombstonedRecords();
-      saveLocal();
+      saveLocal(true);
+      if(!window._lastSnap||Date.now()-window._lastSnap>1800000){window._lastSnap=Date.now();snapshotBackup('auto');}
       // v41: Solo pushea a Supabase si hay cambios reales (_dirtyFlag)
       // Antes empujaba TODO cada 30s → generaba Realtime UPDATE por cada row
       if(sbConnected&&_dirtyFlag){
@@ -1922,7 +1988,7 @@ function startAutoSave(){
       }
     }
   // v41: Intervalo aumentado 30s → 2 min (ahorro adicional en caso de Realtime activo)
-  },120000);
+  },60000);
 }
 function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
 
@@ -2115,14 +2181,7 @@ function toggleBackupReminder(enabled){
 function refreshDashboard(){
   setEl('dashboard-date',new Date().toLocaleDateString('es-PR',{weekday:'long',year:'numeric',month:'long',day:'numeric'}));
   const prima=DB.clientes.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
-  // Calcular comisión neta por cliente: si tiene tasa específica usa esa, si no usa el default
-  const neto=DB.clientes.reduce((s,c)=>{
-    const p=parseFloat(c.prima_anual||c.prima_m)||0;
-    if(!p)return s;
-    // Buscar tasa específica del cliente según aseguradora + lob
-    const r=getClientRate(c);
-    return s+(p*r/100);
-  },0);
+  const neto=DB.clientes.reduce((s,c)=>s+getComisionEstimada(c),0);
   const hoy=new Date();hoy.setHours(0,0,0,0);
   const en30=new Date(hoy);en30.setDate(hoy.getDate()+30);
   const renosUrgentes=DB.clientes.filter(c=>{if(!c.vencimiento)return false;const d=new Date(c.vencimiento);d.setHours(0,0,0,0);return d>=hoy&&d<=en30;});
@@ -2136,10 +2195,9 @@ function refreshDashboard(){
     const anioActual=new Date().getFullYear();
     const anioIni=new Date(anioActual,0,1);
     const anioFin=new Date(anioActual,11,31,23,59,59);
-    const ventasAnio=getVentasEnRango(anioIni,anioFin);
-    const comAnio=ventasAnio.reduce((s,c)=>s+getComisionEstimada(c),0);
-    setEl('ds-comision-anio','$'+comAnio.toLocaleString('en-US',{maximumFractionDigits:0}));
-    setEl('ds-comision-anio-sub',ventasAnio.length+' pólizas emitidas '+anioActual);
+    const T=calcComisionesPeriodo(anioIni,anioFin);
+    setEl('ds-comision-anio','$'+T.total.toLocaleString('en-US',{maximumFractionDigits:0}));
+    setEl('ds-comision-anio-sub',T.ventas.length+' pólizas '+anioActual+' · incl. endosos y Progressive');
   }catch(e){console.warn('Comisión año:',e.message);}
   setEl('ds-renos',renosUrgentes.length);
   setEl('ds-tareas',tareasPend.length);
@@ -2149,21 +2207,19 @@ function refreshDashboard(){
     const hoyFin=new Date();hoyFin.setHours(23,59,59);
     const mesIni=new Date(hoy0.getFullYear(),hoy0.getMonth(),1);
     const mesFin=new Date(hoy0.getFullYear(),hoy0.getMonth()+1,0,23,59,59);
-    const vHoy=getVentasEnRango(hoy0,hoyFin);
-    const vMes=getVentasEnRango(mesIni,mesFin);
-    const comHoy=vHoy.reduce((s,c)=>s+getComisionEstimada(c),0);
-    const comMes=vMes.reduce((s,c)=>s+getComisionEstimada(c),0);
-    setEl('ds-ventas-hoy',vHoy.length);
-    setEl('ds-ventas-hoy-sub','$'+comHoy.toLocaleString('en-US',{maximumFractionDigits:0})+' comisión');
-    setEl('ds-ventas-mes',vMes.length);
-    setEl('ds-ventas-mes-sub','$'+comMes.toLocaleString('en-US',{maximumFractionDigits:0})+' comisión');
+    const TH=calcComisionesPeriodo(hoy0,hoyFin);
+    const TM=calcComisionesPeriodo(mesIni,mesFin);
+    setEl('ds-ventas-hoy',TH.ventas.length);
+    setEl('ds-ventas-hoy-sub','$'+TH.total.toLocaleString('en-US',{maximumFractionDigits:0})+' comisión total');
+    setEl('ds-ventas-mes',TM.ventas.length);
+    setEl('ds-ventas-mes-sub','$'+TM.total.toLocaleString('en-US',{maximumFractionDigits:0})+' comisión total');
   }catch(e){console.warn('Ventas dashboard:',e.message);}
   // Progressive Finance dashboard stat
   try{
     const pfs=DB.progressive_finance||[];
     const pfTotal=pfs.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
     setEl('ds-progressive-total','$'+pfTotal.toLocaleString('en-US',{minimumFractionDigits:2}));
-    setEl('ds-progressive-sub',pfs.length+' póliza'+(pfs.length!==1?'s':'')+ ' financiada'+(pfs.length!==1?'s':''));
+    setEl('ds-progressive-sub',pfs.length+' póliza'+(pfs.length!==1?'s':'')+ ' financiada'+(pfs.length!==1?'s':'')+' (ya incluido en totales)');
   }catch(e){console.warn('Progressive dashboard:',e.message);}
 
   // MEDIDOR DE META - Retiro de Lexus
@@ -2179,28 +2235,18 @@ function refreshDashboard(){
     const diaActual=now2.getDate();
     const diasRestantes=diasEnMes-diaActual;
 
-    // Comisiones este mes
-    const vMes2=getVentasEnRango(mesIni2,mesFin2);
-    const comMes2=vMes2.reduce((s,c)=>s+getComisionEstimada(c),0);
-    // Comisiones de endosos del mes
-    const endososMes=(DB.endosos||[]).filter(e=>{if(!e.fecha)return false;const d=new Date(e.fecha+'T00:00:00');return d>=mesIni2&&d<=mesFin2;});
-    const comEndososMes=endososMes.reduce((s,e)=>s+(parseFloat(e.comision_estimada)||0),0);
-    const pfMes2=(DB.progressive_finance||[]).filter(f=>{if(!f.fecha)return false;const d=new Date(f.fecha+'T00:00:00');return d>=mesIni2&&d<=mesFin2;});
-    const pfIncMes=pfMes2.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
-    const totalMes=comMes2+pfIncMes+comEndososMes;
-
-    // Comisiones año 2026
-    const vAnio2=getVentasEnRango(anioIni2,anioFin2);
-    const comAnio2=vAnio2.reduce((s,c)=>s+getComisionEstimada(c),0);
-    const pfAnio2=(DB.progressive_finance||[]).filter(f=>{if(!f.fecha)return false;const d=new Date(f.fecha+'T00:00:00');return d>=anioIni2&&d<=anioFin2;});
-    const pfIncAnio=pfAnio2.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
-    const totalAnio=comAnio2+pfIncAnio;
-
-    // Total histórico (todas las pólizas y Progressive)
+    const TMes=calcComisionesPeriodo(mesIni2,mesFin2);
+    const vMes2=TMes.ventas, pfIncMes=TMes.pfInc;
+    const totalMes=TMes.total;
+    const TAnio=calcComisionesPeriodo(anioIni2,anioFin2);
+    const vAnio2=TAnio.ventas;
+    const totalAnio=TAnio.total;
+    // Histórico: todas las pólizas + todos los endosos + todo Progressive
     const todasVentas=DB.clientes||[];
     const comHist=todasVentas.reduce((s,c)=>s+getComisionEstimada(c),0);
+    const comEndososHist=(DB.endosos||[]).reduce((s,e)=>s+(parseFloat(e.comision_estimada)||0),0);
     const pfIncHist=(DB.progressive_finance||[]).reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
-    const totalHist=comHist+pfIncHist;
+    const totalHist=comHist+comEndososHist+pfIncHist;
 
     // Porcentajes
     const pctMes=Math.min(100,(totalMes/META)*100);
@@ -3610,19 +3656,9 @@ function renderVentasMes(){
   const titulosLista={dia:'📋 Pólizas emitidas — '+label,semana:'📋 Pólizas emitidas — semana del '+label,mes:'📋 Pólizas emitidas — '+label,anio:'📋 Pólizas emitidas — año '+label};
   setEl('ventas-lista-titulo',titulosLista[_vpPeriodo]||'📋 Pólizas emitidas');
 
-  // Calcular totales del período
-  const prima=ventas.reduce((s,c)=>s+(parseFloat(c.prima_anual||c.prima_m)||0),0);
-  const com=ventas.reduce((s,c)=>s+getComisionEstimada(c),0);
-
-  // Incentivos Progressive Finance en el mismo período
-  const pfs=DB.progressive_finance||[];
-  const pfPeriodo=pfs.filter(f=>{
-    if(!f.fecha)return false;
-    const d=new Date(f.fecha+'T00:00:00');
-    return d>=desde && d<=hasta;
-  });
-  const pfInc=pfPeriodo.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
-  const comTotal=com+pfInc;
+  // Totales del período (misma función que usa el Dashboard)
+  const T=calcComisionesPeriodo(desde,hasta);
+  const prima=T.prima, com=T.com, pfPeriodo=T.pfs, pfInc=T.pfInc, comTotal=com+pfInc;
 
   setEl('ventas-hoy-count',ventas.length);
   const detalle=pfInc>0
@@ -3708,12 +3744,8 @@ function renderVentasMes(){
   const listaEl=document.getElementById('ventas-lista-mes');
   if(listaEl){
     // Endosos del período
-    const endososPeriodo=(DB.endosos||[]).filter(e=>{
-      if(!e.fecha)return false;
-      const d=new Date(e.fecha+'T00:00:00');
-      return d>=desde&&d<=hasta;
-    });
-    const comEndosos=endososPeriodo.reduce((s,e)=>s+(parseFloat(e.comision_estimada)||0),0);
+    const endososPeriodo=T.endosos;
+    const comEndosos=T.comEndosos;
 
     // Actualizar total de comisión con endosos
     if(endososPeriodo.length>0){
@@ -3796,6 +3828,11 @@ function renderVentasMes(){
           <td style="padding:8px;text-align:right;font-size:11px;font-weight:700;color:#1a7a4a;">$${pfPeriodo.reduce((s,f)=>s+(parseFloat(f.prima)||0),0).toFixed(2)}</td>
           <td style="padding:8px;text-align:right;font-size:12px;font-weight:700;color:#1a7a4a;">$${pfInc.toFixed(2)}</td>
         </tr>`:''}
+        <tr style="background:var(--navy);color:white;border-top:3px solid var(--gold);">
+          <td colspan="5" style="padding:10px 8px;font-size:12px;font-weight:700;letter-spacing:0.05em;">TOTAL DEL PERÍODO <span style="font-weight:400;font-size:10px;opacity:0.7;">(pólizas${T.endosos.length?' + endosos':''}${T.pfs.length?' + Progressive':''})</span></td>
+          <td style="padding:10px 8px;text-align:right;font-size:13px;font-weight:700;">$${T.primaTotal.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+          <td style="padding:10px 8px;text-align:right;font-size:14px;font-weight:700;color:#4ade80;">$${T.total.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+        </tr>
         </tbody></table></div>`;
     }
   }
@@ -4329,6 +4366,24 @@ function renderProgressiveFinance(){
   setP('pf-inc-semana',fmt(sumInc(pfSemana)),pfSemana.length,sumPrima(pfSemana));
   setP('pf-inc-mes',fmt(sumInc(pfMes)),pfMes.length,sumPrima(pfMes));
   setP('pf-inc-ano',fmt(sumInc(pfAno)),pfAno.length,sumPrima(pfAno));
+
+  // Resumen general por período (misma función que Dashboard y Pólizas emitidas)
+  try{
+    const rg=document.getElementById('pf-resumen-general');
+    if(rg){
+      const n0=new Date();n0.setHours(0,0,0,0);
+      const fin=d=>{const x=new Date(d);x.setHours(23,59,59,999);return x;};
+      const filas=[
+        ['Hoy',calcComisionesPeriodo(n0,fin(n0))],
+        ['Esta semana',calcComisionesPeriodo(new Date(n0.getFullYear(),n0.getMonth(),n0.getDate()-n0.getDay()),fin(n0))],
+        ['Este mes',calcComisionesPeriodo(new Date(n0.getFullYear(),n0.getMonth(),1),fin(new Date(n0.getFullYear(),n0.getMonth()+1,0)))],
+        ['Este año',calcComisionesPeriodo(new Date(n0.getFullYear(),0,1),fin(new Date(n0.getFullYear(),11,31)))]
+      ];
+      const m=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+      rg.innerHTML='<table class="crm-table"><thead><tr><th>Período</th><th>Pólizas</th><th>Prima (pólizas+endosos)</th><th>Com. pólizas</th><th>Com. endosos</th><th style="color:#1a7a4a;">Progressive</th><th>TOTAL comisión</th></tr></thead><tbody>'+
+        filas.map(([l,t])=>`<tr><td><strong>${l}</strong></td><td>${t.ventas.length}</td><td>${m(t.primaTotal)}</td><td>${m(t.com)}</td><td>${m(t.comEndosos)}</td><td style="color:#1a7a4a;">${m(t.pfInc)}</td><td><strong style="color:var(--success);">${m(t.total)}</strong></td></tr>`).join('')+'</tbody></table>';
+    }
+  }catch(e){console.warn('PF resumen:',e.message);}
 
   // Render historial
   const wrap=document.getElementById('pf-historial-wrap');
