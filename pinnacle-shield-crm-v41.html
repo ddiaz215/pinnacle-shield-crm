@@ -362,6 +362,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <div class="stat-card" style="cursor:pointer;" onclick="showSection('comisiones')"><div class="stat-label">💵 Comisión cartera</div><div class="stat-value" id="ds-comision">$0</div><div class="stat-sub">Cartera total vigente</div></div>
     <div class="stat-card" style="cursor:pointer;" onclick="showSection('comisiones')"><div class="stat-label">📈 Comisión año</div><div class="stat-value" id="ds-comision-anio" style="color:var(--success);">$0</div><div class="stat-sub" id="ds-comision-anio-sub">Pólizas emitidas 2026</div></div>
     <div class="stat-card" style="cursor:pointer;background:linear-gradient(135deg,#e8f5ee,#f0faf4);" onclick="showSection('comisiones');setTimeout(()=>{showComTab('progressive',document.getElementById('com-tab-progressive'));},200)"><div class="stat-label">🏦 Incentivos Progressive</div><div class="stat-value" id="ds-progressive-total" style="color:#1a7a4a;">$0</div><div class="stat-sub" id="ds-progressive-sub">0 pólizas financiadas</div></div>
+    <div class="stat-card" style="cursor:pointer;background:linear-gradient(135deg,#e8f5ee,#f0faf4);" onclick="showSection('comisiones');setTimeout(()=>{showComTab('progressive',document.getElementById('com-tab-progressive'));},200)"><div class="stat-label">📑 Contratos Progressive</div><div class="stat-value" id="ds-pf-contratos" style="color:#1a7a4a;">0</div><div class="stat-sub" id="ds-pf-contratos-sub">0 este mes · $0 financiado</div></div>
     <div class="stat-card"><div class="stat-label">Renovaciones ≤30d</div><div class="stat-value" id="ds-renos" style="color:#c0392b;">0</div><div class="stat-sub">Urgentes</div></div>
     <div class="stat-card"><div class="stat-label">Tareas pendientes</div><div class="stat-value" id="ds-tareas">0</div><div class="stat-sub">Sin completar</div></div>
   </div>
@@ -2220,6 +2221,11 @@ function refreshDashboard(){
     const pfTotal=pfs.reduce((s,f)=>s+(parseFloat(f.incentivo)||0),0);
     setEl('ds-progressive-total','$'+pfTotal.toLocaleString('en-US',{minimumFractionDigits:2}));
     setEl('ds-progressive-sub',pfs.length+' póliza'+(pfs.length!==1?'s':'')+ ' financiada'+(pfs.length!==1?'s':'')+' (ya incluido en totales)');
+    const n=new Date(),mi=new Date(n.getFullYear(),n.getMonth(),1),mf=new Date(n.getFullYear(),n.getMonth()+1,0,23,59,59);
+    const pfMesD=calcComisionesPeriodo(mi,mf);
+    const primaFin=pfs.reduce((s,f)=>s+(parseFloat(f.prima)||0),0);
+    setEl('ds-pf-contratos',pfs.length);
+    setEl('ds-pf-contratos-sub',pfMesD.pfs.length+' este mes · $'+primaFin.toLocaleString('en-US',{maximumFractionDigits:0})+' financiado');
   }catch(e){console.warn('Progressive dashboard:',e.message);}
 
   // MEDIDOR DE META - Retiro de Lexus
