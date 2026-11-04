@@ -256,6 +256,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <div><div class="page-title">Dashboard</div><div class="page-sub" id="dashboard-date"></div></div>
     
   </div>
+  <div id="recordatorios-panel" style="margin-bottom:16px;"></div>
   <div id="birthday-alerts" style="display:none;background:white;border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:16px;"></div>
   <div id="renewal-alert-banner" style="display:none;" class="renewal-alert-banner" onclick="showSection('renovaciones')">
     <span style="font-size:20px;">🚨</span>
@@ -2032,6 +2033,172 @@ function startAutoSave(){
 function toggleAutosave(val){DB.config.autosave=val;saveLocal();}
 
 
+
+// ============ v41: RECORDATORIOS Y SEGUIMIENTO ============
+// Agenda unificada: cumpleaños, renovaciones y eventos/tareas con fecha.
+function _recHechos(){try{return JSON.parse(localStorage.getItem('ps_crm_rec_hechos')||'{}');}catch(e){return {};}}
+function _recSetHecho(k,v){try{const h=_recHechos();if(v)h[k]=Date.now();else delete h[k];
+  Object.keys(h).forEach(x=>{if(Date.now()-h[x]>400*86400000)delete h[x];});
+  localStorage.setItem('ps_crm_rec_hechos',JSON.stringify(h));}catch(e){}}
+function _recHorizonte(){try{return parseInt(localStorage.getItem('ps_crm_rec_hz')||'30')||30;}catch(e){return 30;}}
+function recSetHorizonte(v){try{localStorage.setItem('ps_crm_rec_hz',v);}catch(e){}renderRecordatorios();}
+function recVerHechos(){window._recMostrarHechos=!window._recMostrarHechos;renderRecordatorios();}
+
+function buildRecordatorios(hz){
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const hechos=_recHechos();
+  const items=[];
+  const diasHasta=f=>{const d=parseFechaLocal(f);if(!d||isNaN(d))return null;d.setHours(0,0,0,0);return Math.round((d-hoy)/86400000);};
+  // Cumpleaños (clientes, prospectos, referidos)
+  [['Cliente',DB.clientes],['Prospecto',DB.prospectos],['Referido',DB.referidos]].forEach(([tp,arr])=>{
+    (arr||[]).forEach(x=>{
+      if(!x.nacimiento)return;
+      const pr=String(x.nacimiento).split('-');if(pr.length<3)return;
+      const m=parseInt(pr[1])-1,d=parseInt(pr[2]),y0=parseInt(pr[0]);
+      if(isNaN(m)||isNaN(d))return;
+      let prox=new Date(hoy.getFullYear(),m,d);
+      if(prox<hoy)prox=new Date(hoy.getFullYear()+1,m,d);
+      const dias=Math.round((prox-hoy)/86400000);
+      if(dias>Math.min(hz,60))return;
+      const edad=y0>1900?prox.getFullYear()-y0:null;
+      items.push({cat:'cumple',dias,nombre:x.nombre,sub:'Cumple '+(edad?edad+' años · ':'')+prox.toLocaleDateString('es-PR',{day:'numeric',month:'long'}),tel:x.tel,key:'c:'+x.id+':'+prox.getFullYear(),fecha:prox});
+    });
+  });
+  // Renovaciones
+  (DB.clientes||[]).forEach(c=>{
+    if(!c.vencimiento||c.estado==='Cancelado'||c.estado==='Inactivo')return;
+    const dias=diasHasta(c.vencimiento);if(dias===null||dias>hz||dias<-15)return;
+    items.push({cat:'reno',dias,nombre:c.nombre,sub:'Vence póliza '+(c.numpoliza||'')+' · '+(c.aseguradora||'')+(c.prima_anual?' · $'+parseFloat(c.prima_anual).toLocaleString('en-US',{maximumFractionDigits:0}):''),tel:c.tel,key:'r:'+c.id+':'+c.vencimiento,fecha:parseFechaLocal(c.vencimiento)});
+  });
+  (DB.prospectos||[]).forEach(p=>{
+    if(!p.reno_fecha)return;
+    const dias=diasHasta(p.reno_fecha);if(dias===null||dias>hz||dias<-15)return;
+    items.push({cat:'reno',dias,nombre:p.nombre,sub:'Prospecto · vence su póliza actual'+(p.aseguradora?' · '+p.aseguradora:''),tel:p.tel,key:'r:'+p.id+':'+p.reno_fecha,fecha:parseFechaLocal(p.reno_fecha)});
+  });
+  (DB.referidos||[]).forEach(r=>{
+    if(!r.vence_poliza||r.estado==='Convertido'||r.estado==='No interesado')return;
+    const dias=diasHasta(r.vence_poliza);if(dias===null||dias>hz||dias<-15)return;
+    items.push({cat:'reno',dias,nombre:r.nombre,sub:'Referido · vence su póliza actual',tel:r.tel,key:'r:'+r.id+':'+r.vence_poliza,fecha:parseFechaLocal(r.vence_poliza)});
+  });
+  // Eventos / tareas con fecha (pendientes; las vencidas siempre se muestran)
+  (DB.tareas||[]).forEach(t=>{
+    if(!t.vence||t.estado==='Completada')return;
+    const dias=diasHasta(t.vence);if(dias===null||dias>hz)return;
+    items.push({cat:'tarea',dias,nombre:t.titulo,sub:(t.cliente?t.cliente+' · ':'')+'Prioridad '+(t.prioridad||'Media'),tel:null,key:'t:'+t.id,tareaId:t.id,fecha:parseFechaLocal(t.vence)});
+  });
+  // Seguimiento de prospectos con fecha
+  (DB.prospectos||[]).forEach(p=>{
+    if(!p.seguimiento_fecha)return;
+    const dias=diasHasta(p.seguimiento_fecha);if(dias===null||dias>hz||dias<-15)return;
+    items.push({cat:'seg',dias,nombre:p.nombre,sub:'Dar seguimiento a prospecto',tel:p.tel,key:'s:'+p.id+':'+p.seguimiento_fecha,fecha:parseFechaLocal(p.seguimiento_fecha)});
+  });
+  items.forEach(i=>{i.hecho=!!hechos[i.key];});
+  items.sort((a,b)=>a.dias-b.dias);
+  return items;
+}
+
+function renderRecordatorios(){
+  const el=document.getElementById('recordatorios-panel');if(!el)return;
+  const hz=_recHorizonte();
+  const todos=buildRecordatorios(hz);
+  const pend=todos.filter(i=>!i.hecho);
+  const hechos=todos.filter(i=>i.hecho);
+  const lista=window._recMostrarHechos?todos:pend;
+  window._recItems=lista;
+  const cfg={cumple:{ico:'🎂',lbl:'Cumpleaños',col:'#b8860b',bg:'#fff8e1'},reno:{ico:'🔄',lbl:'Renovación',col:'#c0392b',bg:'#fdecea'},tarea:{ico:'📌',lbl:'Evento / tarea',col:'#1a4a8a',bg:'#eef3ff'},seg:{ico:'📞',lbl:'Seguimiento',col:'#1a7a4a',bg:'#e8f5ee'}};
+  const cnt=c=>pend.filter(i=>i.cat===c).length;
+  const venc=pend.filter(i=>i.dias<0).length, hoyN=pend.filter(i=>i.dias===0).length;
+  const dtxt=d=>d<0?'Venció hace '+Math.abs(d)+'d':d===0?'HOY':d===1?'Mañana':'En '+d+' días';
+  const dcol=d=>d<=0?'#c0392b':d<=3?'#d97706':d<=7?'#b8860b':'#64748b';
+  const fila=(i,idx)=>{const c=cfg[i.cat];
+    const telLimpio=String(i.tel||'').replace(/[^0-9+]/g,'');
+    return `<div style="display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--border);${i.hecho?'opacity:0.45;':''}">
+      <div style="width:34px;height:34px;border-radius:10px;background:${c.bg};display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;">${c.ico}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:12px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.nombre||'—'} <span style="font-size:9px;font-weight:600;color:${c.col};text-transform:uppercase;letter-spacing:.5px;">${c.lbl}</span></div>
+        <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${i.sub||''}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;min-width:78px;"><div style="font-size:11px;font-weight:700;color:${dcol(i.dias)};">${dtxt(i.dias)}</div><div style="font-size:9px;color:var(--text-muted);">${i.fecha?i.fecha.toLocaleDateString('es-PR',{day:'numeric',month:'short'}):''}</div></div>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        ${i.tel?`<button class="btn btn-whatsapp btn-sm" onclick="recWA(${idx})" style="padding:3px 7px;font-size:10px;" title="WhatsApp">💬</button><a class="btn btn-outline btn-sm" href="tel:${telLimpio}" style="padding:3px 7px;font-size:10px;text-decoration:none;" title="Llamar">📞</a>`:''}
+        <button class="btn btn-outline btn-sm" onclick="recHecho(${idx})" style="padding:3px 7px;font-size:10px;color:#1a7a4a;border-color:#1a7a4a;" title="${i.hecho?'Desmarcar':'Marcar como atendido'}">${i.hecho?'↩':'✓'}</button>
+      </div></div>`;};
+  const chip=(n,txt,col)=>`<span style="background:${col}1a;color:${col};font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;">${n} ${txt}</span>`;
+  el.innerHTML=`<div style="background:white;border-radius:14px;border:1px solid var(--border);padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.04);">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:700;color:var(--navy);">🔔 Recordatorios y seguimiento</div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <select onchange="recSetHorizonte(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;">
+          ${[[7,'Próximos 7 días'],[14,'Próximos 14 días'],[30,'Próximos 30 días'],[60,'Próximos 60 días'],[90,'Próximos 90 días']].map(([v,t])=>`<option value="${v}" ${v===hz?'selected':''}>${t}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="recNuevoEvento('📌 ')" style="font-size:11px;">+ Evento</button>
+        <button class="btn btn-outline btn-sm" onclick="recNuevoEvento('📞 Llamar: ')" style="font-size:11px;">+ Llamada</button>
+        <button class="btn btn-outline btn-sm" onclick="recNuevoEvento('🤝 Cita: ')" style="font-size:11px;">+ Cita</button>
+        <button class="btn btn-outline btn-sm" onclick="recNotifs()" style="font-size:11px;" title="Avisos del navegador">🔔 Avisos</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+      ${venc?chip(venc,'vencidos','#c0392b'):''}${hoyN?chip(hoyN,'para hoy','#c0392b'):''}${cnt('reno')?chip(cnt('reno'),'renovaciones','#c0392b'):''}${cnt('cumple')?chip(cnt('cumple'),'cumpleaños','#b8860b'):''}${cnt('tarea')?chip(cnt('tarea'),'eventos','#1a4a8a'):''}${cnt('seg')?chip(cnt('seg'),'seguimientos','#1a7a4a'):''}
+      ${!pend.length?'<span style="font-size:11px;color:var(--text-muted);">✅ Todo al día en este período</span>':''}
+    </div>
+    <div style="max-height:340px;overflow-y:auto;">${lista.length?lista.map((i,idx)=>fila(i,idx)).join(''):''}</div>
+    ${hechos.length?`<div style="text-align:center;margin-top:8px;"><a href="#" onclick="recVerHechos();return false;" style="font-size:10px;color:var(--text-muted);">${window._recMostrarHechos?'Ocultar':'Mostrar'} ${hechos.length} atendido${hechos.length!==1?'s':''}</a></div>`:''}
+  </div>`;
+}
+function _recNum(tel){const clean=String(tel||'').replace(/\D/g,'');if(!clean)return '';return clean.startsWith('1')?clean:'1'+clean;}
+function recWA(idx){const i=(window._recItems||[])[idx];if(!i)return;
+  const nom=(i.nombre||'').split(' ')[0];
+  const num=_recNum(i.tel);if(!num){toast('Sin número','warning');return;}
+  if(i.cat==='cumple'){
+    window.open('https://wa.me/'+num+'?text='+encodeURIComponent('¡Feliz cumpleaños '+nom+'! 🎉 Te desea lo mejor Daniel Díaz de Pinnacle Shield Advisors.'),'_blank');
+  }else if(i.cat==='reno'){
+    window.open('https://wa.me/'+num+'?text='+encodeURIComponent('Hola '+nom+', te escribe Daniel Díaz de Pinnacle Shield Advisors. Tu póliza está próxima a renovar y quiero asegurarme de que tengas la mejor cobertura y precio. ¿Tienes un momento para revisarla?'),'_blank');
+  }else{openWhatsApp(i.tel,nom);}
+}
+function recHecho(idx){const i=(window._recItems||[])[idx];if(!i)return;
+  if(i.cat==='tarea'&&i.tareaId){
+    const t=DB.tareas.find(x=>x.id===i.tareaId);
+    if(t){t.estado='Completada';saveLocal();if(sbConnected)upsertTable('tareas',[t]);}
+  }else{_recSetHecho(i.key,!i.hecho);}
+  refreshDashboard();
+  try{if(document.getElementById('sec-tareas').classList.contains('active'))renderTareas();}catch(e){}
+}
+function recNuevoEvento(prefijo){
+  try{
+    document.getElementById('tarea-id').value='';
+    document.getElementById('modal-tarea-title').textContent='Nuevo evento / recordatorio';
+    document.getElementById('t-titulo').value=prefijo||'';
+    document.getElementById('t-cliente').value='';
+    document.getElementById('t-vence').value=new Date(Date.now()+86400000-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+    document.getElementById('t-estado').value='Pendiente';
+    document.getElementById('t-notas').value='';
+  }catch(e){}
+  openModal('modal-tarea');
+  setTimeout(()=>{const t=document.getElementById('t-titulo');if(t){t.focus();t.setSelectionRange(t.value.length,t.value.length);}},100);
+}
+// Avisos del navegador (funcionan mientras el CRM esté abierto)
+function recNotifs(){
+  if(!('Notification' in window)){toast('Este navegador no soporta avisos','warning');return;}
+  Notification.requestPermission().then(p=>{
+    if(p==='granted'){toast('🔔 Avisos activados','success');recNotificarHoy(true);}
+    else toast('Avisos bloqueados en el navegador','warning');
+  });
+}
+function recNotificarHoy(force){
+  try{
+    if(!('Notification' in window)||Notification.permission!=='granted')return;
+    const n=new Date();
+    const hoyStr=n.getFullYear()+'-'+(n.getMonth()+1)+'-'+n.getDate();
+    if(!force&&localStorage.getItem('ps_crm_rec_notif')===hoyStr)return;
+    const p=buildRecordatorios(7).filter(i=>!i.hecho&&i.dias<=1);
+    if(!p.length)return;
+    localStorage.setItem('ps_crm_rec_notif',hoyStr);
+    new Notification('Pinnacle Shield · Recordatorios',{body:p.slice(0,4).map(i=>(i.cat==='cumple'?'🎂 ':i.cat==='reno'?'🔄 ':'📌 ')+i.nombre+' ('+(i.dias<0?'vencido':i.dias===0?'hoy':'mañana')+')').join('\n')+(p.length>4?'\n+'+(p.length-4)+' más':'')});
+  }catch(e){}
+}
+setTimeout(recNotificarHoy,4000);
+// ============ FIN RECORDATORIOS ============
+
 // ============ ENDOSOS ============
 function openEndososModal(clienteId){
   const c = DB.clientes.find(x=>x.id===clienteId);
@@ -2372,10 +2539,11 @@ function refreshDashboard(){
   const banner=document.getElementById('renewal-alert-banner');
   if(banner){if(renosUrgentes.length>0){banner.style.display='flex';setEl('rab-count',renosUrgentes.length);setEl('rab-sub-text',`${renosUrgentes.length} renovaciones en los próximos 30 días`);}else banner.style.display='none';}
   renderRenosDashboard(renosUrgentes);
+  try{renderRecordatorios();}catch(e){console.warn('Recordatorios:',e.message);}
   renderActivity();
   renderBirthdayAlerts();
 }
-function renderBirthdayAlerts(){const el=document.getElementById('birthday-alerts');if(!el)return;const hoy=new Date();const mes=hoy.getMonth()+1,dia=hoy.getDate();const todos=[...DB.clientes,...DB.prospectos,...DB.referidos];const cumples=todos.filter(x=>{if(!x.nacimiento)return false;const p=x.nacimiento.split('-');return parseInt(p[1])===mes&&parseInt(p[2])===dia;});if(!cumples.length){el.style.display='none';return;}el.style.display='block';el.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">🎂 Cumpleaños hoy</div>'+cumples.map(x=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:18px;">🎉</span><div style="flex:1;"><strong style="font-size:12px;">${x.nombre}</strong></div>${x.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${x.tel}','${(x.nombre||'').split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 Felicitar</button>`:''}</div>`).join('');}
+function renderBirthdayAlerts(){const el=document.getElementById('birthday-alerts');if(!el)return;el.style.display='none';return;const hoy=new Date();const mes=hoy.getMonth()+1,dia=hoy.getDate();const todos=[...DB.clientes,...DB.prospectos,...DB.referidos];const cumples=todos.filter(x=>{if(!x.nacimiento)return false;const p=x.nacimiento.split('-');return parseInt(p[1])===mes&&parseInt(p[2])===dia;});if(!cumples.length){el.style.display='none';return;}el.style.display='block';el.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--navy);margin-bottom:8px;">🎂 Cumpleaños hoy</div>'+cumples.map(x=>`<div style="display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);"><span style="font-size:18px;">🎉</span><div style="flex:1;"><strong style="font-size:12px;">${x.nombre}</strong></div>${x.tel?`<button class="btn btn-whatsapp btn-sm" onclick="openWhatsApp('${x.tel}','${(x.nombre||'').split(' ')[0]}')" style="padding:2px 7px;font-size:10px;">💬 Felicitar</button>`:''}</div>`).join('');}
 function renderActivity(){const el=document.getElementById('recent-activity');if(!el)return;const all=[...DB.clientes.map(c=>({date:c.created_at,text:'Cliente: '+c.nombre,type:'cliente'})),...DB.prospectos.map(p=>({date:p.created_at,text:'Prospecto: '+p.nombre,type:'prospecto'})),...DB.tareas.filter(t=>t.estado!=='Completada').map(t=>({date:t.created_at,text:'Tarea: '+t.titulo,type:'tarea'}))].filter(a=>a.date).sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);if(!all.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><p>Sin actividad</p></div>';return;}el.innerHTML=all.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);"><span class="badge ${a.type==='cliente'?'badge-info':a.type==='prospecto'?'badge-gold':'badge-warning'}">${a.type}</span><span style="font-size:12px;flex:1;">${a.text}</span><span style="font-size:10px;color:var(--text-light);">${new Date(a.date).toLocaleDateString('es-PR')}</span></div>`).join('');}
 function renderRenosDashboard(renos){const el=document.getElementById('renos-dashboard');if(!el)return;if(!renos.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">🔄</div><p>Sin renovaciones urgentes</p></div>';return;}el.innerHTML=renos.slice(0,6).map(c=>{const dias=daysDiff(c.vencimiento);const cls=renoClass(dias);return`<div class="renovacion-item"><div class="renovacion-days ${cls==='future'?'ok':cls}"><div class="days-num">${dias??'—'}</div><div class="days-label">días</div></div><div style="flex:1;"><div style="font-size:12px;font-weight:600;">${c.nombre}</div><div style="font-size:10px;color:var(--text-muted);">${c.aseguradora||''}</div></div><span class="badge ${cls==='urgent'?'badge-danger':cls==='soon'?'badge-warning':'badge-success'}">${c.vencimiento}</span></div>`;}).join('');}
 
