@@ -238,6 +238,7 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
   <div class="nav-section-label">Gestión</div>
   <div class="nav-item" onclick="showSection('comisiones')"><span class="nav-icon">💰</span><span class="nav-label">Comisiones</span></div>
   <div class="nav-item" onclick="showSection('renovaciones')"><span class="nav-icon">🔄</span><span class="nav-label">Renovaciones</span><span class="nav-badge" id="badge-renos" style="background:#c0392b;color:white;">0</span></div>
+  <div class="nav-item" onclick="showSection('recordatorios')"><span class="nav-icon">🔔</span><span class="nav-label">Recordatorios</span><span class="nav-badge" id="badge-recordatorios" style="background:#c0392b;color:white;">0</span></div>
   <div class="nav-item" onclick="showSection('seguimiento')"><span class="nav-icon">📋</span><span class="nav-label">Seguimiento</span><span class="nav-badge" id="badge-seguimiento">0</span></div>
   <div class="nav-item" onclick="showSection('tareas')"><span class="nav-icon">✓</span><span class="nav-label">Tareas</span><span class="nav-badge" id="badge-tareas">0</span></div>
   <div class="nav-item" onclick="showSection('reportes')"><span class="nav-icon">📊</span><span class="nav-label">Reportes</span></div>
@@ -256,7 +257,6 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
     <div><div class="page-title">Dashboard</div><div class="page-sub" id="dashboard-date"></div></div>
     
   </div>
-  <div id="recordatorios-panel" style="margin-bottom:16px;"></div>
   <div id="birthday-alerts" style="display:none;background:white;border-radius:12px;border:1px solid var(--border);padding:14px;margin-bottom:16px;"></div>
   <div id="renewal-alert-banner" style="display:none;" class="renewal-alert-banner" onclick="showSection('renovaciones')">
     <span style="font-size:20px;">🚨</span>
@@ -921,6 +921,13 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
 </div>
 
 <!-- TAREAS -->
+<div id="sec-recordatorios" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Recordatorios</div><div class="page-sub">Renovaciones, cumpleaños, citas y seguimiento a clientes</div></div>
+  </div>
+  <div id="recordatorios-panel"></div>
+</div>
+
 <div id="sec-tareas" class="section">
   <div class="page-header"><div><div class="page-title">Tareas</div><div class="page-sub">Se nutre de clientes, prospectos y referidos</div></div>
     <button class="btn btn-primary" onclick="openModal('modal-tarea')">+ Nueva Tarea</button>
@@ -1539,7 +1546,7 @@ function showSection(id){
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const sec=document.getElementById('sec-'+id);if(sec)sec.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n=>{if(n.getAttribute('onclick')&&n.getAttribute('onclick').includes("'"+id+"'"))n.classList.add('active');});
-  const fns={dashboard:refreshDashboard,clientes:renderClientes,prospectos:renderProspectos,pipeline:renderPipeline,referidos:renderReferidos,comisiones:()=>{renderComisiones();initCalc2();initPeriodoVentas();setPeriodoVentas(_vpPeriodo);renderProgressiveFinance();},renovaciones:renderRenovaciones,seguimiento:renderSeguimiento,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas,respaldo:()=>{initBackupReminder();checkBackupAlert();}};
+  const fns={dashboard:refreshDashboard,clientes:renderClientes,prospectos:renderProspectos,pipeline:renderPipeline,referidos:renderReferidos,comisiones:()=>{renderComisiones();initCalc2();initPeriodoVentas();setPeriodoVentas(_vpPeriodo);renderProgressiveFinance();},renovaciones:renderRenovaciones,recordatorios:renderRecordatorios,seguimiento:renderSeguimiento,tareas:renderTareas,reportes:renderReportes,plantillas:renderPlantillas,respaldo:()=>{initBackupReminder();checkBackupAlert();}};
   if(fns[id])fns[id]();
   if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebar-overlay').classList.remove('active');}
 }
@@ -2042,6 +2049,8 @@ function _recSetHecho(k,v){try{const h=_recHechos();if(v)h[k]=Date.now();else de
   localStorage.setItem('ps_crm_rec_hechos',JSON.stringify(h));}catch(e){}}
 function _recHorizonte(){try{return parseInt(localStorage.getItem('ps_crm_rec_hz')||'30')||30;}catch(e){return 30;}}
 function recSetHorizonte(v){try{localStorage.setItem('ps_crm_rec_hz',v);}catch(e){}renderRecordatorios();}
+function _recFiltro(){try{return localStorage.getItem('ps_crm_rec_f')||'cumple';}catch(e){return 'cumple';}}
+function recSetFiltro(v){try{localStorage.setItem('ps_crm_rec_f',v);}catch(e){}renderRecordatorios();}
 function recVerHechos(){window._recMostrarHechos=!window._recMostrarHechos;renderRecordatorios();}
 
 function buildRecordatorios(hz){
@@ -2067,29 +2076,29 @@ function buildRecordatorios(hz){
   // Renovaciones
   (DB.clientes||[]).forEach(c=>{
     if(!c.vencimiento||c.estado==='Cancelado'||c.estado==='Inactivo')return;
-    const dias=diasHasta(c.vencimiento);if(dias===null||dias>hz||dias<-15)return;
+    const dias=diasHasta(c.vencimiento);if(dias===null||dias>hz||dias<-2)return;
     items.push({cat:'reno',dias,nombre:c.nombre,sub:'Vence póliza '+(c.numpoliza||'')+' · '+(c.aseguradora||'')+(c.prima_anual?' · $'+parseFloat(c.prima_anual).toLocaleString('en-US',{maximumFractionDigits:0}):''),tel:c.tel,key:'r:'+c.id+':'+c.vencimiento,fecha:parseFechaLocal(c.vencimiento)});
   });
   (DB.prospectos||[]).forEach(p=>{
     if(!p.reno_fecha)return;
-    const dias=diasHasta(p.reno_fecha);if(dias===null||dias>hz||dias<-15)return;
+    const dias=diasHasta(p.reno_fecha);if(dias===null||dias>hz||dias<-2)return;
     items.push({cat:'reno',dias,nombre:p.nombre,sub:'Prospecto · vence su póliza actual'+(p.aseguradora?' · '+p.aseguradora:''),tel:p.tel,key:'r:'+p.id+':'+p.reno_fecha,fecha:parseFechaLocal(p.reno_fecha)});
   });
   (DB.referidos||[]).forEach(r=>{
     if(!r.vence_poliza||r.estado==='Convertido'||r.estado==='No interesado')return;
-    const dias=diasHasta(r.vence_poliza);if(dias===null||dias>hz||dias<-15)return;
+    const dias=diasHasta(r.vence_poliza);if(dias===null||dias>hz||dias<-2)return;
     items.push({cat:'reno',dias,nombre:r.nombre,sub:'Referido · vence su póliza actual',tel:r.tel,key:'r:'+r.id+':'+r.vence_poliza,fecha:parseFechaLocal(r.vence_poliza)});
   });
   // Eventos / tareas con fecha (pendientes; las vencidas siempre se muestran)
   (DB.tareas||[]).forEach(t=>{
     if(!t.vence||t.estado==='Completada')return;
-    const dias=diasHasta(t.vence);if(dias===null||dias>hz)return;
+    const dias=diasHasta(t.vence);if(dias===null||dias>hz||dias<-2)return;
     items.push({cat:'tarea',dias,nombre:t.titulo,sub:(t.cliente?t.cliente+' · ':'')+'Prioridad '+(t.prioridad||'Media'),tel:null,key:'t:'+t.id,tareaId:t.id,fecha:parseFechaLocal(t.vence)});
   });
   // Seguimiento de prospectos con fecha
   (DB.prospectos||[]).forEach(p=>{
     if(!p.seguimiento_fecha)return;
-    const dias=diasHasta(p.seguimiento_fecha);if(dias===null||dias>hz||dias<-15)return;
+    const dias=diasHasta(p.seguimiento_fecha);if(dias===null||dias>hz||dias<-2)return;
     items.push({cat:'seg',dias,nombre:p.nombre,sub:'Dar seguimiento a prospecto',tel:p.tel,key:'s:'+p.id+':'+p.seguimiento_fecha,fecha:parseFechaLocal(p.seguimiento_fecha)});
   });
   items.forEach(i=>{i.hecho=!!hechos[i.key];});
@@ -2098,9 +2107,12 @@ function buildRecordatorios(hz){
 }
 
 function renderRecordatorios(){
-  const el=document.getElementById('recordatorios-panel');if(!el)return;
   const hz=_recHorizonte();
-  const todos=buildRecordatorios(hz);
+  const todosTipos=buildRecordatorios(hz);
+  try{setEl('badge-recordatorios',todosTipos.filter(i=>!i.hecho&&i.dias<=7).length);}catch(e){}
+  const fil=_recFiltro();
+  const todos=fil==='todo'?todosTipos:todosTipos.filter(i=>i.cat===fil);
+  const el=document.getElementById('recordatorios-panel');if(!el)return;
   const pend=todos.filter(i=>!i.hecho);
   const hechos=todos.filter(i=>i.hecho);
   const lista=window._recMostrarHechos?todos:pend;
@@ -2126,8 +2138,11 @@ function renderRecordatorios(){
   const chip=(n,txt,col)=>`<span style="background:${col}1a;color:${col};font-size:10px;font-weight:700;padding:3px 9px;border-radius:12px;">${n} ${txt}</span>`;
   el.innerHTML=`<div style="background:white;border-radius:14px;border:1px solid var(--border);padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,.04);">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-      <div style="font-size:13px;font-weight:700;color:var(--navy);">🔔 Recordatorios y seguimiento</div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy);">🔔 Próximos recordatorios</div>
       <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <select onchange="recSetFiltro(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;">
+          ${[['cumple','🎂 Solo cumpleaños'],['reno','🔄 Solo renovaciones'],['tarea','📌 Solo eventos'],['todo','Todo']].map(([v,t])=>`<option value="${v}" ${v===fil?'selected':''}>${t}</option>`).join('')}
+        </select>
         <select onchange="recSetHorizonte(this.value)" style="padding:4px 8px;border:1px solid var(--border);border-radius:8px;font-size:11px;font-family:'DM Sans',sans-serif;">
           ${[[7,'Próximos 7 días'],[14,'Próximos 14 días'],[30,'Próximos 30 días'],[60,'Próximos 60 días'],[90,'Próximos 90 días']].map(([v,t])=>`<option value="${v}" ${v===hz?'selected':''}>${t}</option>`).join('')}
         </select>
@@ -2160,7 +2175,7 @@ function recHecho(idx){const i=(window._recItems||[])[idx];if(!i)return;
     const t=DB.tareas.find(x=>x.id===i.tareaId);
     if(t){t.estado='Completada';saveLocal();if(sbConnected)upsertTable('tareas',[t]);}
   }else{_recSetHecho(i.key,!i.hecho);}
-  refreshDashboard();
+  refreshDashboard();renderRecordatorios();
   try{if(document.getElementById('sec-tareas').classList.contains('active'))renderTareas();}catch(e){}
 }
 function recNuevoEvento(prefijo){
