@@ -1075,15 +1075,25 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
         <div class="form-grid form-grid-3">
           <div class="form-group">
             <label>Tipo de endoso</label>
-            <select id="endoso-tipo" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;">
-              <option value="Adicion de vehiculo">Adición de vehículo</option>
-              <option value="Eliminacion de vehiculo">Eliminación de vehículo</option>
-              <option value="Cambio de vehiculo">Cambio de vehículo</option>
-              <option value="Adicion de conductor">Adición de conductor</option>
-              <option value="Articulo de valor">Artículo de valor</option>
-              <option value="Cambio de cobertura">Cambio de cobertura</option>
-              <option value="Cambio de direccion">Cambio de dirección</option>
-              <option value="Otro">Otro</option>
+            <select id="endoso-tipo" onchange="endosoTipoChange()" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;">
+              <optgroup label="🚗 Vehículos">
+                <option value="Adicion de vehiculo">Adición de vehículo</option>
+                <option value="Cubierta de otro auto">Cubierta de otro auto (añadir otro auto a la póliza)</option>
+                <option value="Eliminacion de vehiculo">Eliminación de vehículo</option>
+                <option value="Cambio de vehiculo">Cambio de vehículo</option>
+                <option value="Adicion de conductor">Adición de conductor</option>
+              </optgroup>
+              <optgroup label="🛡️ Añadir / aumentar cobertura">
+                <option value="Aumento de cobertura">Aumentar cobertura (contenido, estructura, límites...)</option>
+                <option value="Responsabilidad publica">Responsabilidad pública</option>
+                <option value="Cubierta adicional">Cubierta adicional / especial</option>
+                <option value="Articulo de valor">Artículo de valor (joyas, equipo, etc.)</option>
+                <option value="Cambio de cobertura">Cambio de cobertura / deducible</option>
+              </optgroup>
+              <optgroup label="📄 Otros">
+                <option value="Cambio de direccion">Cambio de dirección</option>
+                <option value="Otro">Otro</option>
+              </optgroup>
             </select>
           </div>
           <div class="form-group">
@@ -1093,6 +1103,34 @@ table.crm-table tr:hover td{background:rgba(30,46,83,0.02);}
           <div class="form-group">
             <label>Prima adicional ($)</label>
             <input type="number" id="endoso-prima" placeholder="0.00" step="0.01">
+          </div>
+        </div>
+        <div id="endoso-cob-wrap" style="display:none;background:white;border:1px dashed rgba(26,74,138,0.35);border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+          <div style="font-size:10px;font-weight:700;color:#1a4a8a;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">🛡️ Detalle de la cobertura</div>
+          <div class="form-grid form-grid-3">
+            <div class="form-group">
+              <label>Cobertura</label>
+              <select id="endoso-cobertura" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;">
+                <option value="">— Seleccionar —</option>
+                <option>Contenido</option>
+                <option>Responsabilidad pública</option>
+                <option>Responsabilidad civil auto (daños a terceros)</option>
+                <option>Gastos médicos</option>
+                <option>Colisión</option>
+                <option>Comprensivo</option>
+                <option>Estructura / vivienda</option>
+                <option>Otras estructuras</option>
+                <option>Pérdida de uso</option>
+                <option>Joyas / artículos de valor</option>
+                <option>Equipo electrónico</option>
+                <option>Inundación</option>
+                <option>Terremoto</option>
+                <option>Huracán / tormenta</option>
+                <option>Otra (escribir abajo)</option>
+              </select>
+            </div>
+            <div class="form-group"><label>Límite anterior</label><input type="text" id="endoso-lim-ant" placeholder="Ej: $50,000"></div>
+            <div class="form-group"><label>Límite nuevo</label><input type="text" id="endoso-lim-nuevo" placeholder="Ej: $75,000"></div>
           </div>
         </div>
         <div class="form-grid form-grid-2">
@@ -2008,6 +2046,7 @@ function openEndososModal(clienteId){
   document.getElementById('endoso-numpoliza').value = c.numpoliza || '';
   document.getElementById('endoso-notas').value = '';
   renderEndososLista(clienteId);
+  try{endosoTipoChange();}catch(e){}
   openModal('modal-endosos');
 }
 
@@ -2042,12 +2081,30 @@ function renderEndososLista(clienteId){
     </div>`;
 }
 
+// Mostrar detalle de cobertura según el tipo de endoso
+function endosoTipoChange(){
+  const t=document.getElementById('endoso-tipo').value;
+  const esCob=['Aumento de cobertura','Responsabilidad publica','Cubierta adicional','Articulo de valor','Cambio de cobertura'].includes(t);
+  const w=document.getElementById('endoso-cob-wrap');if(w)w.style.display=esCob?'block':'none';
+  const d=document.getElementById('endoso-descripcion');
+  const ph={'Adicion de vehiculo':'Ej: 2024 Nissan Rogue KKL259','Cubierta de otro auto':'Ej: 2022 Toyota Corolla · Tablilla · VIN','Eliminacion de vehiculo':'Vehículo que se elimina','Cambio de vehiculo':'Ej: 2026 Acura MDX',
+    'Aumento de cobertura':'Ej: Aumentar contenido de $50,000 a $75,000','Responsabilidad publica':'Ej: Responsabilidad pública $300,000','Cubierta adicional':'Describe la cobertura especial que se añade','Articulo de valor':'Ej: Anillo de diamantes · valor $4,500'};
+  if(d)d.placeholder=ph[t]||'Detalle del endoso';
+  if(!esCob){['endoso-cobertura','endoso-lim-ant','endoso-lim-nuevo'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});}
+}
 async function saveEndoso(){
   const clienteId = document.getElementById('endoso-cliente-id').value;
   const tipo = document.getElementById('endoso-tipo').value;
   const fecha = document.getElementById('endoso-fecha').value;
   const prima = parseFloat(document.getElementById('endoso-prima').value)||0;
-  const descripcion = document.getElementById('endoso-descripcion').value.trim();
+  let descripcion = document.getElementById('endoso-descripcion').value.trim();
+  const cob = (document.getElementById('endoso-cobertura')||{}).value||'';
+  const limA = ((document.getElementById('endoso-lim-ant')||{}).value||'').trim();
+  const limN = ((document.getElementById('endoso-lim-nuevo')||{}).value||'').trim();
+  if(cob||limA||limN){
+    const det=(cob?cob:'Cobertura')+(limN?': '+limN:'')+(limA?' (antes '+limA+')':'');
+    descripcion = descripcion ? det+' — '+descripcion : det;
+  }
   const numpoliza = document.getElementById('endoso-numpoliza').value.trim();
   const notas = document.getElementById('endoso-notas').value.trim();
 
@@ -2068,6 +2125,7 @@ async function saveEndoso(){
 
   if(!DB.endosos) DB.endosos = [];
   DB.endosos.push(endoso);
+  saveLocal();
 
   // Guardar en Supabase
   if(sbClient && sbConnected){
@@ -2083,6 +2141,7 @@ async function saveEndoso(){
   document.getElementById('endoso-prima').value = '';
   document.getElementById('endoso-descripcion').value = '';
   document.getElementById('endoso-notas').value = '';
+  ['endoso-cobertura','endoso-lim-ant','endoso-lim-nuevo'].forEach(i=>{const e=document.getElementById(i);if(e)e.value='';});
 
   renderEndososLista(clienteId);
   refreshDashboard();
@@ -2091,6 +2150,7 @@ async function saveEndoso(){
 async function deleteEndoso(endosoId, clienteId){
   if(!confirm('¿Eliminar este endoso?')) return;
   DB.endosos = (DB.endosos||[]).filter(e=>e.id!==endosoId);
+  saveLocal();
   if(sbClient && sbConnected){
     try{ await sbClient.from('endosos').delete().eq('id',endosoId); }catch(e){}
   }
