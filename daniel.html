@@ -95,6 +95,28 @@
   footer{text-align:center;padding:24px 22px 26px;font-size:10.5px;line-height:1.7;color:#9aa3b5;letter-spacing:.03em}
   footer strong{color:#d7dbe3;font-weight:600}
 
+  .modal{position:fixed;inset:0;background:rgba(5,10,24,.72);backdrop-filter:blur(4px);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:12px}
+  .modal[hidden]{display:none}
+  .sheet{position:relative;width:100%;max-width:420px;background:linear-gradient(180deg,var(--navy),var(--navy-2));border-radius:22px;padding:26px 22px 20px;box-shadow:0 -10px 50px rgba(0,0,0,.5),inset 0 0 0 1px rgba(253,200,115,.25);max-height:calc(100vh - 24px);overflow:auto}
+  .sheet[hidden]{display:none}
+  @media(min-height:700px){.modal{align-items:center}}
+  .sheet h2{font-family:"Cormorant Garamond",serif;font-size:28px;font-weight:600}
+  .msub{font-size:13px;color:#cfd5e0;margin:6px 0 16px;line-height:1.5}
+  .sheet label{display:block;margin-bottom:12px}
+  .sheet label span{display:block;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--silver);margin-bottom:6px}
+  .sheet input,.sheet select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#fff;font:500 16px Montserrat,sans-serif;outline:none}
+  .sheet select option{color:#1E2E53}
+  .sheet input:focus,.sheet select:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(253,200,115,.18)}
+  .sheet input.bad{border-color:#ff8a80}
+  .hp{position:absolute!important;left:-9999px;width:1px;height:1px;opacity:0}
+  .sbm{margin:8px 0 0!important;width:100%!important}
+  .sbm[disabled]{opacity:.6}
+  .err{color:#ffb4ab;font-size:12.5px;min-height:1em;margin:2px 0 4px}
+  .consent{font-size:10.5px;color:#8f99ad;line-height:1.5;margin-top:12px;text-align:center}
+  .x{position:absolute;top:10px;right:12px;background:none;border:0;color:var(--silver);font-size:28px;line-height:1;cursor:pointer;padding:4px 8px}
+  .done{text-align:center}
+  .done .save{margin:14px 0 0;width:100%}
+  .ok{width:64px;height:64px;border-radius:50%;margin:4px auto 12px;display:grid;place-items:center;font-size:30px;font-weight:700;color:var(--navy);background:linear-gradient(160deg,#FFE3A8,var(--gold) 45%,var(--gold-d))}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;
     background:var(--gold);color:var(--navy);font:600 13px Montserrat,sans-serif;padding:11px 18px;border-radius:999px;
     box-shadow:0 10px 30px rgba(0,0,0,.4);transition:all .25s ease;pointer-events:none}
@@ -148,7 +170,7 @@
     </div>
   </section>
 
-  <a class="save" href="daniel-diaz.vcf" download="Daniel-Diaz-Pinnacle-Shield.vcf" data-i="save">Guardar contacto</a>
+  <button class="save" id="saveBtn" data-i="save">Guardar contacto</button>
   <button class="copyall" id="saveContact" data-i="all">Copiar todos mis datos de contacto</button>
 
   <div class="qrbox">
@@ -163,6 +185,38 @@
     <span data-i="f2">Propiedad · Contingencia · Vida · Puerto Rico</span>
   </footer>
 </main>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle" hidden>
+  <form class="sheet" id="leadForm" novalidate>
+    <button type="button" class="x" id="mClose" aria-label="Cerrar">×</button>
+    <h2 id="mTitle" data-i="mTitle">Guarda mi contacto</h2>
+    <p class="msub" data-i="mSub">Déjame tus datos para poder ayudarte con tu seguro. Te descargo mi contacto al instante.</p>
+    <label><span data-i="lName">Nombre completo</span>
+      <input name="nombre" autocomplete="name" required maxlength="120"></label>
+    <label><span data-i="lTel">Teléfono</span>
+      <input name="tel" type="tel" inputmode="tel" autocomplete="tel" required maxlength="30" placeholder="(787) 000-0000"></label>
+    <label><span data-i="lEmail">Email</span>
+      <input name="email" type="email" inputmode="email" autocomplete="email" maxlength="160" placeholder="tu@email.com"></label>
+    <label><span data-i="lInt">¿Qué seguro te interesa?</span>
+      <select name="interes">
+        <option value="" data-i="oNone">Seleccionar (opcional)</option>
+        <option value="Auto">Auto</option>
+        <option value="Hogar / Propiedad" data-i="home">Hogar / Propiedad</option>
+        <option value="Comercial" data-i="comm">Comercial</option>
+        <option value="Vida" data-i="life">Vida</option>
+      </select></label>
+    <input class="hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    <p class="err" id="mErr" role="alert"></p>
+    <button type="submit" class="save sbm" id="mSubmit" data-i="mBtn">Enviar y guardar contacto</button>
+    <p class="consent" data-i="mConsent">Al enviar, autorizas a Pinnacle Shield Advisors a contactarte por llamada, texto, WhatsApp o email sobre seguros. Tu información no se comparte.</p>
+  </form>
+  <div class="sheet done" id="mDone" hidden>
+    <div class="ok">✓</div>
+    <h2 data-i="dTitle">¡Gracias!</h2>
+    <p class="msub" data-i="dSub">Tu información llegó. Te estaré contactando pronto.</p>
+    <a class="save" href="daniel-diaz.vcf" id="dlLink" data-i="dBtn">Abrir mi contacto</a>
+    <button type="button" class="copyall" id="dClose" data-i="dClose">Cerrar</button>
+  </div>
+</div>
 <div class="toast" id="toast">Copiado ✓</div>
 <script>
   const toast = document.getElementById('toast');
@@ -173,10 +227,10 @@
   }
   document.querySelectorAll('.copy').forEach(b => b.addEventListener('click', () => copy(b.dataset.copy)));
   const T = {
-    es:{role:'Asesor de Seguros',role2:'Representante Autorizado · Puerto Rico',home:'Hogar / Propiedad',comm:'Comercial',life:'Vida',call:'Llamar',phone:'Teléfono',copy:'Copiar',all:'Copiar todos mis datos de contacto',save:'Guardar contacto',scan:'Escanea y guárdame',scan2:'Comparte esta tarjeta: el código abre pinnacleshieldpr.com/daniel',f1:'Lic. OCS 3004416881 · Representante Autorizado',f2:'Propiedad · Contingencia · Vida · Puerto Rico',
+    es:{role:'Asesor de Seguros',role2:'Representante Autorizado · Puerto Rico',home:'Hogar / Propiedad',comm:'Comercial',life:'Vida',call:'Llamar',phone:'Teléfono',copy:'Copiar',all:'Copiar todos mis datos de contacto',save:'Guardar contacto',mTitle:'Guarda mi contacto',mSub:'Déjame tus datos para poder ayudarte con tu seguro. Te descargo mi contacto al instante.',lName:'Nombre completo',lTel:'Teléfono',lEmail:'Email',lInt:'¿Qué seguro te interesa?',oNone:'Seleccionar (opcional)',mBtn:'Enviar y guardar contacto',mConsent:'Al enviar, autorizas a Pinnacle Shield Advisors a contactarte por llamada, texto, WhatsApp o email sobre seguros. Tu información no se comparte.',dTitle:'¡Gracias!',dSub:'Tu información llegó. Te estaré contactando pronto.',dBtn:'Abrir mi contacto',dClose:'Cerrar',eName:'Escribe tu nombre.',eTel:'Escribe un teléfono válido (10 dígitos).',eEmail:'Revisa el email.',eNet:'No se pudo enviar. Revisa tu conexión e intenta de nuevo.',sending:'Enviando…',scan:'Escanea y guárdame',scan2:'Comparte esta tarjeta: el código abre pinnacleshieldpr.com/daniel',f1:'Lic. OCS 3004416881 · Representante Autorizado',f2:'Propiedad · Contingencia · Vida · Puerto Rico',
         copied:'Copiado ✓',allCopied:'Datos copiados ✓',hold:'Mantén presionado el texto para copiar',
         wa:'Hola Daniel, me interesa una cotización de seguro.',subj:'Cotización de seguro',title:'Asesor de Seguros',btn:'EN'},
-    en:{role:'Insurance Advisor',role2:'Authorized Representative · Puerto Rico',home:'Home / Property',comm:'Commercial',life:'Life',call:'Call',phone:'Phone',copy:'Copy',all:'Copy all my contact info',save:'Save contact',scan:'Scan & save me',scan2:'Share this card: the code opens pinnacleshieldpr.com/daniel',f1:'PR OCS Lic. 3004416881 · Authorized Representative',f2:'Property · Casualty · Life · Puerto Rico',
+    en:{role:'Insurance Advisor',role2:'Authorized Representative · Puerto Rico',home:'Home / Property',comm:'Commercial',life:'Life',call:'Call',phone:'Phone',copy:'Copy',all:'Copy all my contact info',save:'Save contact',mTitle:'Save my contact',mSub:'Leave your info so I can help you with your insurance. My contact downloads right away.',lName:'Full name',lTel:'Phone',lEmail:'Email',lInt:'Which insurance are you interested in?',oNone:'Select (optional)',mBtn:'Send & save contact',mConsent:'By sending, you authorize Pinnacle Shield Advisors to contact you by call, text, WhatsApp or email about insurance. Your information is not shared.',dTitle:'Thank you!',dSub:'Your information was received. I will be in touch soon.',dBtn:'Open my contact',dClose:'Close',eName:'Please enter your name.',eTel:'Please enter a valid phone (10 digits).',eEmail:'Please check the email.',eNet:'Could not send. Check your connection and try again.',sending:'Sending…',scan:'Scan & save me',scan2:'Share this card: the code opens pinnacleshieldpr.com/daniel',f1:'PR OCS Lic. 3004416881 · Authorized Representative',f2:'Property · Casualty · Life · Puerto Rico',
         copied:'Copied ✓',allCopied:'Contact info copied ✓',hold:'Press and hold the text to copy',
         wa:'Hi Daniel, I would like an insurance quote.',subj:'Insurance quote',title:'Insurance Advisor',btn:'ES'}
   };
@@ -202,6 +256,41 @@ Tel/WhatsApp: (939) 392-5008
 Email: ddiaz@pinnacleshieldpr.com
 Web: https://pinnacleshieldpr.com/daniel
 Lic. OCS 3004416881`, T[lang].allCopied));
+
+  // ---- Formulario de lead antes de guardar el contacto ----
+  const LEAD_URL = 'https://oljsjvsakzymxrsfkbda.supabase.co/functions/v1/tarjeta-lead';
+  const modal = document.getElementById('modal'), form = document.getElementById('leadForm'),
+        done = document.getElementById('mDone'), err = document.getElementById('mErr'), sbm = document.getElementById('mSubmit');
+  function openModal(){
+    let sent = false; try { sent = localStorage.getItem('ps_lead_sent') === '1'; } catch(e){}
+    if (sent) { location.href = 'daniel-diaz.vcf'; return; }
+    form.hidden = false; done.hidden = true; err.textContent = ''; modal.hidden = false;
+    setTimeout(() => form.nombre.focus(), 50);
+  }
+  function closeModal(){ modal.hidden = true; }
+  document.getElementById('saveBtn').addEventListener('click', openModal);
+  document.getElementById('mClose').addEventListener('click', closeModal);
+  document.getElementById('dClose').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const t = T[lang], d = Object.fromEntries(new FormData(form));
+    [form.nombre, form.tel, form.email].forEach(i => i.classList.remove('bad'));
+    if ((d.nombre || '').trim().length < 2) { form.nombre.classList.add('bad'); err.textContent = t.eName; form.nombre.focus(); return; }
+    if ((d.tel || '').replace(/\D/g, '').length < 10) { form.tel.classList.add('bad'); err.textContent = t.eTel; form.tel.focus(); return; }
+    if (d.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.email.trim())) { form.email.classList.add('bad'); err.textContent = t.eEmail; form.email.focus(); return; }
+    err.textContent = ''; sbm.disabled = true; sbm.textContent = t.sending;
+    try {
+      const r = await fetch(LEAD_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...d, lang }) });
+      if (!r.ok) throw new Error(r.status);
+      try { localStorage.setItem('ps_lead_sent', '1'); } catch(e){}
+      form.hidden = true; done.hidden = false;
+      setTimeout(() => { location.href = 'daniel-diaz.vcf'; }, 700);
+    } catch(ex) {
+      err.textContent = t.eNet;
+    } finally { sbm.disabled = false; sbm.textContent = t.mBtn; }
+  });
 </script>
 </body>
 </html>
